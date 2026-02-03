@@ -1,0 +1,20 @@
+# Node / Next
+node_modules/
+.next/
+dist/
+out/
+
+# Env files
+.env*
+!.env.example
+
+# OS / editor
+.DS_Store
+.vscode/
+
+# Outputs / artifacts
+output/
+**/output/
+
+# Logs
+*.log
