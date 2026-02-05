@@ -200,7 +200,7 @@ export async function GET(req: Request) {
   // Optional support: /api/script-pack?runId=...
   const url = new URL(req.url);
   const runId = url.searchParams.get("runId") ?? "";
-  const bytes = await buildPdf({ header: runId ? { runId } : undefined });
+  const bytes = await buildPdf({ header: runId ? { runId } : {} });
   const responseBody = Buffer.from(bytes);
   return new NextResponse(responseBody, {
     headers: {

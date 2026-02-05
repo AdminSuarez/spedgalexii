@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
@@ -249,7 +249,7 @@ function readParam(sp: URLSearchParams, key: string): string {
   return typeof v === "string" ? v : "";
 }
 
-export default function GoalsPage() {
+function GoalsPageInner() {
   const searchParams = useSearchParams();
 
   const [goalText, setGoalText] = useState<string>(
@@ -475,5 +475,13 @@ export default function GoalsPage() {
         <div className="h-6" />
       </div>
     </GalaxyShell>
+  );
+}
+
+export default function GoalsPage() {
+  return (
+    <Suspense fallback={<GalaxyShell><div className="p-8 text-white/60">Loading Goals Galexii...</div></GalaxyShell>}>
+      <GoalsPageInner />
+    </Suspense>
   );
 }

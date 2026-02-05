@@ -127,7 +127,8 @@ function parseCsv(text: string): string[][] {
   row.push(field);
   rows.push(row);
 
-  if (rows.length && rows[rows.length - 1].every((c) => String(c || "").trim() === "")) rows.pop();
+  const lastRow = rows[rows.length - 1];
+  if (rows.length && lastRow && lastRow.every((c) => String(c || "").trim() === "")) rows.pop();
   return rows;
 }
 

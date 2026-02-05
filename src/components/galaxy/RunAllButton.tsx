@@ -112,7 +112,8 @@ export function RunAllButton() {
 
     const formData = new FormData();
     for (let i = 0; i < files.length; i++) {
-      formData.append("files", files[i]);
+      const file = files[i];
+      if (file) formData.append("files", file);
     }
 
     const res = await fetch("/api/upload", { method: "POST", body: formData });

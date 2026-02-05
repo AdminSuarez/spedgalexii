@@ -35,6 +35,8 @@ type RunSelection = {
   cacheHit?: boolean;
 };
 
+const DEFAULT_SELECTION: RunSelection = { scope: "all" };
+
 type RunManifestOutputs = {
   primaryXlsx?: string;
   pdf?: string;
@@ -896,6 +898,7 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     for (const args of pipeline) {
       const scriptName = args[0];
+      if (!scriptName) continue;
       const scriptAbs = resolveScriptAbs(scriptName);
 
       const spawnArgs = [scriptAbs, ...args.slice(1)];
@@ -1004,7 +1007,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       startedAt: startedAt.toISOString(),
       finishedAt: finishedAtIso,
       status: "error",
-      selection,
+      selection: selection ?? DEFAULT_SELECTION,
       outputs: {},
     };
     await writeManifestSafe(fail);

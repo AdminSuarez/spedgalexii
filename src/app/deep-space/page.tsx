@@ -93,9 +93,10 @@ export default function DeepDivePage() {
     setFiles((prev) => [...prev, ...droppedFiles]);
 
     // Try to extract student ID from first filename
-    if (droppedFiles.length > 0 && !studentId) {
-      const match = droppedFiles[0].name.match(/^(\d{8})/);
-      if (match) {
+    const firstFile = droppedFiles[0];
+    if (firstFile && !studentId) {
+      const match = firstFile.name.match(/^(\d{8})/);
+      if (match?.[1]) {
         setStudentId(match[1]);
       }
     }
@@ -106,9 +107,10 @@ export default function DeepDivePage() {
       const selectedFiles = Array.from(e.target.files);
       setFiles((prev) => [...prev, ...selectedFiles]);
 
-      if (selectedFiles.length > 0 && !studentId) {
-        const match = selectedFiles[0].name.match(/^(\d{8})/);
-        if (match) {
+      const firstFile = selectedFiles[0];
+      if (firstFile && !studentId) {
+        const match = firstFile.name.match(/^(\d{8})/);
+        if (match?.[1]) {
           setStudentId(match[1]);
         }
       }
