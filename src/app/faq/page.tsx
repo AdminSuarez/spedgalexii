@@ -74,15 +74,15 @@ const FAQ_ITEMS = [
     questions: [
       {
         q: "My PDF won't upload. What should I do?",
-        a: "Ensure your PDF is under 50MB and is a text-based PDF (not a scanned image). If issues persist, try refreshing the page and uploading again. For continued problems, email support@spedgalexii.com with the error message.",
+        a: "Ensure your PDF is under 50MB and is a text-based PDF (not a scanned image). If issues persist, try refreshing the page and uploading again. For continued problems, email admin@SpEdGalexii.com with the error message.",
       },
       {
         q: "The analysis seems wrong or incomplete. Why?",
-        a: "SpEdGalexii relies on consistent document formatting. If your district uses unusual IEP formats or non-standard field names, some data may not extract correctly. Please report specific issues to support@spedgalexii.com so we can improve our parsers.",
+        a: "SpEdGalexii relies on consistent document formatting. If your district uses unusual IEP formats or non-standard field names, some data may not extract correctly. Please report specific issues to admin@SpEdGalexii.com so we can improve our parsers.",
       },
       {
         q: "How do I report a bug or request a feature?",
-        a: "Email support@spedgalexii.com with details about the bug (including screenshots if possible) or your feature request. We actively incorporate educator feedback into our development.",
+        a: "Email admin@SpEdGalexii.com with details about the bug (including screenshots if possible) or your feature request. We actively incorporate educator feedback into our development.",
       },
       {
         q: "Does SpEdGalexii work on mobile devices?",
@@ -103,7 +103,7 @@ const FAQ_ITEMS = [
       },
       {
         q: "Can my whole district use SpEdGalexii?",
-        a: "Yes! We encourage district-wide adoption. For enterprise features, volume licensing, or integration with your SIS/IEP system, contact support@spedgalexii.com.",
+        a: "Yes! We encourage district-wide adoption. For enterprise features, volume licensing, or integration with your SIS/IEP system, contact admin@SpEdGalexii.com.",
       },
     ],
   },
@@ -195,7 +195,7 @@ export default function FAQPage() {
             Can't find what you're looking for? We're here to help!
           </p>
           <div className="bg-white/5 rounded-lg p-4">
-            <p className="text-white font-semibold">📧 Email: support@spedgalexii.com</p>
+            <p className="text-white font-semibold">📧 Email: admin@SpEdGalexii.com</p>
             <p className="text-white/60 text-sm mt-1">
               We typically respond within 24-48 business hours.
             </p>

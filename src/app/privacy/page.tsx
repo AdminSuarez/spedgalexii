@@ -131,7 +131,7 @@ export default function PrivacyPolicyPage() {
               For questions about our privacy practices, data handling, or to report a concern:
             </p>
             <div className="mt-3 bg-white/5 rounded-lg p-4">
-              <p className="text-white font-semibold">Email: support@spedgalexii.com</p>
+              <p className="text-white font-semibold">Email: admin@SpEdGalexii.com</p>
               <p className="text-white/60 text-sm mt-1">Response within 24-48 business hours</p>
             </div>
           </section>

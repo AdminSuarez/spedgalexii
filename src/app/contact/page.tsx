@@ -39,10 +39,10 @@ export default function ContactPage() {
             <div className="text-center">
               <p className="text-white/60 text-sm uppercase tracking-wider mb-2">Email Us</p>
               <a 
-                href="mailto:support@spedgalexii.com"
+                href="mailto:admin@SpEdGalexii.com"
                 className="text-2xl md:text-3xl font-bold text-white hover:text-fuchsia-400 transition-colors"
               >
-                support@spedgalexii.com
+                admin@SpEdGalexii.com
               </a>
               <p className="text-white/60 mt-3">
                 We typically respond within 24-48 business hours
