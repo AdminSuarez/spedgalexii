@@ -19,11 +19,14 @@ import {
 type Scope = "all" | "case_manager";
 type ArtifactFormat = "xlsx" | "pdf" | "gsheet" | "gform";
 
-export type GalexiiModule = "accommodations" | "goals" | "plaafp";
+export type GalexiiModule = "accommodations" | "goals" | "plaafp" | "services" | "compliance" | "assessments";
 
 // Used only for “copy path” UX (filesystem MVP)
 const OUTPUT_PATH = "AccommodationsAudit/output/";
 const LS_LAST_RUN_KEY_PREFIX = "spedgalexii:lastRun:v2";
+
+// Manual entry sentinel
+const MANUAL_CM_KEY = "__manual__";
 
 function isObject(x: unknown): x is Record<string, unknown> {
   return typeof x === "object" && x !== null;
@@ -118,7 +121,10 @@ function lsKey(module: GalexiiModule) {
 }
 
 function readLastRunCache(module: GalexiiModule): LastRunCache | null {
+  // IMPORTANT: Only call after mount (client). This function touches window/localStorage.
   try {
+    if (typeof window === "undefined") return null;
+
     const raw = window.localStorage.getItem(lsKey(module));
     if (!raw) return null;
 
@@ -129,7 +135,7 @@ function readLastRunCache(module: GalexiiModule): LastRunCache | null {
 
     const mod = parsed.module;
     const moduleOut: GalexiiModule =
-      mod === "goals" || mod === "plaafp" || mod === "accommodations" ? mod : module;
+      mod === "goals" || mod === "plaafp" || mod === "accommodations" || mod === "services" || mod === "compliance" || mod === "assessments" ? mod : module;
 
     const out: LastRunCache = {
       runId: parsed.runId,
@@ -146,6 +152,7 @@ function readLastRunCache(module: GalexiiModule): LastRunCache | null {
 
 function writeLastRunCache(cache: LastRunCache) {
   try {
+    if (typeof window === "undefined") return;
     window.localStorage.setItem(lsKey(cache.module), JSON.stringify(cache));
   } catch {
     // ignore
@@ -158,8 +165,8 @@ function moduleCopy(module: GalexiiModule) {
       return {
         title: "Upload + Run Goals Galexii",
         subtitle:
-          "Upload IEP PDFs + roster/crosswalk/TestHound. Goals pipeline wiring is next; UI is ready now.",
-        tip: "Tip: This module will extract goals, baselines, criteria, and progress cadence (once wired).",
+          "Upload your FULLGoals_By_Student CSV export. Goals are scored on 4 TEA components.",
+        tip: "Tip: Each goal is scored on Timeframe, Condition, Behavior, and Criterion (0-4 scale).",
         plannedExcelAll: "GOALS_TABLE__ALL_CASE_MANAGERS.xlsx",
         plannedExcelCM: "GOALS_TABLE__<CASE_MANAGER>.xlsx",
       };
@@ -167,10 +174,37 @@ function moduleCopy(module: GalexiiModule) {
       return {
         title: "Upload + Run PLAAFP Galexii",
         subtitle:
-          "Upload IEP PDFs + roster/crosswalk/TestHound. PLAAFP extraction wiring is next; UI is ready now.",
-        tip: "Tip: This module will extract strengths, needs, data points, and disability impact (once wired).",
+          "Upload IEP PDFs to extract PLAAFP sections: Strengths, Concerns, Impact, Data, Parent Input.",
+        tip: "Tip: PLAAFP completeness is scored 0-5 based on how many sections are found in each IEP.",
         plannedExcelAll: "PLAAFP_TABLE__ALL_CASE_MANAGERS.xlsx",
         plannedExcelCM: "PLAAFP_TABLE__<CASE_MANAGER>.xlsx",
+      };
+    case "services":
+      return {
+        title: "Upload + Run Services Galexii",
+        subtitle:
+          "Extract IEP services, instructional settings, speech codes, and LRE analysis from Frontline exports.",
+        tip: "Tip: Uses FULLIEP_Program_Names and FULLSummary CSV files for comprehensive service analysis.",
+        plannedExcelAll: "SERVICES_TABLE__ALL_CASE_MANAGERS.xlsx",
+        plannedExcelCM: "SERVICES_TABLE__<CASE_MANAGER>.xlsx",
+      };
+    case "compliance":
+      return {
+        title: "Upload + Run Compliance Galexii",
+        subtitle:
+          "Track IEP compliance: ARD due dates, FIE/3-year evals, REED deadlines, BIP/FBA reviews.",
+        tip: "Tip: Merges data from Summary, Evaluation, REED, and BIP spreadsheets. Color-coded status: OVERDUE (red), DUE SOON (yellow), OK (green).",
+        plannedExcelAll: "COMPLIANCE_TABLE__ALL_CASE_MANAGERS.xlsx",
+        plannedExcelCM: "COMPLIANCE_TABLE__<CASE_MANAGER>.xlsx",
+      };
+    case "assessments":
+      return {
+        title: "Upload + Run Assessment Profile Galexii",
+        subtitle:
+          "Consolidate STAAR Alt 2, TELPAS Alt status, primary disabilities, and testing accommodations for IEP planning.",
+        tip: "Tip: Uses Student_Alternate_Assessments, Telpas_By_Student, Disabilities_By_Student, and Student_Accommodations CSVs to build comprehensive assessment profiles.",
+        plannedExcelAll: "ASSESSMENT_PROFILE__ALL_CASE_MANAGERS.xlsx",
+        plannedExcelCM: "ASSESSMENT_PROFILE__<CASE_MANAGER>.xlsx",
       };
     default:
       return {
@@ -181,6 +215,16 @@ function moduleCopy(module: GalexiiModule) {
         plannedExcelCM: "REQUIRED_AUDIT_TABLE__<CASE_MANAGER>.xlsx",
       };
   }
+}
+
+// Match the normalization used in /api/run/route.ts (keyFromName)
+function keyFromName(name: string): string {
+  const cleaned = (name || "")
+    .trim()
+    .replaceAll(",", "")
+    .replaceAll(" ", "_")
+    .replace(/[^A-Za-z0-9_]+/g, "");
+  return cleaned || "BLANK_CASE_MANAGER";
 }
 
 export function UploadCard({ module = "accommodations" }: { module?: GalexiiModule }) {
@@ -199,8 +243,12 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
   const [scope, setScope] = useState<Scope>("all");
   const [caseManagers, setCaseManagers] = useState<CaseManagerOption[]>([]);
   const [caseManagerKey, setCaseManagerKey] = useState<string>("");
+  const [manualCaseManagerName, setManualCaseManagerName] = useState<string>("");
 
   const [manifest, setManifest] = useState<RunManifest | null>(null);
+
+  // ✅ Hydration-safe: lastRun is loaded AFTER mount, so server/client initial HTML matches.
+  const [lastRun, setLastRun] = useState<LastRunCache | null>(null);
 
   const fileCount = files?.length ?? 0;
   const hasFiles = fileCount > 0;
@@ -213,9 +261,24 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
   const isDone = useMemo(() => looksDone(log), [log]);
   const isSuccess = useMemo(() => looksSuccess(log), [log]);
 
+  const isManual = scope === "case_manager" && caseManagerKey === MANUAL_CM_KEY;
+
   const selectedCaseManagerOption = useMemo(() => {
     return caseManagers.find((c) => c.key === caseManagerKey) ?? null;
   }, [caseManagers, caseManagerKey]);
+
+  const resolvedCaseManagerKey = useMemo(() => {
+    if (scope !== "case_manager") return "";
+    if (isManual) return keyFromName(manualCaseManagerName);
+    return caseManagerKey || "";
+  }, [scope, isManual, manualCaseManagerName, caseManagerKey]);
+
+  const resolvedCaseManagerName = useMemo(() => {
+    if (scope !== "case_manager") return "";
+    if (isManual) return manualCaseManagerName.trim();
+    // if dropdown-selected, prefer label
+    return selectedCaseManagerOption?.label ?? caseManagerKey.replaceAll("_", " ");
+  }, [scope, isManual, manualCaseManagerName, selectedCaseManagerOption, caseManagerKey]);
 
   function stopPolling() {
     if (pollTimer.current !== null) {
@@ -294,8 +357,38 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Resume last run per module
-  const lastRun = useMemo(() => (typeof window !== "undefined" ? readLastRunCache(module) : null), [module]);
+  // ✅ Resume last run per module (hydration-safe)
+  useEffect(() => {
+    // Only runs on client after mount
+    const cached = readLastRunCache(module);
+    setLastRun(cached);
+    
+    // Auto-resume the last run to show previous results immediately
+    if (cached?.runId) {
+      setRunId(cached.runId);
+      void fetchManifest(cached.runId);
+      void fetchLog(cached.runId);
+      
+      if (cached.scope) setScope(cached.scope);
+      if (cached.caseManagerKey) {
+        // We'll set this after caseManagers loads
+      }
+    }
+  }, [module]);
+  
+  // When caseManagers loads and we have a lastRun, restore the CM selection
+  useEffect(() => {
+    if (lastRun?.caseManagerKey && caseManagers.length > 0) {
+      const exists = caseManagers.some((c) => c.key === lastRun.caseManagerKey);
+      if (exists) {
+        setCaseManagerKey(lastRun.caseManagerKey);
+      } else {
+        setCaseManagerKey(MANUAL_CM_KEY);
+        setManualCaseManagerName(lastRun.caseManagerKey.replaceAll("_", " "));
+      }
+    }
+  }, [lastRun, caseManagers]);
+
   const canResume = Boolean(lastRun?.runId);
 
   function onResumeLastRun() {
@@ -308,7 +401,16 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
     void fetchManifest(lastRun.runId);
 
     if (lastRun.scope) setScope(lastRun.scope);
-    if (lastRun.caseManagerKey) setCaseManagerKey(lastRun.caseManagerKey);
+    if (lastRun.caseManagerKey) {
+      // If the last run key is not in the dropdown, switch to manual and keep the key visible as typed placeholder
+      const exists = caseManagers.some((c) => c.key === lastRun.caseManagerKey);
+      if (exists) {
+        setCaseManagerKey(lastRun.caseManagerKey);
+      } else {
+        setCaseManagerKey(MANUAL_CM_KEY);
+        setManualCaseManagerName(lastRun.caseManagerKey.replaceAll("_", " "));
+      }
+    }
   }
 
   // When done, fetch manifest once
@@ -325,10 +427,18 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
       runId,
       scope,
       module,
-      ...(scope === "case_manager" && caseManagerKey ? { caseManagerKey } : {}),
+      ...(scope === "case_manager" && resolvedCaseManagerKey ? { caseManagerKey: resolvedCaseManagerKey } : {}),
       savedAt: new Date().toISOString(),
     });
-  }, [runId, scope, caseManagerKey, module]);
+    // Optional: update in-memory resume data immediately
+    setLastRun({
+      runId,
+      scope,
+      module,
+      ...(scope === "case_manager" && resolvedCaseManagerKey ? { caseManagerKey: resolvedCaseManagerKey } : {}),
+      savedAt: new Date().toISOString(),
+    });
+  }, [runId, scope, resolvedCaseManagerKey, module]);
 
   useEffect(() => {
     return () => stopPolling();
@@ -366,10 +476,15 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
 
   const plannedExcelLabel = useMemo(() => {
     if (scope === "case_manager") {
+      // If manual, show what we *expect* the file name to be
+      if (isManual) {
+        const k = resolvedCaseManagerKey || "CASE_MANAGER";
+        return `REQUIRED_AUDIT_TABLE__${k}.xlsx`;
+      }
       return selectedCaseManagerOption?.filename ?? COPY.plannedExcelCM;
     }
     return COPY.plannedExcelAll;
-  }, [scope, selectedCaseManagerOption, COPY.plannedExcelAll, COPY.plannedExcelCM]);
+  }, [scope, selectedCaseManagerOption, COPY.plannedExcelAll, COPY.plannedExcelCM, isManual, resolvedCaseManagerKey]);
 
   const bestExcelRel = useMemo(() => {
     const primary = manifest?.outputs.primaryXlsx;
@@ -380,13 +495,25 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
 
     const lower = list.map((p) => ({ p, b: safeBasename(p ?? "").toLowerCase() }));
 
-    if (scope === "case_manager" && caseManagerKey) {
-      const fuzzy = lower.find((x) => x.b.includes(caseManagerKey.toLowerCase()));
+    // Admin scope should prefer the ALL_CASE_MANAGERS workbook
+    if (scope === "all") {
+      const planned = (COPY.plannedExcelAll ?? "").toLowerCase();
+      const all =
+        lower.find((x) => x.b.includes("__all_case_managers")) ??
+        (planned ? lower.find((x) => x.b === planned) : undefined) ??
+        lower.find((x) => x.b.includes("all_case_managers"));
+      if (all) return all.p;
+    }
+
+    // Case-manager scope prefers the selected CM key
+    if (scope === "case_manager" && resolvedCaseManagerKey) {
+      const key = resolvedCaseManagerKey.toLowerCase();
+      const fuzzy = lower.find((x) => x.b.includes(`__${key}`)) ?? lower.find((x) => x.b.includes(key));
       if (fuzzy) return fuzzy.p;
     }
 
     return list[0];
-  }, [manifest, exportXlsxList, scope, caseManagerKey]);
+  }, [manifest, exportXlsxList, scope, resolvedCaseManagerKey, COPY.plannedExcelAll]);
 
   async function onReveal(format: ArtifactFormat, file?: string) {
     if (!runId) {
@@ -426,9 +553,22 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
       return;
     }
 
-    if (scope === "case_manager" && !caseManagerKey) {
-      setMsg("Choose a case manager (or switch to Admin scope).");
-      return;
+    if (scope === "case_manager") {
+      if (isManual) {
+        if (!manualCaseManagerName.trim()) {
+          setMsg("Type your case manager name (manual entry) or choose one from the list.");
+          return;
+        }
+        if (!resolvedCaseManagerKey || resolvedCaseManagerKey === "BLANK_CASE_MANAGER") {
+          setMsg("Manual name produced an empty key. Try adding letters/numbers to the name.");
+          return;
+        }
+      } else {
+        if (!caseManagerKey) {
+          setMsg("Choose a case manager (or switch to Admin scope).");
+          return;
+        }
+      }
     }
 
     setBusy(true);
@@ -458,9 +598,9 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
         return;
       }
 
-      // Case manager argument: keep it deterministic
-      const cmKey = scope === "case_manager" ? caseManagerKey : "";
-      const cmName = scope === "case_manager" ? cmKey.replaceAll("_", " ") : "";
+      // Case manager argument: deterministic
+      const cmKey = scope === "case_manager" ? resolvedCaseManagerKey : "";
+      const cmName = scope === "case_manager" ? resolvedCaseManagerName : "";
 
       // Run (include module + uploadBatchId)
       const run = await fetch("/api/run", {
@@ -622,20 +762,45 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             <div className="mt-2 min-w-0">
               <select
                 value={caseManagerKey}
-                onChange={(e) => setCaseManagerKey(e.target.value)}
-                disabled={scope !== "case_manager" || caseManagers.length === 0}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setCaseManagerKey(v);
+                  if (v !== MANUAL_CM_KEY) setManualCaseManagerName("");
+                }}
+                disabled={scope !== "case_manager"}
                 className="w-full min-w-0 rounded-2xl border border-white/10 bg-black/30 px-3 py-3 text-white/85 outline-none disabled:opacity-50 cardBody"
               >
-                {caseManagers.length === 0 ? (
-                  <option value="">(No case managers detected yet)</option>
+                {scope !== "case_manager" ? (
+                  <option value="">(Switch to Case Manager scope)</option>
                 ) : (
-                  caseManagers.map((cm) => (
-                    <option key={cm.key} value={cm.key}>
-                      {cm.label}
-                    </option>
-                  ))
+                  <>
+                    {caseManagers.length === 0 ? <option value="">(No case managers detected yet)</option> : null}
+                    {caseManagers.map((cm) => (
+                      <option key={cm.key} value={cm.key}>
+                        {cm.label}
+                      </option>
+                    ))}
+                    <option value={MANUAL_CM_KEY}>(Not listed) Enter manually…</option>
+                  </>
                 )}
               </select>
+
+              {scope === "case_manager" && caseManagerKey === MANUAL_CM_KEY ? (
+                <div className="mt-2 min-w-0">
+                  <input
+                    value={manualCaseManagerName}
+                    onChange={(e) => setManualCaseManagerName(e.target.value)}
+                    placeholder="Type case manager name (e.g., Shelley Greenleaf)"
+                    className="w-full min-w-0 rounded-2xl border border-white/10 bg-black/30 px-3 py-3 text-white/85 outline-none cardBody"
+                  />
+                  <div className="cardMeta mt-2 text-white/70">
+                    Key:{" "}
+                    <span className="font-mono text-white/80">
+                      {resolvedCaseManagerKey || "—"}
+                    </span>
+                  </div>
+                </div>
+              ) : null}
 
               <div className="cardBody mt-2 text-white/70 min-w-0">
                 {caseManagers.length === 0
@@ -652,7 +817,16 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                         </span>
                       </span>
                     )
-                    : ""}
+                    : scope === "case_manager" && caseManagerKey === MANUAL_CM_KEY
+                      ? (
+                        <span className="block min-w-0">
+                          <span className="shrink-0">Will target:</span>{" "}
+                          <span className="block min-w-0 break-all font-mono text-white/75">
+                            {plannedExcelLabel}
+                          </span>
+                        </span>
+                      )
+                      : ""}
               </div>
             </div>
           </div>
@@ -716,7 +890,12 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
         <button
           type="button"
           disabled={!runId}
-          onClick={onCopyRunLink}
+          onClick={() => {
+            if (!runId) return;
+            const url = `${window.location.origin}/api/run/${runId}`;
+            navigator.clipboard.writeText(url).catch(() => {});
+            setMsg("Copied run log link to clipboard.");
+          }}
           className="ctaBtn ctaBtn--deep inline-flex items-center gap-2 disabled:opacity-50"
         >
           <Copy size={16} />
@@ -768,7 +947,9 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             <div className="min-w-0">
               <div className="cardMeta font-semibold uppercase tracking-[0.22em] text-white/70">Exports</div>
               <div className="cardTitle mt-1 min-w-0 truncate text-white">Reveal Outputs</div>
-              <div className="cardBody mt-1 text-white/80">Buttons only activate when that artifact exists for this run.</div>
+              <div className="cardBody mt-1 text-white/80">
+                Buttons only activate when that artifact exists for this run.
+              </div>
             </div>
 
             <div className="mt-2 md:mt-0 shrink-0">
@@ -820,7 +1001,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
 
               <button
                 type="button"
-                disabled={!canRevealExcel}
+                disabled={!Boolean(runId && isDone && bestExcelRel)}
                 onClick={() => onReveal("xlsx", bestExcelRel)}
                 className="ctaBtn ctaBtn--pink mt-4 inline-flex w-full items-center justify-center gap-2 disabled:opacity-50"
               >
@@ -846,9 +1027,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                 <FileText size={16} />
                 Reveal PDF
               </button>
-              {!manifest?.outputs.pdf ? (
-                <div className="cardMeta mt-2 text-white/60">Not generated for this run.</div>
-              ) : null}
+              {!manifest?.outputs.pdf ? <div className="cardMeta mt-2 text-white/60">Not generated for this run.</div> : null}
             </div>
 
             {/* Google Sheet */}
@@ -864,9 +1043,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                 <ExternalLink size={16} />
                 Reveal Sheet
               </button>
-              {!manifest?.outputs.gsheetUrl ? (
-                <div className="cardMeta mt-2 text-white/60">Not configured for this run.</div>
-              ) : null}
+              {!manifest?.outputs.gsheetUrl ? <div className="cardMeta mt-2 text-white/60">Not configured for this run.</div> : null}
             </div>
 
             {/* Google Form */}
@@ -882,9 +1059,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                 <ExternalLink size={16} />
                 Reveal Form
               </button>
-              {!manifest?.outputs.gformUrl ? (
-                <div className="cardMeta mt-2 text-white/60">Not configured for this run.</div>
-              ) : null}
+              {!manifest?.outputs.gformUrl ? <div className="cardMeta mt-2 text-white/60">Not configured for this run.</div> : null}
             </div>
           </div>
 

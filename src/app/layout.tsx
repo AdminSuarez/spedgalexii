@@ -14,9 +14,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="galaxy-bg min-h-dvh overflow-x-hidden">
         <div className="spaceBackdrop" aria-hidden="true">
           <div className="space" />
+          {/* Multi-layered deep space star field */}
           <div className="stars l1" />
           <div className="stars l2" />
           <div className="stars l3" />
+          <div className="stars l4" />
+          <div className="stars l5" />
 
           {/* Orbiting planets */}
           <div className="planets">

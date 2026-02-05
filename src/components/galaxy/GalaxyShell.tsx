@@ -13,6 +13,10 @@ import {
   CalendarClock,
   BarChart3,
   BookOpen,
+  FileText,
+  Orbit,
+  ShieldCheck,
+  Search,
 } from "lucide-react";
 
 type NavItem = {
@@ -22,15 +26,33 @@ type NavItem = {
   icon: React.ReactNode;
   href: string;
   status?: "live" | "coming";
+  featured?: boolean;
 };
 
 const NAV: NavItem[] = [
   {
-    key: "accommodations",
-    label: "Accommodation Galexii",
-    sub: "Audit accommodations across sources",
-    icon: <UploadCloud className="h-4 w-4" />,
+    key: "orbit-hub",
+    label: "Orbit Hub",
+    sub: "Mission control & launch all modules",
+    icon: <Orbit className="h-4 w-4" />,
     href: "/",
+    status: "live",
+  },
+  {
+    key: "deep-space",
+    label: "🚀 Deep Space",
+    sub: "Comprehensive IEP clarity analysis",
+    icon: <Search className="h-4 w-4" />,
+    href: "/deep-space",
+    status: "live",
+    featured: true,
+  },
+  {
+    key: "accommodations",
+    label: "Accommodations",
+    sub: "Audit accommodations across sources",
+    icon: <ShieldCheck className="h-4 w-4" />,
+    href: "/accommodations",
     status: "live",
   },
   {
@@ -47,7 +69,7 @@ const NAV: NavItem[] = [
     sub: "Present levels extraction",
     icon: <ClipboardList className="h-4 w-4" />,
     href: "/plaafp",
-    status: "coming",
+    status: "live",
   },
   {
     key: "services",
@@ -55,7 +77,7 @@ const NAV: NavItem[] = [
     sub: "Minutes, setting, provider, schedule",
     icon: <Briefcase className="h-4 w-4" />,
     href: "/services",
-    status: "coming",
+    status: "live",
   },
   {
     key: "compliance",
@@ -63,7 +85,15 @@ const NAV: NavItem[] = [
     sub: "Deadlines, meetings, notices, logs",
     icon: <CalendarClock className="h-4 w-4" />,
     href: "/compliance",
-    status: "coming",
+    status: "live",
+  },
+  {
+    key: "assessments",
+    label: "Assessment Profiles",
+    sub: "STAAR Alt 2, TELPAS Alt, disabilities",
+    icon: <FileText className="h-4 w-4" />,
+    href: "/assessments",
+    status: "live",
   },
   {
     key: "trackers",
@@ -71,7 +101,7 @@ const NAV: NavItem[] = [
     sub: "Weekly, daily, trials, progress sheets",
     icon: <BarChart3 className="h-4 w-4" />,
     href: "/trackers",
-    status: "coming",
+    status: "live",
   },
   {
     key: "resources",
@@ -100,18 +130,20 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
       <MusicSidebar />
 
       <div className="relative mx-auto flex h-full min-h-0 w-full gap-6 px-3 py-4 md:px-6 md:py-6">
-        <aside className="hidden shrink-0 md:block md:w-[360px] lg:w-[400px] min-h-0">
+        {/* ✅ Wider sidebar so headings are readable */}
+        <aside className="hidden shrink-0 md:block md:w-[440px] lg:w-[500px] xl:w-[560px] min-h-0">
           <div className="sticky top-6">
             <div className="panel popCard popCard--violet overflow-hidden">
               <div className="scrollCosmic max-h-[calc(100dvh-3rem)] min-h-0 overflow-y-auto p-4">
                 <div className="mb-5 flex items-center gap-4">
-                  <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl border border-white/14 bg-black/35 shadow-[0_0_60px_rgba(251,191,36,0.20)]">
+                  {/* ✅ Match hero logo "rounded dark plate" + gradients */}
+                  <div className="sidebarLogoWrap">
                     <Image
                       src="/brand/galexii-logo-round.png"
                       alt="SpEdGalexii"
-                      width={56}
-                      height={56}
-                      className="h-14 w-14"
+                      width={64}
+                      height={64}
+                      className="sidebarLogo"
                       priority
                     />
                   </div>
@@ -180,11 +212,15 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 min-w-0">
-                            <div className="cardTitle truncate text-white">
+                            <div className="sidebarNavTitle truncate text-white">
                               {item.label}
                             </div>
 
-                            {item.status === "coming" ? (
+                            {item.featured ? (
+                              <span className="shrink-0 rounded-full border border-amber-300/30 bg-amber-400/20 px-2 py-0.5 text-[11px] font-semibold text-amber-100 shadow-[0_0_12px_rgba(251,191,36,0.3)]">
+                                ⭐ NEW
+                              </span>
+                            ) : item.status === "coming" ? (
                               <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">
                                 Coming
                               </span>
@@ -233,9 +269,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
         <main className="min-w-0 flex-1 min-h-0">
           <div className="scrollCosmic h-full min-h-0 overflow-y-auto pr-1 md:pr-2">
             <div className="panel popCard popCard--violet min-w-0 overflow-hidden">
-              <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0">
-                {children}
-              </div>
+              <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0">{children}</div>
             </div>
 
             <div className="h-6" />

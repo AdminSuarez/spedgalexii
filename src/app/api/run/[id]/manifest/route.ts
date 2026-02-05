@@ -8,8 +8,10 @@ export const dynamic = "force-dynamic";
 
 const AUDIT_ROOT = path.resolve(process.cwd(), "..");
 const RUNS_ROOT = path.join(AUDIT_ROOT, "output", "_runs");
+const RUNS_ROOT_REAL = path.resolve(RUNS_ROOT);
 
-type RouteCtx = { params: { id: string } };
+// ✅ Next route ctx params are Promise-wrapped in your Next version
+type RouteCtx = { params: Promise<{ id: string }> };
 
 function safeId(id: string) {
   return /^[a-zA-Z0-9._-]{6,200}$/.test(id);
@@ -28,22 +30,30 @@ async function readJsonIfExists(filePath: string): Promise<unknown | null> {
   }
 }
 
-export async function GET(_req: NextRequest, { params }: RouteCtx) {
-  const runId = (params?.id ?? "").trim();
+function resolveRunDir(runId: string) {
+  const abs = path.resolve(RUNS_ROOT, runId);
+  if (!abs.startsWith(RUNS_ROOT_REAL + path.sep)) return null;
+  return abs;
+}
+
+export async function GET(_req: NextRequest, ctx: RouteCtx) {
+  const { id } = await ctx.params;
+  const runId = (id ?? "").trim();
 
   if (!safeId(runId)) {
-    return NextResponse.json({ ok: false, error: "Invalid run id." }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Invalid run id." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
 
-  const runDir = path.join(RUNS_ROOT, runId);
-  const manifestPath = path.join(runDir, "manifest.json");
+  const runDir = resolveRunDir(runId);
+  if (!runDir) {
+    return NextResponse.json({ ok: false, error: "Invalid run path." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+  }
 
-  // Legacy fallback (older system)
+  const manifestPath = path.join(runDir, "manifest.json");
   const legacyManifestPath = path.join(RUNS_ROOT, `${runId}.json`);
 
   const parsed = (await readJsonIfExists(manifestPath)) ?? (await readJsonIfExists(legacyManifestPath));
 
-  // If we have a manifest, return it as-is. UploadCard expects ok/runId/status/outputs.
   if (parsed && isObject(parsed)) {
     return NextResponse.json(parsed, {
       status: 200,
@@ -51,7 +61,7 @@ export async function GET(_req: NextRequest, { params }: RouteCtx) {
     });
   }
 
-  // If run dir exists but manifest isn't written yet, return a safe stub
+  // If the dir exists but manifest isn't written yet, return "running" placeholder
   try {
     const st = await fs.stat(runDir);
     const startedAt = new Date(st.mtimeMs).toISOString();
@@ -73,4 +83,3 @@ export async function GET(_req: NextRequest, { params }: RouteCtx) {
     );
   }
 }
-

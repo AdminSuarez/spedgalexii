@@ -1,10 +1,64 @@
 import Image from "next/image";
+import Link from "next/link";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
-import { UploadCard } from "@/components/galaxy/UploadCard";
 import { GXCard } from "@/components/ui/GXCard";
 import ScriptPackButton from "@/components/galaxy/ScriptPackButton";
+import { RunAllButton } from "@/components/galaxy/RunAllButton";
 
-export default function Page() {
+const MODULES = [
+  {
+    key: "deep-space",
+    name: "Deep Space",
+    icon: "🚀",
+    desc: "Beyond the surface — comprehensive IEP clarity & academic stability analysis",
+    href: "/deep-space",
+    featured: true,
+  },
+  {
+    key: "accommodations",
+    name: "Accommodations",
+    icon: "🛡️",
+    desc: "Audit IEP vs TestHound accommodations",
+    href: "/accommodations",
+  },
+  {
+    key: "goals",
+    name: "Goals",
+    icon: "🎯",
+    desc: "Score goals on TEA 4-component rubric",
+    href: "/goals",
+  },
+  {
+    key: "plaafp",
+    name: "PLAAFP",
+    icon: "📝",
+    desc: "Extract present levels from IEP PDFs",
+    href: "/plaafp",
+  },
+  {
+    key: "services",
+    name: "Services",
+    icon: "🔧",
+    desc: "Minutes, settings, providers, LRE",
+    href: "/services",
+  },
+  {
+    key: "compliance",
+    name: "Compliance",
+    icon: "✅",
+    desc: "ARD dates, FIE, REED, BIP deadlines",
+    href: "/compliance",
+  },
+  {
+    key: "assessments",
+    name: "Assessments",
+    icon: "📊",
+    desc: "STAAR Alt, TELPAS Alt, disabilities",
+    href: "/assessments",
+  },
+];
+
+export default function OrbitHubPage() {
   return (
     <GalaxyShell>
       <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
@@ -24,88 +78,99 @@ export default function Page() {
 
             <div className="min-w-0 heroAura">
               <h1 className="heroTitle wrap-break-word">
-                SpEdGalexii <span className="opacity-90">🌌</span>
+                SpEdGalexii
               </h1>
 
-              <div className="cardMeta mt-3 text-white/70">Audit Universe for Special Education workflows</div>
+              <div className="cardMeta mt-3 text-white/70">🌌 Orbit Hub – Mission Control</div>
             </div>
           </div>
 
           <p className="cardBody mt-5 max-w-5xl text-white/85">
-            A modular audit universe for Special Education workflows. Each{" "}
-            <span className="text-white/95">Galexii</span> is a launchable system
-            to verify compliance, catch missing items, and export clean evidence
-            for ARD/IEP documentation.
+            Welcome to the <span className="text-white/95 font-semibold">Orbit Hub</span> – 
+            your mission control center for the SpEdGalexii audit universe. Upload your 
+            documents once and launch all modules, or navigate to individual modules 
+            for focused analysis.
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <a
-              href="#upload"
+              href="#launch"
               className="ctaBtn ctaBtn--deep inline-flex items-center justify-center"
-              title="Jump to upload"
+              title="Jump to launch"
             >
-              Go to Upload
+              🚀 Launch Missions
             </a>
 
             <ScriptPackButton label="Download Script Pack (Blank PDF)" />
           </div>
         </div>
 
-        {/* Module Header */}
+        {/* Module Overview Grid */}
         <GXCard className="mb-6 rounded-3xl popCard popCard--violet min-w-0">
-          <div className="uiLabel text-white/70">Module System</div>
+          <div className="uiLabel text-white/70">Available Modules</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            Accommodation Galexii
+            🛸 Galexii Fleet
           </h2>
 
           <p className="cardBody mt-3 max-w-5xl text-white/80">
-            This system audits whether each student’s accommodations match across
-            your sources, then outputs an auditor-friendly spreadsheet view of
-            what’s present, missing, or inconsistent.
+            Each Galexii module extracts and analyzes a specific aspect of IEP 
+            documentation. Use the "Run All" button below to process everything 
+            at once, or click a module to work with it individually.
           </p>
 
-          <div className="cardsGrid mt-5 grid gap-4 md:grid-cols-3">
-            <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
-              <div className="cardTitle text-white leading-tight wrap-break-word">
-                What you upload
-              </div>
-              <ul className="cardBody mt-2 space-y-1 text-white/80">
-                <li>• IEP PDFs (one or many)</li>
-                <li>• Roster file (CSV/XLSX)</li>
-                <li>• ID crosswalk (optional)</li>
-                <li>• TestHound export (CSV/XLSX)</li>
-              </ul>
-            </GXCard>
-
-            <GXCard variant="plain" interactive={false} className="popCard popCard--violet min-w-0">
-              <div className="cardTitle text-white leading-tight wrap-break-word">
-                What it does
-              </div>
-              <ul className="cardBody mt-2 space-y-1 text-white/80">
-                <li>• Extracts accommodations from IEP PDFs</li>
-                <li>• Normalizes names/types/subjects</li>
-                <li>• Compares against roster + TestHound</li>
-                <li>• Logs the run for transparency</li>
-              </ul>
-            </GXCard>
-
-            <GXCard variant="plain" interactive={false} className="popCard popCard--ember min-w-0">
-              <div className="cardTitle text-white leading-tight wrap-break-word">
-                What you get
-              </div>
-              <ul className="cardBody mt-2 space-y-1 text-white/80">
-                <li>• Export-ready spreadsheet outputs</li>
-                <li>• Clear “what’s missing” indicators</li>
-                <li>• Run log link for audit trails</li>
-                <li>• Consistent formatting for review</li>
-              </ul>
-            </GXCard>
+          <div className="cardsGrid mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {MODULES.map((mod) => (
+              <Link key={mod.key} href={mod.href}>
+                <GXCard 
+                  variant="plain" 
+                  interactive={true} 
+                  className="popCard popCard--solar min-w-0 hover:scale-[1.02] transition-transform cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{mod.icon}</span>
+                    <div>
+                      <div className="cardTitle text-white leading-tight wrap-break-word">
+                        {mod.name}
+                      </div>
+                      <div className="text-sm text-white/60 mt-1">
+                        {mod.desc}
+                      </div>
+                    </div>
+                  </div>
+                </GXCard>
+              </Link>
+            ))}
           </div>
         </GXCard>
 
-        <div id="upload">
-          <UploadCard />
+        {/* Launch Section */}
+        <div id="launch" className="space-y-6">
+          {/* Easy Button - Run All Modules */}
+          <RunAllButton />
+          
+          {/* Quick Tips */}
+          <GXCard className="rounded-2xl popCard popCard--ember min-w-0">
+            <div className="cardTitle text-white">💡 Quick Tips</div>
+            <ul className="cardBody mt-2 space-y-2 text-white/80">
+              <li>
+                <strong>Run All:</strong> Upload your IEP PDFs, CSVs, and exports once. 
+                All modules will process and populate their tabs automatically.
+              </li>
+              <li>
+                <strong>Per-Module:</strong> Visit individual module tabs to upload 
+                specific files or re-run with different settings.
+              </li>
+              <li>
+                <strong>Case Manager Filter:</strong> Select a specific case manager 
+                to generate filtered exports for just their students.
+              </li>
+              <li>
+                <strong>Results Persist:</strong> Your results are saved locally. 
+                Refresh the page and your data will still be there!
+              </li>
+            </ul>
+          </GXCard>
         </div>
       </div>
     </GalaxyShell>

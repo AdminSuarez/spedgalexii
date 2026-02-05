@@ -104,7 +104,7 @@ h1,h2,h3{
 }
 
 .cardMeta{
-  font-size: var(--fs-small) !important;
+  font-size: clamp(17px, 0.65vw + 14px, 24px) !important;
   opacity: .88;
   font-weight: 700;
 }
@@ -131,29 +131,51 @@ h1,h2,h3{
 }
 
 .heroIconWrap{
-  width: clamp(84px, 5.2vw + 64px, 152px);
-  height: clamp(84px, 5.2vw + 64px, 152px);
-  border-radius: 28px;
+  width: clamp(100px, 6.5vw + 80px, 180px);
+  height: clamp(100px, 6.5vw + 80px, 180px);
+  border-radius: 32px;
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(60% 60% at 30% 25%, rgba(251,191,36,.18), transparent 60%),
-    radial-gradient(60% 60% at 70% 65%, rgba(34,211,238,.12), transparent 64%),
-    linear-gradient(180deg, rgba(10,8,18,.82), rgba(0,0,0,.30));
-  border: 1px solid rgba(255,255,255,.14);
-  box-shadow:
-    0 18px 60px rgba(0,0,0,.55),
-    0 0 64px rgba(168,85,247,.14),
-    0 0 58px rgba(251,191,36,.10),
-    inset 0 1px 0 rgba(255,255,255,.12);
+  /* CRISP: no fog, just simple dark bg */
+  background: rgba(6,4,16,.85);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 12px 36px rgba(0,0,0,.50);
 }
 
 .heroIcon{
-  width: clamp(72px, 4.6vw + 54px, 132px);
-  height: clamp(72px, 4.6vw + 54px, 132px);
-  filter: drop-shadow(0 0 26px rgba(251,191,36,.16))
-          drop-shadow(0 0 34px rgba(34,211,238,.12))
-          drop-shadow(0 0 40px rgba(168,85,247,.12));
+  width: clamp(88px, 5.8vw + 68px, 160px);
+  height: clamp(88px, 5.8vw + 68px, 160px);
+  /* CRISP: no fog/glow filters */
+  filter: none;
+}
+
+/* Sidebar logo plate: match hero's "rounded dark background" feel */
+.sidebarLogoWrap{
+  width: 104px;
+  height: 104px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(60% 60% at 30% 25%, rgba(251,191,36,.16), transparent 60%),
+    radial-gradient(60% 60% at 70% 65%, rgba(34,211,238,.10), transparent 64%),
+    linear-gradient(180deg, rgba(10,8,18,.82), rgba(0,0,0,.32));
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow:
+    0 18px 54px rgba(0,0,0,.50),
+    0 0 58px rgba(168,85,247,.10),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.sidebarLogo{
+  width: 88px;
+  height: 88px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.45);
+  box-shadow:
+    0 0 22px rgba(251,191,36,.10),
+    0 0 26px rgba(34,211,238,.08),
+    0 0 28px rgba(168,85,247,.08);
 }
 
 .heroTitle{
@@ -162,7 +184,7 @@ h1,h2,h3{
   line-height: 0.98;
   letter-spacing: -0.02em;
 
-  font-size: clamp(56px, 3.8vw + 26px, 120px);
+  font-size: clamp(64px, 4.5vw + 32px, 140px);
 
   background-image: linear-gradient(90deg,
     rgba(34,211,238,1),
@@ -173,31 +195,20 @@ h1,h2,h3{
   background-clip: text;
   color: transparent;
 
-  text-shadow: none;
+  /* CRISP: intense colors, no blur/haze */
+  filter: saturate(1.4) brightness(1.12) contrast(1.05) !important;
 
-  filter:
-    drop-shadow(0 0 16px rgba(34,211,238,.18))
-    drop-shadow(0 0 18px rgba(168,85,247,.18))
-    drop-shadow(0 0 14px rgba(251,191,36,.12));
+  /* No text-shadow glow — completely crisp */
+  text-shadow: none;
 }
 
 .heroAura{
   position: relative;
 }
 
+/* CRISP: aura removed — no fog/haze behind hero title */
 .heroAura::after{
-  content:"";
-  position:absolute;
-  inset:-18px -14px -16px -14px;
-  border-radius: 26px;
-  pointer-events:none;
-  background:
-    radial-gradient(60% 60% at 20% 25%, rgba(34,211,238,.22), transparent 68%),
-    radial-gradient(60% 60% at 80% 65%, rgba(251,191,36,.18), transparent 70%),
-    radial-gradient(60% 60% at 55% 55%, rgba(168,85,247,.20), transparent 72%);
-  filter: blur(14px);
-  opacity: .68;
-  z-index: -1;
+  display: none;
 }
 
 /* Hero + module headings (so cardTitle can stay reasonable everywhere else) */
@@ -214,9 +225,16 @@ h1,h2,h3{
 }
 
 .brandTitle{
-  font-size: clamp(20px, 0.85vw + 16px, 30px) !important;
+  font-size: clamp(32px, 1.4vw + 24px, 46px) !important;
   font-weight: 950;
   line-height: 1.05;
+}
+
+/* Sidebar nav item titles (smaller than cardTitle) */
+.sidebarNavTitle{
+  font-size: clamp(16px, 0.7vw + 13px, 22px) !important;
+  font-weight: 800;
+  line-height: 1.15;
 }
 
 .uiLabel{
@@ -312,41 +330,105 @@ h1,h2,h3{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
 }
 
-/* ✅ Stars: bigger fields + less wallpaper feel */
+/* ✅ DEEP SPACE STARS — multi-layered, multi-sized, dense universe */
 .stars{
   position:absolute;
-  inset:-220px;
+  inset:-300px;
   pointer-events:none;
   z-index: 0;
   mix-blend-mode: screen;
-  transform: rotate(9deg);
-  opacity: .9;
 }
 
+/* Layer 1: Bright foreground stars — largest, brightest, sparse */
 .stars.l1{
+  transform: rotate(3deg);
+  opacity: 1;
   background:
-    radial-gradient(circle, rgba(255,255,255,.98) 0 1.4px, transparent 2.8px) 0 0/520px 520px,
-    radial-gradient(circle, rgba(255,255,255,.60) 0 1.1px, transparent 2.6px) 220px 140px/760px 760px,
-    radial-gradient(circle, rgba(255,255,255,.44) 0 0.9px, transparent 2.2px) 90px 380px/980px 980px;
-  animation: drift1 120s linear infinite, starTwinkle 8s ease-in-out infinite;
+    /* Bright white giants */
+    radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3.5px) 0 0/380px 380px,
+    radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px) 180px 120px/520px 520px,
+    radial-gradient(circle, rgba(255,255,255,.88) 0 1.5px, transparent 2.8px) 90px 280px/620px 620px,
+    /* Blue-white hot stars */
+    radial-gradient(circle, rgba(200,220,255,.92) 0 1.6px, transparent 2.8px) 240px 60px/440px 440px,
+    radial-gradient(circle, rgba(180,200,255,.85) 0 1.4px, transparent 2.6px) 320px 340px/580px 580px,
+    /* Yellow/warm stars */
+    radial-gradient(circle, rgba(255,248,220,.88) 0 1.5px, transparent 2.6px) 140px 200px/490px 490px,
+    radial-gradient(circle, rgba(255,240,200,.82) 0 1.3px, transparent 2.4px) 380px 160px/560px 560px;
+  animation: drift1 140s linear infinite, starTwinkle 6s ease-in-out infinite;
 }
 
+/* Layer 2: Mid-distance stars — medium size, moderate density */
 .stars.l2{
-  opacity: .78;
+  transform: rotate(-5deg);
+  opacity: .88;
   background:
-    radial-gradient(circle, rgba(255,255,255,.74) 0 1.1px, transparent 2.6px) 140px 90px/740px 740px,
-    radial-gradient(circle, rgba(255,255,255,.40) 0 0.9px, transparent 2.2px) -260px 220px/1020px 1020px,
-    radial-gradient(circle, rgba(255,255,255,.30) 0 0.8px, transparent 2.0px) 420px -120px/1280px 1280px;
-  animation: drift2 180s linear infinite, starTwinkle 10s ease-in-out infinite;
+    /* Dense white field */
+    radial-gradient(circle, rgba(255,255,255,.78) 0 1.2px, transparent 2.4px) 40px 80px/280px 280px,
+    radial-gradient(circle, rgba(255,255,255,.72) 0 1.1px, transparent 2.2px) 160px 20px/340px 340px,
+    radial-gradient(circle, rgba(255,255,255,.68) 0 1.0px, transparent 2.1px) 90px 180px/420px 420px,
+    radial-gradient(circle, rgba(255,255,255,.62) 0 0.9px, transparent 2.0px) 220px 260px/380px 380px,
+    /* Blue tinted distant */
+    radial-gradient(circle, rgba(180,200,255,.65) 0 1.0px, transparent 2.1px) 280px 140px/460px 460px,
+    radial-gradient(circle, rgba(200,210,255,.58) 0 0.9px, transparent 1.9px) 120px 320px/520px 520px,
+    /* Warm tinted */
+    radial-gradient(circle, rgba(255,235,200,.55) 0 0.9px, transparent 1.9px) 340px 60px/480px 480px,
+    radial-gradient(circle, rgba(255,220,180,.50) 0 0.85px, transparent 1.8px) 60px 400px/540px 540px;
+  animation: drift2 200s linear infinite, starTwinkle 9s ease-in-out infinite;
 }
 
+/* Layer 3: Deep field stars — smaller, denser, fills gaps */
 .stars.l3{
-  opacity: .70;
+  transform: rotate(7deg);
+  opacity: .75;
   background:
-    radial-gradient(circle, rgba(255,255,255,.46) 0 0.9px, transparent 2.2px) 200px 260px/980px 980px,
-    radial-gradient(circle, rgba(255,255,255,.28) 0 0.8px, transparent 2.0px) 520px 40px/1420px 1420px,
-    radial-gradient(circle, rgba(255,255,255,.22) 0 0.7px, transparent 1.8px) -140px 520px/1660px 1660px;
-  animation: drift3 240s linear infinite, starTwinkle 12s ease-in-out infinite;
+    /* Very dense small stars */
+    radial-gradient(circle, rgba(255,255,255,.55) 0 0.8px, transparent 1.8px) 20px 40px/180px 180px,
+    radial-gradient(circle, rgba(255,255,255,.50) 0 0.75px, transparent 1.7px) 100px 90px/220px 220px,
+    radial-gradient(circle, rgba(255,255,255,.46) 0 0.7px, transparent 1.6px) 60px 160px/260px 260px,
+    radial-gradient(circle, rgba(255,255,255,.42) 0 0.65px, transparent 1.5px) 140px 200px/300px 300px,
+    radial-gradient(circle, rgba(255,255,255,.38) 0 0.6px, transparent 1.4px) 180px 120px/340px 340px,
+    /* Faint blue dust */
+    radial-gradient(circle, rgba(180,200,255,.35) 0 0.6px, transparent 1.4px) 240px 80px/380px 380px,
+    radial-gradient(circle, rgba(160,180,255,.30) 0 0.55px, transparent 1.3px) 80px 280px/420px 420px;
+  animation: drift3 280s linear infinite, starTwinkle 12s ease-in-out infinite;
+}
+
+/* Layer 4: Ultra-distant star dust — tiny pinpoints, very dense */
+.stars.l4{
+  position: absolute;
+  inset: -300px;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  transform: rotate(-3deg);
+  opacity: .62;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.36) 0 0.5px, transparent 1.2px) 10px 30px/120px 120px,
+    radial-gradient(circle, rgba(255,255,255,.32) 0 0.45px, transparent 1.1px) 70px 50px/150px 150px,
+    radial-gradient(circle, rgba(255,255,255,.28) 0 0.4px, transparent 1.0px) 40px 100px/180px 180px,
+    radial-gradient(circle, rgba(255,255,255,.24) 0 0.38px, transparent 0.95px) 110px 70px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.22) 0 0.35px, transparent 0.9px) 90px 140px/240px 240px,
+    radial-gradient(circle, rgba(200,210,255,.20) 0 0.35px, transparent 0.9px) 160px 40px/260px 260px,
+    radial-gradient(circle, rgba(180,190,255,.18) 0 0.32px, transparent 0.85px) 50px 180px/280px 280px;
+  animation: drift1 360s linear infinite reverse;
+}
+
+/* Layer 5: Background star field — finest dust, fills entire void */
+.stars.l5{
+  position: absolute;
+  inset: -300px;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+  transform: rotate(12deg);
+  opacity: .48;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.20) 0 0.3px, transparent 0.8px) 5px 15px/80px 80px,
+    radial-gradient(circle, rgba(255,255,255,.18) 0 0.28px, transparent 0.75px) 35px 25px/100px 100px,
+    radial-gradient(circle, rgba(255,255,255,.16) 0 0.26px, transparent 0.7px) 20px 55px/130px 130px,
+    radial-gradient(circle, rgba(255,255,255,.14) 0 0.24px, transparent 0.65px) 60px 40px/160px 160px,
+    radial-gradient(circle, rgba(200,205,255,.12) 0 0.22px, transparent 0.6px) 45px 80px/190px 190px;
+  animation: drift2 420s linear infinite reverse, starTwinkle 18s ease-in-out infinite;
 }
 
 /* Meteors/comets */

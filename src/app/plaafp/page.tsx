@@ -3,6 +3,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
+import { UploadCard } from "@/components/galaxy/UploadCard";
 
 type YesNoUnknown = "yes" | "no" | "unknown";
 type Severity = "info" | "warn" | "fail";
@@ -78,11 +79,36 @@ function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
 
-function Header({ title, subtitle }: { title: string; subtitle: string }) {
+function Header() {
   return (
-    <div className="min-w-0">
-      <div className="text-4xl font-black tracking-tight text-white">{title}</div>
-      <div className="mt-2 text-white/70">{subtitle}</div>
+    <div className="mb-10">
+      <div className="heroBrandRow">
+        <div className="heroIconWrap">
+          <div className="heroIcon rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-6xl">
+            📝
+          </div>
+        </div>
+
+        <div className="min-w-0 heroAura">
+          <h1 className="heroTitle wrap-break-word">
+            PLAAFP Galexii
+          </h1>
+
+          <div className="cardMeta mt-3 text-white/70">
+            📖 Story Station — Where data becomes narrative
+          </div>
+        </div>
+      </div>
+
+      <p className="cardBody mt-5 max-w-5xl text-white/85">
+        The <span className="text-white/95 font-semibold">PLAAFP Galexii</span> extracts 
+        Present Levels of Academic Achievement and Functional Performance from IEP PDFs, 
+        then audits them for completeness, data sources, and TEA compliance.
+      </p>
+
+      <p className="cardBody mt-3 max-w-4xl text-cyan-300/80 italic">
+        "Present levels are the foundation. Every goal, service, and accommodation flows from here."
+      </p>
     </div>
   );
 }
@@ -853,12 +879,20 @@ export default function Page() {
 
   return (
     <GalaxyShell>
-      <Header
-        title="PLAAFP Galexii"
-        subtitle="Paste PLAAFP sections, extract defendable data points, and generate an ARD-ready pack with evidence-first structure."
-      />
+      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+        <Header />
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-12">
+        {/* ✅ Pipeline Upload Card */}
+        <UploadCard module="plaafp" />
+
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <div className="text-2xl font-bold text-white/90 mb-4">📋 Manual PLAAFP Extraction</div>
+          <div className="text-white/70 mb-4">
+            Paste PLAAFP sections from Frontline exports or PDF text. The parser is deterministic and safe by default.
+          </div>
+        </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-12">
         <div className="lg:col-span-7 sidebarTile sidebarTile--violet p-5">
           <div className="cardTitle text-white">Extractor cockpit</div>
           <div className="cardBody mt-2 text-white/80">
@@ -1103,6 +1137,7 @@ export default function Page() {
           {toast}
         </div>
       ) : null}
+      </div>
     </GalaxyShell>
   );
 }

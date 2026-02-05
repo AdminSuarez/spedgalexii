@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
+import { UploadCard } from "@/components/galaxy/UploadCard";
 
 type Severity = "info" | "warn" | "fail";
 
@@ -293,14 +294,50 @@ export default function GoalsPage() {
 
   return (
     <GalaxyShell>
-      <div className="min-w-0">
-        <div className="text-4xl font-black tracking-tight text-white">Goals Galexii</div>
-        <div className="mt-2 text-white/70">
-          Paste a goal, score it against the TEA-style components (timeframe, condition,
-          behavior, criterion), and get a cleaner rewrite.
+      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+        {/* Universe Header */}
+        <div className="mb-10">
+          <div className="heroBrandRow">
+            <div className="heroIconWrap">
+              <div className="heroIcon rounded-full bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center text-6xl">
+                🎯
+              </div>
+            </div>
+
+            <div className="min-w-0 heroAura">
+              <h1 className="heroTitle wrap-break-word">
+                Goals Galexii
+              </h1>
+
+              <div className="cardMeta mt-3 text-white/70">
+                🏹 Target Range — Where vague intentions become measurable outcomes
+              </div>
+            </div>
+          </div>
+
+          <p className="cardBody mt-5 max-w-5xl text-white/85">
+            The <span className="text-white/95 font-semibold">Goals Galexii</span> scores 
+            IEP goals against the TEA 4-component rubric: Timeframe, Condition, Behavior, and Criterion. 
+            Upload your FULLGoals_By_Student export to score goals automatically, or paste a single goal below.
+          </p>
+
+          <p className="cardBody mt-3 max-w-4xl text-rose-300/80 italic">
+            "A goal without a baseline is just a wish. A goal without a criterion is a dream. Let's make them real."
+          </p>
         </div>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-12">
+        {/* Upload Card */}
+        <UploadCard module="goals" />
+
+        <div className="mt-8 border-t border-white/10 pt-6">
+          <div className="text-2xl font-bold text-white/90 mb-4">🎯 Manual Goal Scoring</div>
+          <div className="text-white/70 mb-4">
+            Paste a goal, score it against the TEA-style components (timeframe, condition,
+            behavior, criterion), and get a cleaner rewrite.
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-12">
           <div className="lg:col-span-7 sidebarTile sidebarTile--violet p-5">
             <div className="cardTitle text-white">Goal intake</div>
             <div className="cardBody mt-2 text-white/80">
