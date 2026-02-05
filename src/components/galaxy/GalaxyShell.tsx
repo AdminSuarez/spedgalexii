@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MusicSidebar } from "@/components/galaxy/MusicSidebar";
+import { GalaxyFooter } from "@/components/galaxy/GalaxyFooter";
 import {
   ClipboardList,
   Target,
@@ -266,12 +267,15 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
           </div>
         </aside>
 
-        <main className="min-w-0 flex-1 min-h-0">
-          <div className="scrollCosmic h-full min-h-0 overflow-y-auto pr-1 md:pr-2">
+        <main className="min-w-0 flex-1 min-h-0 flex flex-col">
+          <div className="scrollCosmic flex-1 min-h-0 overflow-y-auto pr-1 md:pr-2">
             <div className="panel popCard popCard--violet min-w-0 overflow-hidden">
               <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0">{children}</div>
             </div>
 
+            {/* Footer */}
+            <GalaxyFooter />
+            
             <div className="h-6" />
           </div>
         </main>
