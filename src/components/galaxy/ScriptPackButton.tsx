@@ -46,7 +46,7 @@ export default function ScriptPackButton({ runId, label = "Download Script Pack 
       type="button"
       disabled={busy}
       onClick={onClick}
-      className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 backdrop-blur hover:bg-white/10 disabled:opacity-60 cardBody inline-flex items-center justify-center"
+      className="rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 hover:bg-white/10 disabled:opacity-60 cardBody inline-flex items-center justify-center"
       title={runId ? `Run ${runId}` : "Template script pack"}
     >
       {busy ? "Generating…" : label}

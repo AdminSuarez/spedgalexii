@@ -9,7 +9,7 @@ const MODULES = [
   {
     key: "deep-space",
     name: "Deep Space",
-    icon: "🚀",
+    icon: "",
     desc: "Beyond the surface — comprehensive IEP clarity & academic stability analysis",
     href: "/deep-space",
     featured: true,
@@ -17,42 +17,42 @@ const MODULES = [
   {
     key: "accommodations",
     name: "Accommodations",
-    icon: "🛡️",
+    icon: "",
     desc: "Audit IEP vs TestHound accommodations",
     href: "/accommodations",
   },
   {
     key: "goals",
     name: "Goals",
-    icon: "🎯",
+    icon: "",
     desc: "Score goals on TEA 4-component rubric",
     href: "/goals",
   },
   {
     key: "plaafp",
     name: "PLAAFP",
-    icon: "📝",
+    icon: "",
     desc: "Extract present levels from IEP PDFs",
     href: "/plaafp",
   },
   {
     key: "services",
     name: "Services",
-    icon: "🔧",
+    icon: "",
     desc: "Minutes, settings, providers, LRE",
     href: "/services",
   },
   {
     key: "compliance",
     name: "Compliance",
-    icon: "✅",
+    icon: "",
     desc: "ARD dates, FIE, REED, BIP deadlines",
     href: "/compliance",
   },
   {
     key: "assessments",
     name: "Assessments",
-    icon: "📊",
+    icon: "",
     desc: "STAAR Alt, TELPAS Alt, disabilities",
     href: "/assessments",
   },
@@ -81,7 +81,7 @@ export default function OrbitHubPage() {
                 SpEdGalexii
               </h1>
 
-              <div className="cardMeta mt-3 text-white/70">🌌 Orbit Hub – Mission Control</div>
+              <div className="cardMeta mt-3 text-white/70">Orbit Hub – Mission Control</div>
             </div>
           </div>
 
@@ -98,7 +98,7 @@ export default function OrbitHubPage() {
               className="ctaBtn ctaBtn--deep inline-flex items-center justify-center"
               title="Jump to launch"
             >
-              🚀 Launch Missions
+              Launch Missions
             </a>
 
             <ScriptPackButton label="Download Script Pack (Blank PDF)" />
@@ -110,7 +110,7 @@ export default function OrbitHubPage() {
           <div className="uiLabel text-white/70">Available Modules</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            🛸 Galexii Fleet
+            Galexii Fleet
           </h2>
 
           <p className="cardBody mt-3 max-w-5xl text-white/80">
@@ -127,15 +127,12 @@ export default function OrbitHubPage() {
                   interactive={true} 
                   className="popCard popCard--solar min-w-0 hover:scale-[1.02] transition-transform cursor-pointer"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{mod.icon}</span>
-                    <div>
-                      <div className="cardTitle text-white leading-tight wrap-break-word">
-                        {mod.name}
-                      </div>
-                      <div className="text-sm text-white/60 mt-1">
-                        {mod.desc}
-                      </div>
+                  <div>
+                    <div className="cardTitle text-white leading-tight wrap-break-word">
+                      {mod.name}
+                    </div>
+                    <div className="text-sm text-white/60 mt-1">
+                      {mod.desc}
                     </div>
                   </div>
                 </GXCard>
@@ -151,7 +148,7 @@ export default function OrbitHubPage() {
           
           {/* Quick Tips */}
           <GXCard className="rounded-2xl popCard popCard--ember min-w-0">
-            <div className="cardTitle text-white">💡 Quick Tips</div>
+            <div className="cardTitle text-white">Quick Tips</div>
             <ul className="cardBody mt-2 space-y-2 text-white/80">
               <li>
                 <strong>Run All:</strong> Upload your IEP PDFs, CSVs, and exports once. 

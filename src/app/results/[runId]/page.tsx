@@ -143,7 +143,7 @@ export default function ResultsPage({ params }: { params: { runId: string } }) {
             </button>
 
             <a
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 backdrop-blur hover:bg-white/10 cardBody"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 hover:bg-white/10 cardBody"
               href={`/api/run/${encodeURIComponent(runId)}`}
               target="_blank"
               rel="noreferrer"

@@ -4,7 +4,7 @@ export function GalaxyFooter() {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="mt-auto border-t border-white/10 bg-black/30 backdrop-blur-sm">
+    <footer className="mt-auto border-t border-white/10 bg-black/30">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Links Row */}
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-4">

@@ -38,12 +38,12 @@ type RunAllResponse = {
 };
 
 const ALL_MODULES = [
-  { key: "accommodations", label: "Accommodations Audit", icon: "📋" },
-  { key: "goals", label: "Goals Analysis", icon: "🎯" },
-  { key: "plaafp", label: "PLAAFP Extraction", icon: "📝" },
-  { key: "services", label: "Services Summary", icon: "🔧" },
-  { key: "compliance", label: "Compliance Tracker", icon: "✅" },
-  { key: "assessments", label: "Assessment Profile", icon: "📊" },
+  { key: "accommodations", label: "Accommodations Audit", icon: "" },
+  { key: "goals", label: "Goals Analysis", icon: "" },
+  { key: "plaafp", label: "PLAAFP Extraction", icon: "" },
+  { key: "services", label: "Services Summary", icon: "" },
+  { key: "compliance", label: "Compliance Tracker", icon: "" },
+  { key: "assessments", label: "Assessment Profile", icon: "" },
 ] as const;
 
 const LS_RUNALL_KEY = "spedgalexii:runAll:v1";
@@ -220,7 +220,7 @@ export function RunAllButton() {
             <Rocket className="w-6 h-6 text-white" />
           </div>
           <div className="text-left">
-            <h3 className="text-lg font-bold text-white">🚀 Run All Modules</h3>
+            <h3 className="text-lg font-bold text-white">Run All Modules</h3>
             <p className="text-sm text-gray-400">
               Upload once, populate all sidebar tabs instantly
             </p>
@@ -378,7 +378,6 @@ export function RunAllButton() {
                           : "bg-gray-800/50 border border-gray-700"
                       }`}
                     >
-                      <span className="text-xl">{mod.icon}</span>
                       <span className="flex-1 text-white">{mod.label}</span>
                       {result?.ok ? (
                         <CheckCircle className="w-5 h-5 text-green-400" />
@@ -394,7 +393,7 @@ export function RunAllButton() {
 
           {/* Tip */}
           <p className="text-xs text-gray-500 italic">
-            💡 After running, visit each sidebar tab to view and download the extracted data.
+            After running, visit each sidebar tab to view and download the extracted data.
             Your results are saved locally and will persist across page refreshes.
           </p>
         </div>

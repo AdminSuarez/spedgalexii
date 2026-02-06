@@ -699,7 +699,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
           </div>
         </div>
 
-        <div className="cardMeta shrink-0 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-white/70 backdrop-blur max-w-full">
+        <div className="cardMeta shrink-0 rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-white/70 max-w-full">
           <div className="flex max-w-full items-center gap-2">
             <span className="shrink-0">Outputs:</span>
             <span className="min-w-0 break-all font-mono text-white/70" title={OUTPUT_PATH}>
@@ -727,10 +727,10 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             type="button"
             onClick={() => setScope("all")}
             className={[
-              "min-w-0 rounded-3xl border bg-white/5 p-4 text-left transition hover:bg-white/10 overflow-hidden",
+              "min-w-0 rounded-3xl border-2 bg-white/5 p-4 text-left transition hover:bg-white/10 overflow-hidden",
               scope === "all"
-                ? "border-emerald-300/25 shadow-[0_0_40px_rgba(16,185,129,0.10)]"
-                : "border-white/10",
+                ? "border-emerald-400/60 shadow-[0_0_40px_rgba(16,185,129,0.10)]"
+                : "border-white/25",
             ].join(" ")}
           >
             <div className="cardTitle flex min-w-0 items-center gap-2 text-white">
@@ -744,10 +744,10 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             type="button"
             onClick={() => setScope("case_manager")}
             className={[
-              "min-w-0 rounded-3xl border bg-white/5 p-4 text-left transition hover:bg-white/10 overflow-hidden",
+              "min-w-0 rounded-3xl border-2 bg-white/5 p-4 text-left transition hover:bg-white/10 overflow-hidden",
               scope === "case_manager"
-                ? "border-fuchsia-300/25 shadow-[0_0_40px_rgba(236,72,153,0.10)]"
-                : "border-white/10",
+                ? "border-fuchsia-400/60 shadow-[0_0_40px_rgba(236,72,153,0.10)]"
+                : "border-white/25",
             ].join(" ")}
           >
             <div className="cardTitle flex min-w-0 items-center gap-2 text-white">
@@ -904,7 +904,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
 
         {runId ? (
           <a
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 backdrop-blur hover:bg-white/10 cardBody"
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-white/90 hover:bg-white/10 cardBody"
             href={`/api/run/${runId}`}
             target="_blank"
             rel="noreferrer"
@@ -1095,7 +1095,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             </div>
           ) : null}
 
-          <div className="cardMeta mt-4 text-white/60">✨ Clean signal, no noise.</div>
+          <div className="cardMeta mt-4 text-white/60">Clean signal, no noise.</div>
         </div>
       </div>
     </section>

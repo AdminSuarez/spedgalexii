@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
 import { GXCard } from "@/components/ui/GXCard";
@@ -10,9 +11,14 @@ export default function Page() {
         <div className="mb-10">
           <div className="heroBrandRow">
             <div className="heroIconWrap">
-              <div className="heroIcon rounded-full bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center text-6xl">
-                🔧
-              </div>
+              <Image
+                src="/brand/galexii-logo-round.png"
+                alt="SpEdGalexii"
+                width={140}
+                height={140}
+                priority
+                className="heroIcon rounded-full bg-black"
+              />
             </div>
 
             <div className="min-w-0 heroAura">
@@ -21,7 +27,7 @@ export default function Page() {
               </h1>
 
               <div className="cardMeta mt-3 text-white/70">
-                ⚙️ Engine Room — Where support hours become reality
+                Engine Room — Where support hours become reality
               </div>
             </div>
           </div>
@@ -42,7 +48,7 @@ export default function Page() {
           <div className="uiLabel text-white/70">Mission Briefing</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            📊 What Services Galexii Extracts
+            What Services Galexii Extracts
           </h2>
 
           <p className="cardBody mt-3 max-w-5xl text-white/80">
@@ -52,7 +58,7 @@ export default function Page() {
           <div className="cardsGrid mt-5 grid gap-4 md:grid-cols-3">
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                🎯 Service Details
+                Service Details
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• Speech therapy (SLP)</li>
@@ -65,7 +71,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--violet min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                📐 Instructional Settings
+                Instructional Settings
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• Minutes in GenEd vs SpEd</li>
@@ -77,7 +83,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--ember min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                👤 Provider Info
+                Provider Info
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• SLP codes and frequency</li>

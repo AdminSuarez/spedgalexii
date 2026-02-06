@@ -23,14 +23,14 @@ export default function ContactPage() {
             </div>
             <div className="min-w-0 heroAura">
               <h1 className="heroTitle text-3xl md:text-4xl">Contact & Support</h1>
-              <div className="cardMeta mt-2 text-white/70">📬 We're Here to Help</div>
+              <div className="cardMeta mt-2 text-white/70">We're Here to Help</div>
             </div>
           </div>
         </div>
 
         {/* Main Contact */}
         <GXCard className="rounded-2xl popCard popCard--deep mb-6">
-          <h2 className="text-2xl font-bold text-white mb-4">📧 Get in Touch</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Get in Touch</h2>
           <p className="text-white/80 mb-6">
             Have questions, feedback, or need technical support? We'd love to hear from you!
           </p>
@@ -54,7 +54,7 @@ export default function ContactPage() {
         {/* Contact Categories */}
         <div className="grid md:grid-cols-2 gap-4 mb-6">
           <GXCard className="rounded-2xl popCard popCard--ember">
-            <h3 className="text-lg font-bold text-white mb-3">🔧 Technical Support</h3>
+            <h3 className="text-lg font-bold text-white mb-3">Technical Support</h3>
             <p className="text-white/70 text-sm mb-4">
               Experiencing bugs, upload issues, or unexpected behavior? Let us know!
             </p>
@@ -70,7 +70,7 @@ export default function ContactPage() {
           </GXCard>
 
           <GXCard className="rounded-2xl popCard popCard--solar">
-            <h3 className="text-lg font-bold text-white mb-3">💡 Feature Requests</h3>
+            <h3 className="text-lg font-bold text-white mb-3">Feature Requests</h3>
             <p className="text-white/70 text-sm mb-4">
               Have an idea that would make SpEdGalexii even better? We're all ears!
             </p>
@@ -85,7 +85,7 @@ export default function ContactPage() {
           </GXCard>
 
           <GXCard className="rounded-2xl popCard popCard--violet">
-            <h3 className="text-lg font-bold text-white mb-3">🏫 District Partnerships</h3>
+            <h3 className="text-lg font-bold text-white mb-3">District Partnerships</h3>
             <p className="text-white/70 text-sm mb-4">
               Interested in bringing SpEdGalexii to your entire district?
             </p>
@@ -101,7 +101,7 @@ export default function ContactPage() {
           </GXCard>
 
           <GXCard className="rounded-2xl popCard popCard--deep">
-            <h3 className="text-lg font-bold text-white mb-3">🔒 Privacy Concerns</h3>
+            <h3 className="text-lg font-bold text-white mb-3">Privacy Concerns</h3>
             <p className="text-white/70 text-sm mb-4">
               Questions about data handling or privacy practices?
             </p>
@@ -118,20 +118,20 @@ export default function ContactPage() {
 
         {/* Response Times */}
         <GXCard className="rounded-2xl popCard popCard--deep mb-6">
-          <h2 className="text-xl font-bold text-white mb-4">⏱️ Response Times</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Response Times</h2>
           <div className="grid md:grid-cols-3 gap-4">
             <div className="bg-white/5 rounded-lg p-4 text-center">
-              <p className="text-3xl mb-2">🟢</p>
+              <div className="flex justify-center mb-2"><span className="gx-status-done scale-150"></span></div>
               <p className="text-white font-semibold">General Inquiries</p>
               <p className="text-white/60 text-sm">24-48 hours</p>
             </div>
             <div className="bg-white/5 rounded-lg p-4 text-center">
-              <p className="text-3xl mb-2">🟡</p>
+              <div className="flex justify-center mb-2"><span className="gx-status-progress scale-150"></span></div>
               <p className="text-white font-semibold">Technical Issues</p>
               <p className="text-white/60 text-sm">Same day - 24 hours</p>
             </div>
             <div className="bg-white/5 rounded-lg p-4 text-center">
-              <p className="text-3xl mb-2">🔴</p>
+              <div className="flex justify-center mb-2"><span className="gx-status-done scale-150" style={{background: 'radial-gradient(circle, #f87171 0%, #ef4444 60%, transparent 70%)', boxShadow: '0 0 8px #f87171, 0 0 16px rgba(248, 113, 113, 0.4)'}}></span></div>
               <p className="text-white font-semibold">Security/Privacy</p>
               <p className="text-white/60 text-sm">Priority - ASAP</p>
             </div>
@@ -140,31 +140,31 @@ export default function ContactPage() {
 
         {/* Quick Links */}
         <GXCard className="rounded-2xl popCard popCard--violet">
-          <h2 className="text-xl font-bold text-white mb-4">🔗 Quick Links</h2>
+          <h2 className="text-xl font-bold text-white mb-4">Quick Links</h2>
           <div className="flex flex-wrap gap-3">
             <a
               href="/faq"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
-              ❓ FAQ
+              FAQ
             </a>
             <a
               href="/privacy"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
-              🔒 Privacy Policy
+              Privacy Policy
             </a>
             <a
               href="/about"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
-              🌟 About Us
+              About Us
             </a>
             <a
               href="/"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
-              🏠 Orbit Hub
+              Orbit Hub
             </a>
           </div>
         </GXCard>
@@ -172,7 +172,7 @@ export default function ContactPage() {
         {/* Footer */}
         <div className="mt-8 text-center text-white/50 text-sm">
           <p>SpEdGalexii • Built by Educators, for Educators</p>
-          <p className="mt-1">Austin, Texas • Made with 💜 for Special Education</p>
+          <p className="mt-1">Austin, Texas • Made with care for Special Education</p>
         </div>
       </div>
     </GalaxyShell>

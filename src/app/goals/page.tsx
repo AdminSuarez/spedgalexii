@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
@@ -299,9 +300,14 @@ function GoalsPageInner() {
         <div className="mb-10">
           <div className="heroBrandRow">
             <div className="heroIconWrap">
-              <div className="heroIcon rounded-full bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center text-6xl">
-                🎯
-              </div>
+              <Image
+                src="/brand/galexii-logo-round.png"
+                alt="SpEdGalexii"
+                width={140}
+                height={140}
+                priority
+                className="heroIcon rounded-full bg-black"
+              />
             </div>
 
             <div className="min-w-0 heroAura">
@@ -310,7 +316,7 @@ function GoalsPageInner() {
               </h1>
 
               <div className="cardMeta mt-3 text-white/70">
-                🏹 Target Range — Where vague intentions become measurable outcomes
+                Target Range — Where vague intentions become measurable outcomes
               </div>
             </div>
           </div>
@@ -330,7 +336,7 @@ function GoalsPageInner() {
         <UploadCard module="goals" />
 
         <div className="mt-8 border-t border-white/10 pt-6">
-          <div className="text-2xl font-bold text-white/90 mb-4">🎯 Manual Goal Scoring</div>
+          <div className="text-2xl font-bold text-white/90 mb-4">Manual Goal Scoring</div>
           <div className="text-white/70 mb-4">
             Paste a goal, score it against the TEA-style components (timeframe, condition,
             behavior, criterion), and get a cleaner rewrite.

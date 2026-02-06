@@ -12,9 +12,14 @@ export default function AccommodationsPage() {
         <div className="mb-10">
           <div className="heroBrandRow">
             <div className="heroIconWrap">
-              <div className="heroIcon rounded-full bg-gradient-to-br from-emerald-500 to-cyan-600 flex items-center justify-center text-6xl">
-                🛡️
-              </div>
+              <Image
+                src="/brand/galexii-logo-round.png"
+                alt="SpEdGalexii"
+                width={140}
+                height={140}
+                priority
+                className="heroIcon rounded-full bg-black"
+              />
             </div>
 
             <div className="min-w-0 heroAura">
@@ -23,7 +28,7 @@ export default function AccommodationsPage() {
               </h1>
 
               <div className="cardMeta mt-3 text-white/70">
-                🌌 Shield Station — Ensuring every student gets what they need
+                Shield Station — Ensuring every student gets what they need
               </div>
             </div>
           </div>
@@ -44,7 +49,7 @@ export default function AccommodationsPage() {
           <div className="uiLabel text-white/70">Mission Briefing</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            🎯 What This Module Does
+            What This Module Does
           </h2>
 
           <p className="cardBody mt-3 max-w-5xl text-white/80">
@@ -55,7 +60,7 @@ export default function AccommodationsPage() {
           <div className="cardsGrid mt-5 grid gap-4 md:grid-cols-3">
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                📤 What You Upload
+                What You Upload
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• IEP PDFs (one or many)</li>
@@ -67,7 +72,7 @@ export default function AccommodationsPage() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--violet min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                ⚙️ What It Does
+                What It Does
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• Extracts accommodations from IEP PDFs</li>
@@ -79,7 +84,7 @@ export default function AccommodationsPage() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--ember min-w-0">
               <div className="cardTitle text-white leading-tight wrap-break-word">
-                📥 What You Get
+                What You Get
               </div>
               <ul className="cardBody mt-2 space-y-1 text-white/80">
                 <li>• REQUIRED_AUDIT_TABLE spreadsheet</li>

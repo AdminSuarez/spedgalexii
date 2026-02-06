@@ -18,6 +18,7 @@ import {
   Orbit,
   ShieldCheck,
   Search,
+  Sparkles,
 } from "lucide-react";
 
 type NavItem = {
@@ -41,10 +42,19 @@ const NAV: NavItem[] = [
   },
   {
     key: "deep-space",
-    label: "🚀 Deep Space",
+    label: "Deep Space",
     sub: "Comprehensive IEP clarity analysis",
     icon: <Search className="h-4 w-4" />,
     href: "/deep-space",
+    status: "live",
+    featured: true,
+  },
+  {
+    key: "iep-prep",
+    label: "IEP Prep Galexii",
+    sub: "Auto-populate IEP from Deep Dive",
+    icon: <Sparkles className="h-4 w-4" />,
+    href: "/iep-prep",
     status: "live",
     featured: true,
   },
@@ -199,7 +209,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
                           "hover:bg-white/10 hover:text-white",
                           tileTone,
                           active &&
-                            "ring-2 ring-white/14 border-white/18 bg-white/10 shadow-[0_0_60px_rgba(34,211,238,0.10)]"
+                            "ring-2 ring-white/14 border-white/18 bg-white/10"
                         )}
                       >
                         <span
@@ -219,7 +229,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
 
                             {item.featured ? (
                               <span className="shrink-0 rounded-full border border-amber-300/30 bg-amber-400/20 px-2 py-0.5 text-[11px] font-semibold text-amber-100 shadow-[0_0_12px_rgba(251,191,36,0.3)]">
-                                ⭐ NEW
+                                NEW
                               </span>
                             ) : item.status === "coming" ? (
                               <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">

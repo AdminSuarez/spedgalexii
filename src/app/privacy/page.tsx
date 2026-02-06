@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
             </div>
             <div className="min-w-0 heroAura">
               <h1 className="heroTitle text-3xl md:text-4xl">Privacy Policy</h1>
-              <div className="cardMeta mt-2 text-white/70">🔒 Your Data, Your Trust</div>
+              <div className="cardMeta mt-2 text-white/70">Your Data, Your Trust</div>
             </div>
           </div>
         </div>
@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <p className="text-white/60 text-sm">Last Updated: February 5, 2026</p>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">🛡️ Our Commitment to Privacy</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Our Commitment to Privacy</h2>
             <p className="text-white/80 leading-relaxed">
               SpEdGalexii was created by a special education professional who understands the 
               sacred responsibility of protecting student information. We are committed to 
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">📋 Information We Process</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Information We Process</h2>
             <div className="text-white/80 leading-relaxed space-y-2">
               <p>SpEdGalexii processes the following types of educational records that you upload:</p>
               <ul className="list-disc pl-6 space-y-1">
@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">🔐 How We Protect Your Data</h2>
+            <h2 className="text-xl font-bold text-white mb-3">How We Protect Your Data</h2>
             <div className="text-white/80 leading-relaxed space-y-3">
               <div className="bg-white/5 rounded-lg p-4">
                 <h3 className="font-semibold text-white mb-2">Local Processing</h3>
@@ -84,7 +84,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">📜 FERPA Compliance</h2>
+            <h2 className="text-xl font-bold text-white mb-3">FERPA Compliance</h2>
             <div className="text-white/80 leading-relaxed space-y-2">
               <p>SpEdGalexii is designed to support FERPA compliance:</p>
               <ul className="list-disc pl-6 space-y-1">
@@ -98,7 +98,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">🏫 District Responsibility</h2>
+            <h2 className="text-xl font-bold text-white mb-3">District Responsibility</h2>
             <p className="text-white/80 leading-relaxed">
               As the educational agency, your district remains the custodian of all student records. 
               Use of SpEdGalexii should be authorized by your district's special education director 
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">🍪 Cookies & Analytics</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Cookies & Analytics</h2>
             <p className="text-white/80 leading-relaxed">
               SpEdGalexii uses minimal, essential cookies for session management only. We do NOT 
               use tracking cookies, advertising cookies, or third-party analytics that could 
@@ -117,7 +117,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">👶 Children's Privacy</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Children's Privacy</h2>
             <p className="text-white/80 leading-relaxed">
               SpEdGalexii is a professional tool for educators, not for direct student use. 
               We comply with COPPA (Children's Online Privacy Protection Act) by design - 
@@ -126,7 +126,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">📧 Data Requests & Contact</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Data Requests & Contact</h2>
             <p className="text-white/80 leading-relaxed">
               For questions about our privacy practices, data handling, or to report a concern:
             </p>
@@ -137,7 +137,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">🔄 Policy Updates</h2>
+            <h2 className="text-xl font-bold text-white mb-3">Policy Updates</h2>
             <p className="text-white/80 leading-relaxed">
               We may update this Privacy Policy to reflect changes in our practices or legal 
               requirements. Material changes will be communicated via the platform. Continued 

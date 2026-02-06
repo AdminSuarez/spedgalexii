@@ -169,15 +169,17 @@ export default function DeepDivePage() {
   };
 
   const getSeverityIcon = (severity: AlertSeverity) => {
+    // Returns JSX element for space-themed severity indicators
+    const baseStyle = "inline-block w-3 h-3 rounded-full";
     switch (severity) {
       case "CRITICAL":
-        return "🔴";
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #f87171 0%, #ef4444 60%, transparent 70%)', boxShadow: '0 0 6px #f87171'}}></span>;
       case "HIGH":
-        return "🟠";
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #fb923c 0%, #f97316 60%, transparent 70%)', boxShadow: '0 0 6px #fb923c'}}></span>;
       case "MEDIUM":
-        return "🟡";
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #fbbf24 0%, #f59e0b 60%, transparent 70%)', boxShadow: '0 0 6px #fbbf24'}}></span>;
       default:
-        return "🔵";
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #60a5fa 0%, #3b82f6 60%, transparent 70%)', boxShadow: '0 0 6px #60a5fa'}}></span>;
     }
   };
 
@@ -187,7 +189,11 @@ export default function DeepDivePage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">🚀</span>
+            <img
+              src="/brand/galexii-logo-round.png"
+              alt="SpEdGalexii"
+              className="h-12 w-12 rounded-full"
+            />
             <h1 className="heroTitle">Deep Space</h1>
           </div>
           <p className="text-lg text-violet-200/90 font-medium mb-3">
@@ -201,20 +207,20 @@ export default function DeepDivePage() {
             academic stability through evidence-based clarity.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            <span className="text-xs px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200">
-              ✓ Wrong-name detection
+            <span className="gx-badge-active">
+              Wrong-name detection
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200">
-              ✓ FIE age tracking
+            <span className="gx-badge-active">
+              FIE age tracking
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200">
-              ✓ Attention indicator count
+            <span className="gx-badge-active">
+              Attention indicator count
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200">
-              ✓ Attendance pattern analysis
+            <span className="gx-badge-active">
+              Attendance pattern analysis
             </span>
-            <span className="text-xs px-3 py-1 rounded-full bg-violet-500/20 border border-violet-400/30 text-violet-200">
-              ✓ SLD consistency check
+            <span className="gx-badge-active">
+              SLD consistency check
             </span>
           </div>
         </div>
@@ -222,7 +228,7 @@ export default function DeepDivePage() {
         {/* Upload Section */}
         {!result && (
           <GXCard className="mb-6 rounded-2xl popCard popCard--violet">
-            <h2 className="cardTitle text-white mb-4">📡 Initiate Deep Space Scan</h2>
+            <h2 className="cardTitle text-white mb-4">Initiate Deep Space Scan</h2>
 
             {/* Student ID Input */}
             <div className="mb-4">
@@ -255,7 +261,7 @@ export default function DeepDivePage() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <div className="text-4xl mb-3">🛸</div>
+              <div className="text-4xl mb-3 text-violet-300/80">◎</div>
               <p className="text-white/80">
                 Drag & drop student PDF files here, or click to select
               </p>
@@ -279,9 +285,9 @@ export default function DeepDivePage() {
                     <span className="text-white/80 text-sm truncate">{file.name}</span>
                     <button
                       onClick={() => removeFile(i)}
-                      className="text-red-400 hover:text-red-300 ml-2"
+                      className="gx-status-remove ml-2"
                     >
-                      ✕
+                      ×
                     </button>
                   </div>
                 ))}
@@ -303,11 +309,11 @@ export default function DeepDivePage() {
             >
               {isProcessing ? (
                 <>
-                  <span className="animate-spin mr-2">🛸</span>
+                  <span className="animate-spin mr-2">◎</span>
                   Scanning Deep Space...
                 </>
               ) : (
-                <>🚀 Launch Deep Space Analysis</>
+                <>Launch Deep Space Analysis</>
               )}
             </button>
           </GXCard>
@@ -321,7 +327,6 @@ export default function DeepDivePage() {
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-2xl">🛸</span>
                     <h2 className="cardTitle text-white text-2xl">
                       {result.analysis.student_info.name || `Student ${result.studentId}`}
                     </h2>
@@ -342,14 +347,14 @@ export default function DeepDivePage() {
                   }}
                   className="px-4 py-2 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
                 >
-                  🔄 New Scan
+                  New Scan
                 </button>
               </div>
             </GXCard>
 
             {/* Alert Summary */}
             <GXCard className="rounded-2xl popCard popCard--ember">
-              <h3 className="cardTitle text-white mb-4">🎯 Findings Summary</h3>
+              <h3 className="cardTitle text-white mb-4">Findings Summary</h3>
               <p className="text-white/60 text-sm mb-4">Issues discovered that require attention for academic stability</p>
               <div className="grid grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 bg-red-500/20 rounded-xl border border-red-500/30">
@@ -396,7 +401,7 @@ export default function DeepDivePage() {
                     : "bg-white/10 text-white/70 hover:bg-white/20"
                 }`}
               >
-                🛸 Summary View
+                Summary View
               </button>
               <button
                 onClick={() => setViewMode("report")}
@@ -406,7 +411,7 @@ export default function DeepDivePage() {
                     : "bg-white/10 text-white/70 hover:bg-white/20"
                 }`}
               >
-                📡 Full Report
+                Full Report
               </button>
             </div>
 
@@ -414,7 +419,7 @@ export default function DeepDivePage() {
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Evaluation Status */}
                 <GXCard className="rounded-2xl popCard popCard--violet">
-                  <h3 className="cardTitle text-white mb-4">📋 Evaluation Status</h3>
+                  <h3 className="cardTitle text-white mb-4">Evaluation Status</h3>
                   <p className="text-white/50 text-xs mb-3">FIE + REED timeline tracking</p>
                   <div className="space-y-3 text-white/80">
                     <div className="flex justify-between">
@@ -428,7 +433,7 @@ export default function DeepDivePage() {
                     <div className="flex justify-between">
                       <span>Overdue:</span>
                       <span className={result.analysis.evaluation_status.eval_overdue ? "text-red-400" : "text-green-400"}>
-                        {result.analysis.evaluation_status.eval_overdue ? "🚨 YES" : "✅ No"}
+                        {result.analysis.evaluation_status.eval_overdue ? "YES" : "No"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -440,7 +445,7 @@ export default function DeepDivePage() {
 
                 {/* Attention/ADHD */}
                 <GXCard className="rounded-2xl popCard popCard--violet">
-                  <h3 className="cardTitle text-white mb-4">🧠 Attention Analysis</h3>
+                  <h3 className="cardTitle text-white mb-4">Attention Analysis</h3>
                   <p className="text-white/50 text-xs mb-3">ADHD indicator detection</p>
                   <div className="space-y-3 text-white/80">
                     <div className="flex justify-between">
@@ -465,7 +470,7 @@ export default function DeepDivePage() {
 
                 {/* Attendance */}
                 <GXCard className="rounded-2xl popCard popCard--violet">
-                  <h3 className="cardTitle text-white mb-4">📅 Attendance History</h3>
+                  <h3 className="cardTitle text-white mb-4">Attendance History</h3>
                   <p className="text-white/50 text-xs mb-3">Chronic absenteeism pattern detection</p>
                   {result.analysis.attendance_analysis.history.length > 0 ? (
                     <div className="space-y-2">
@@ -491,7 +496,7 @@ export default function DeepDivePage() {
 
                 {/* Dyslexia */}
                 <GXCard className="rounded-2xl popCard popCard--violet">
-                  <h3 className="cardTitle text-white mb-4">📖 Dyslexia Status</h3>
+                  <h3 className="cardTitle text-white mb-4">Dyslexia Status</h3>
                   <p className="text-white/50 text-xs mb-3">Reading disability service mapping</p>
                   <div className="space-y-3 text-white/80">
                     <div className="flex justify-between">
@@ -505,7 +510,7 @@ export default function DeepDivePage() {
                     <div className="flex justify-between">
                       <span>Phonological Eval:</span>
                       <span className={result.analysis.dyslexia_status.phonological_eval_exists ? "text-green-400" : "text-red-400"}>
-                        {result.analysis.dyslexia_status.phonological_eval_exists ? "Yes" : "❌ No"}
+                        {result.analysis.dyslexia_status.phonological_eval_exists ? "Yes" : "No"}
                       </span>
                     </div>
                   </div>
@@ -513,7 +518,7 @@ export default function DeepDivePage() {
 
                 {/* Documents Analyzed */}
                 <GXCard className="rounded-2xl popCard popCard--violet md:col-span-2">
-                  <h3 className="cardTitle text-white mb-4">📄 Documents Scanned</h3>
+                  <h3 className="cardTitle text-white mb-4">Documents Scanned</h3>
                   <p className="text-white/50 text-xs mb-3">Source materials processed during analysis</p>
                   <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
                     {result.analysis.documents.map((doc, i) => (
@@ -529,7 +534,7 @@ export default function DeepDivePage() {
               /* Full Report View */
               <GXCard className="rounded-2xl popCard popCard--violet">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="cardTitle text-white">📡 Deep Space Transmission</h3>
+                  <h3 className="cardTitle text-white">Deep Space Transmission</h3>
                   <span className="text-xs text-violet-300/60">Full analysis report</span>
                 </div>
                 <div className="prose prose-invert prose-violet max-w-none">
@@ -553,7 +558,7 @@ export default function DeepDivePage() {
                 }}
                 className="ctaBtn ctaBtn--outline"
               >
-                📥 Export Data (JSON)
+                Export Data (JSON)
               </button>
               <button
                 onClick={() => {
@@ -566,7 +571,7 @@ export default function DeepDivePage() {
                 }}
                 className="ctaBtn ctaBtn--outline"
               >
-                📡 Export Report (MD)
+                Export Report (MD)
               </button>
             </div>
           </div>
@@ -574,44 +579,43 @@ export default function DeepDivePage() {
 
         {/* Feature Roadmap - Always visible */}
         <div className="mt-10 border-t border-white/10 pt-8">
-          <h2 className="text-2xl font-bold text-white mb-2">🚀 Deep Space Mission Roadmap</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Deep Space Mission Roadmap</h2>
           <p className="text-white/60 mb-6">Features in development to make SpEdGalexii the most powerful IEP analysis platform on the market.</p>
           
           <div className="grid md:grid-cols-3 gap-6">
             {/* Tier 1 - Essential */}
             <GXCard className="rounded-2xl popCard popCard--solar">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">🌟</span>
                 <h3 className="cardTitle text-yellow-200">Tier 1: Essential</h3>
               </div>
               <p className="text-white/50 text-xs mb-4">Before Launch</p>
               <ul className="space-y-3 text-white/80 text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">✓</span>
+                  <span className="gx-status-done mt-0.5"></span>
                   <span>Document analysis engine</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-green-400 mt-0.5">✓</span>
+                  <span className="gx-status-done mt-0.5"></span>
                   <span>Wrong-name & copy/paste detection</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-yellow-400 mt-0.5">◐</span>
+                  <span className="gx-status-done mt-0.5"></span>
                   <span>Parent-Friendly PDF Report</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Goal Bank Integration</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>PLAAFP Auto-Draft Generator</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>IEP Comparison Mode (2+ years)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Advocacy Letter Generator</span>
                 </li>
               </ul>
@@ -620,29 +624,28 @@ export default function DeepDivePage() {
             {/* Tier 2 - Competitive Edge */}
             <GXCard className="rounded-2xl popCard popCard--violet">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">⚡</span>
                 <h3 className="cardTitle text-violet-200">Tier 2: Competitive Edge</h3>
               </div>
               <p className="text-white/50 text-xs mb-4">Post-Launch Enhancement</p>
               <ul className="space-y-3 text-white/80 text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Multi-Student Batch Analysis</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Timeline Visualization (Calendar)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Compliance Countdown Dashboard</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Red Flag Email Alerts</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Progress Monitoring Tracker</span>
                 </li>
               </ul>
@@ -651,29 +654,28 @@ export default function DeepDivePage() {
             {/* Tier 3 - Premium */}
             <GXCard className="rounded-2xl popCard popCard--ember">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">👑</span>
                 <h3 className="cardTitle text-orange-200">Tier 3: Premium</h3>
               </div>
               <p className="text-white/50 text-xs mb-4">Differentiators</p>
               <ul className="space-y-3 text-white/80 text-sm">
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>AI Goal Scoring (TEA rubric)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Parent Portal (view-only)</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>District Admin Dashboard</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>FERPA Audit Trail</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-white/40 mt-0.5">○</span>
+                  <span className="gx-status-pending mt-0.5"></span>
                   <span>Export to eSped/Frontline</span>
                 </li>
               </ul>

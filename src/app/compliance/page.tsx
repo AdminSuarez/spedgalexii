@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
 import { GXCard } from "@/components/ui/GXCard";
@@ -10,9 +11,14 @@ export default function Page() {
         <div className="mb-10">
           <div className="heroBrandRow">
             <div className="heroIconWrap">
-              <div className="heroIcon rounded-full bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-6xl">
-                ✅
-              </div>
+              <Image
+                src="/brand/galexii-logo-round.png"
+                alt="SpEdGalexii"
+                width={140}
+                height={140}
+                priority
+                className="heroIcon rounded-full bg-black"
+              />
             </div>
 
             <div className="min-w-0 heroAura">
@@ -21,7 +27,7 @@ export default function Page() {
               </h1>
 
               <div className="cardMeta mt-3 text-white/70">
-                ⏰ Mission Control Clock — Never miss a deadline again
+                Mission Control Clock — Never miss a deadline again
               </div>
             </div>
           </div>
@@ -42,13 +48,13 @@ export default function Page() {
           <div className="uiLabel text-white/70">Mission Briefing</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            📋 What Compliance Galexii Tracks
+            What Compliance Galexii Tracks
           </h2>
 
           <div className="cardsGrid mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-red-300 leading-tight">
-                📅 ARD/Annual Review
+                ARD/Annual Review
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Plan start/end dates, days until due, meeting compliance
@@ -57,7 +63,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-yellow-300 leading-tight">
-                🔬 FIE/3-Year Evaluation
+                FIE/3-Year Evaluation
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Last FIE date, next FIE due, evaluation report tracking
@@ -66,7 +72,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-cyan-300 leading-tight">
-                📝 REED Evaluations
+                REED Evaluations
               </div>
               <p className="cardBody mt-2 text-white/80">
                 REED type, date, and evaluation deadlines
@@ -75,7 +81,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-blue-300 leading-tight">
-                🧠 BIP/FBA
+                BIP/FBA
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Behavioral plan review dates and compliance status
@@ -84,7 +90,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-green-300 leading-tight">
-                🚦 Status Indicators
+                Status Indicators
               </div>
               <p className="cardBody mt-2 text-white/80">
                 OVERDUE, DUE SOON (60 days), OK — at a glance
@@ -93,7 +99,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-purple-300 leading-tight">
-                📊 Compliance Score
+                Compliance Score
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Per-student compliance percentage calculation
@@ -104,7 +110,7 @@ export default function Page() {
 
         {/* Status Legend */}
         <GXCard className="mb-6 rounded-2xl popCard popCard--ember min-w-0">
-          <div className="cardTitle text-white">🚦 Color-Coded Status Legend</div>
+          <div className="cardTitle text-white">Color-Coded Status Legend</div>
           <div className="cardBody mt-3 text-white/80 space-y-3">
             <div className="flex items-center gap-3">
               <span className="inline-block w-5 h-5 rounded bg-red-500"></span>

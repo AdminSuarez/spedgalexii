@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
 import { GXCard } from "@/components/ui/GXCard";
@@ -10,9 +11,14 @@ export default function Page() {
         <div className="mb-10">
           <div className="heroBrandRow">
             <div className="heroIconWrap">
-              <div className="heroIcon rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-6xl">
-                📊
-              </div>
+              <Image
+                src="/brand/galexii-logo-round.png"
+                alt="SpEdGalexii"
+                width={140}
+                height={140}
+                priority
+                className="heroIcon rounded-full bg-black"
+              />
             </div>
 
             <div className="min-w-0 heroAura">
@@ -21,7 +27,7 @@ export default function Page() {
               </h1>
 
               <div className="cardMeta mt-3 text-white/70">
-                🔭 Observatory — See the whole picture of every student
+                Observatory — See the whole picture of every student
               </div>
             </div>
           </div>
@@ -42,13 +48,13 @@ export default function Page() {
           <div className="uiLabel text-white/70">Mission Briefing</div>
 
           <h2 className="moduleTitle mt-2 wrap-break-word">
-            🎯 What Assessment Profile Galexii Tracks
+            What Assessment Profile Galexii Tracks
           </h2>
 
           <div className="cardsGrid mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-red-300 leading-tight">
-                📝 STAAR Alternate 2
+                STAAR Alternate 2
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Alt assessment status and reason codes for state testing eligibility
@@ -57,7 +63,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-yellow-300 leading-tight">
-                🗣️ TELPAS Alternate
+                TELPAS Alternate
               </div>
               <p className="cardBody mt-2 text-white/80">
                 English language proficiency alternate assessment tracking for ELs
@@ -66,7 +72,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-cyan-300 leading-tight">
-                🏷️ Primary Disability
+                Primary Disability
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Student's primary disability category from the IEP for PEIMS reporting
@@ -75,7 +81,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-blue-300 leading-tight">
-                🏷️ Secondary Disability
+                Secondary Disability
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Additional disability categories if applicable (OHI, AU, etc.)
@@ -84,7 +90,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-green-300 leading-tight">
-                🛡️ Testing Accommodations
+                Testing Accommodations
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Comprehensive list of state testing accommodations from IEP
@@ -93,7 +99,7 @@ export default function Page() {
 
             <GXCard variant="plain" interactive={false} className="popCard popCard--solar min-w-0">
               <div className="cardTitle text-purple-300 leading-tight">
-                🚩 Assessment Flags
+                Assessment Flags
               </div>
               <p className="cardBody mt-2 text-white/80">
                 Summary indicators for quick ARD committee reference
@@ -104,7 +110,7 @@ export default function Page() {
 
         {/* Why it matters */}
         <GXCard className="mb-6 rounded-2xl popCard popCard--ember min-w-0">
-          <div className="cardTitle text-white">💡 Why Assessment Profiles Matter for IEP Development</div>
+          <div className="cardTitle text-white">Why Assessment Profiles Matter for IEP Development</div>
           <div className="cardBody mt-3 text-white/80 space-y-4">
             <div>
               <strong className="text-cyan-300">PLAAFP Impact:</strong> Disabilities and assessment status 
@@ -123,7 +129,7 @@ export default function Page() {
 
         {/* Data Sources */}
         <GXCard className="mb-6 rounded-2xl popCard popCard--violet min-w-0">
-          <div className="cardTitle text-white">📂 Data Sources</div>
+          <div className="cardTitle text-white">Data Sources</div>
           <div className="cardBody mt-3 text-white/80 space-y-2">
             <div className="flex items-center gap-3">
               <span className="inline-block w-3 h-3 rounded bg-purple-500"></span>

@@ -140,7 +140,7 @@ export default function FAQPage() {
             </div>
             <div className="min-w-0 heroAura">
               <h1 className="heroTitle text-3xl md:text-4xl">FAQ</h1>
-              <div className="cardMeta mt-2 text-white/70">❓ Frequently Asked Questions</div>
+              <div className="cardMeta mt-2 text-white/70">Frequently Asked Questions</div>
             </div>
           </div>
         </div>
@@ -150,12 +150,7 @@ export default function FAQPage() {
           {FAQ_ITEMS.map((category) => (
             <GXCard key={category.category} className="rounded-2xl popCard popCard--deep">
               <h2 className="text-xl font-bold text-white mb-4">
-                {category.category === "General" && "🌟"}
-                {category.category === "Privacy & Security" && "🔒"}
-                {category.category === "Features & Usage" && "🛠️"}
-                {category.category === "Technical Issues" && "🔧"}
-                {category.category === "Account & Access" && "👤"}
-                {" "}{category.category}
+                {category.category}
               </h2>
               
               <div className="space-y-2">
@@ -190,12 +185,12 @@ export default function FAQPage() {
 
         {/* Still Have Questions */}
         <GXCard className="rounded-2xl popCard popCard--ember mt-6">
-          <h2 className="text-xl font-bold text-white mb-3">🤔 Still Have Questions?</h2>
+          <h2 className="text-xl font-bold text-white mb-3">Still Have Questions?</h2>
           <p className="text-white/80 mb-4">
             Can't find what you're looking for? We're here to help!
           </p>
           <div className="bg-white/5 rounded-lg p-4">
-            <p className="text-white font-semibold">📧 Email: admin@SpEdGalexii.com</p>
+            <p className="text-white font-semibold">Email: admin@SpEdGalexii.com</p>
             <p className="text-white/60 text-sm mt-1">
               We typically respond within 24-48 business hours.
             </p>

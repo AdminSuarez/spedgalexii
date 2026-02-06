@@ -84,9 +84,13 @@ function Header() {
     <div className="mb-10">
       <div className="heroBrandRow">
         <div className="heroIconWrap">
-          <div className="heroIcon rounded-full bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center text-6xl">
-            📝
-          </div>
+          <img
+            src="/brand/galexii-logo-round.png"
+            alt="SpEdGalexii"
+            width={140}
+            height={140}
+            className="heroIcon rounded-full bg-black"
+          />
         </div>
 
         <div className="min-w-0 heroAura">
@@ -95,7 +99,7 @@ function Header() {
           </h1>
 
           <div className="cardMeta mt-3 text-white/70">
-            📖 Story Station — Where data becomes narrative
+            Story Station — Where data becomes narrative
           </div>
         </div>
       </div>
@@ -886,7 +890,7 @@ export default function Page() {
         <UploadCard module="plaafp" />
 
         <div className="mt-8 border-t border-white/10 pt-6">
-          <div className="text-2xl font-bold text-white/90 mb-4">📋 Manual PLAAFP Extraction</div>
+          <div className="text-2xl font-bold text-white/90 mb-4">Manual PLAAFP Extraction</div>
           <div className="text-white/70 mb-4">
             Paste PLAAFP sections from Frontline exports or PDF text. The parser is deterministic and safe by default.
           </div>
@@ -1004,7 +1008,7 @@ export default function Page() {
                     className="ctaBtn ctaBtn--sm ctaBtn--violet"
                     onClick={async () => {
                       const ok = await copyToClipboard(jsonPretty);
-                      notify(ok ? "Copied JSON ✨" : "Copy failed");
+                      notify(ok ? "Copied JSON" : "Copy failed");
                     }}
                   >
                     Copy JSON
@@ -1015,7 +1019,7 @@ export default function Page() {
                     onClick={async () => {
                       const pack = ardPack.join("\n\n");
                       const ok = await copyToClipboard(pack);
-                      notify(ok ? "Copied ARD Pack ✨" : "Copy failed");
+                      notify(ok ? "Copied ARD Pack" : "Copy failed");
                     }}
                   >
                     Copy ARD Pack
@@ -1112,7 +1116,7 @@ export default function Page() {
                       className="ctaBtn ctaBtn--sm ctaBtn--violet"
                       onClick={async () => {
                         const ok = await copyToClipboard(g.goalText);
-                        notify(ok ? "Copied ✨" : "Copy failed");
+                        notify(ok ? "Copied" : "Copy failed");
                       }}
                     >
                       Copy
