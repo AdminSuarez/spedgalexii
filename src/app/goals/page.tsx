@@ -5,6 +5,34 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { UploadCard } from "@/components/galaxy/UploadCard";
+import { Search, Sparkles, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
+import goalBankData from "@/data/goals/galexii-goalbank.json";
+
+// GoalBank categories for the browser
+const GOAL_CATEGORIES = [
+  { key: "english", label: "English", color: "violet" },
+  { key: "reading", label: "Reading", color: "cyan" },
+  { key: "writing", label: "Writing", color: "emerald" },
+  { key: "dyslexia_intervention", label: "Dyslexia", color: "amber" },
+  { key: "math", label: "Math", color: "rose" },
+  { key: "math_calculation", label: "Math Calc", color: "pink" },
+  { key: "word_problems", label: "Word Problems", color: "orange" },
+  { key: "science", label: "Science", color: "teal" },
+] as const;
+
+type CategoryKey = typeof GOAL_CATEGORIES[number]["key"];
+
+// Map component keys → actual JSON keys (JSON uses title-case with spaces)
+const CATEGORY_KEY_MAP: Record<CategoryKey, string> = {
+  english: "English",
+  reading: "Reading",
+  writing: "Writing",
+  dyslexia_intervention: "Dyslexia Intervention",
+  math: "Math",
+  math_calculation: "Math Calculation",
+  word_problems: "Word Problems",
+  science: "Science",
+};
 
 type Severity = "info" | "warn" | "fail";
 
@@ -250,6 +278,177 @@ function readParam(sp: URLSearchParams, key: string): string {
   return typeof v === "string" ? v : "";
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🌌 GOALBANK BROWSER COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+function GoalBankBrowser({
+  onInsertGoal,
+}: {
+  onInsertGoal: (goal: string) => void;
+}) {
+  const [activeCategory, setActiveCategory] = useState<CategoryKey>("reading");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  // Get goals for the active category
+  const categoryGoals = useMemo(() => {
+    const jsonKey = CATEGORY_KEY_MAP[activeCategory] || activeCategory;
+    const goals = (goalBankData.categories as Record<string, string[]>)[jsonKey] || [];
+    if (!searchQuery.trim()) return goals;
+    const q = searchQuery.toLowerCase();
+    return goals.filter((g) => g.toLowerCase().includes(q));
+  }, [activeCategory, searchQuery]);
+
+  const handleCopy = async (goal: string, index: number) => {
+    await navigator.clipboard.writeText(goal);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 1500);
+  };
+
+  const categoryMeta = GOAL_CATEGORIES.find((c) => c.key === activeCategory);
+
+  return (
+    <div className="sidebarTile sidebarTile--starfield p-5 mt-8">
+      {/* Header */}
+      <div
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/30 to-cyan-500/30 border border-white/15 grid place-items-center">
+            <Sparkles className="h-5 w-5 text-cyan-300" />
+          </div>
+          <div>
+            <div className="cardTitle text-white flex items-center gap-2">
+              GoalBank Galexii
+              <span className="rounded-full border border-amber-300/30 bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-100 shadow-[0_0_12px_rgba(251,191,36,0.3)]">
+                240 Goals
+              </span>
+            </div>
+            <div className="cardMeta text-white/60">
+              TEA-style goals • 7-9th grade • Ready to customize
+            </div>
+          </div>
+        </div>
+        <button className="p-2 rounded-lg hover:bg-white/10 transition">
+          {isExpanded ? (
+            <ChevronUp className="h-5 w-5 text-white/60" />
+          ) : (
+            <ChevronDown className="h-5 w-5 text-white/60" />
+          )}
+        </button>
+      </div>
+
+      {isExpanded && (
+        <div className="mt-5 space-y-4">
+          {/* Category Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {GOAL_CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat.key;
+              const jsonKey = CATEGORY_KEY_MAP[cat.key] || cat.key;
+              const count = ((goalBankData.categories as Record<string, string[]>)[jsonKey] || []).length;
+
+              return (
+                <button
+                  key={cat.key}
+                  onClick={() => {
+                    setActiveCategory(cat.key);
+                    setSearchQuery("");
+                  }}
+                  className={cx(
+                    "relative px-3 py-1.5 rounded-full text-xs font-semibold transition-all border",
+                    isActive
+                      ? "bg-gradient-to-r from-cyan-500/25 to-violet-500/25 border-cyan-400/40 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)]"
+                      : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  {cat.label}
+                  <span className="ml-1 text-[10px] opacity-60">({count})</span>
+
+                  {/* Active glow bar */}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[2px] rounded-full bg-cyan-400 shadow-[0_0_8px_2px_rgba(34,211,238,0.5)]" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+            <input
+              type="text"
+              placeholder={`Search ${categoryMeta?.label || ""} goals...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 bg-black/30 text-white/90 placeholder-white/40 text-sm outline-none focus:border-cyan-400/40 focus:ring-1 focus:ring-cyan-400/20 transition"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white text-xs"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+
+          {/* Goals List */}
+          <div className="space-y-2 max-h-[320px] overflow-y-auto scrollCosmic pr-2">
+            {categoryGoals.length === 0 ? (
+              <div className="text-center py-8 text-white/50">
+                {searchQuery ? `No goals match "${searchQuery}"` : "No goals in this category"}
+              </div>
+            ) : (
+              categoryGoals.map((goal, idx) => (
+                <div
+                  key={idx}
+                  className="group relative rounded-xl border border-white/8 bg-black/20 p-3 hover:border-cyan-400/25 hover:bg-white/5 transition"
+                >
+                  <p className="text-white/85 text-sm leading-relaxed pr-20">{goal}</p>
+
+                  {/* Actions */}
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <button
+                      onClick={() => handleCopy(goal, idx)}
+                      className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition"
+                      title="Copy to clipboard"
+                    >
+                      {copiedIndex === idx ? (
+                        <Check className="h-3.5 w-3.5 text-emerald-300" />
+                      ) : (
+                        <Copy className="h-3.5 w-3.5 text-white/70" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => onInsertGoal(goal)}
+                      className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border border-cyan-400/30 text-cyan-100 text-xs font-semibold hover:from-cyan-500/40 hover:to-violet-500/40 transition shadow-[0_0_12px_rgba(34,211,238,0.2)]"
+                    >
+                      Insert
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-2 border-t border-white/8">
+            <div className="text-white/50 text-xs">
+              Showing {categoryGoals.length} of {((goalBankData.categories as Record<string, string[]>)[CATEGORY_KEY_MAP[activeCategory] || activeCategory] || []).length} goals
+            </div>
+            <div className="text-white/40 text-xs italic">
+              Click "Insert" to add to Goal intake
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GoalsPageInner() {
   const searchParams = useSearchParams();
 
@@ -293,9 +492,20 @@ function GoalsPageInner() {
     return "text-rose-200";
   }, [result?.score]);
 
+  // Handler to insert goal from GoalBank
+  const handleInsertGoalFromBank = (goal: string) => {
+    setGoalText(goal);
+    setResult(null);
+    // Scroll to intake area
+    const intakeEl = document.getElementById("goal-intake-area");
+    if (intakeEl) {
+      intakeEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+      <div className="page w-full">
         {/* Universe Header */}
         <div className="mb-10">
           <div className="heroBrandRow">
@@ -335,10 +545,20 @@ function GoalsPageInner() {
         {/* Upload Card */}
         <UploadCard module="goals" />
 
-        <div className="mt-8 border-t border-white/10 pt-6">
-          <div className="text-2xl font-bold text-white/90 mb-4">Manual Goal Scoring</div>
+        {/* ═══════════════════════════════════════════════════════════════════
+            🌌 GOALBANK BROWSER - 240 TEA-style goals ready to customize
+        ═══════════════════════════════════════════════════════════════════ */}
+        <GoalBankBrowser onInsertGoal={handleInsertGoalFromBank} />
+
+        <div id="goal-intake-area" className="mt-8 border-t border-white/10 pt-6 scroll-mt-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="text-2xl font-bold text-white/90">Manual Goal Scoring</div>
+            <span className="rounded-full border border-cyan-300/30 bg-cyan-400/15 px-2 py-0.5 text-xs font-semibold text-cyan-100 shadow-[0_0_12px_rgba(34,211,238,0.25)]">
+              Analyzer
+            </span>
+          </div>
           <div className="text-white/70 mb-4">
-            Paste a goal, score it against the TEA-style components (timeframe, condition,
+            Paste a goal (or select from GoalBank above), score it against the TEA-style components (timeframe, condition,
             behavior, criterion), and get a cleaner rewrite.
           </div>
         </div>

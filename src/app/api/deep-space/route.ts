@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Get the path to the analyzer script
-    const projectRoot = process.cwd().replace("/galaxy-iep-accommodations", "");
-    const analyzerPath = path.join(projectRoot, "scripts", "deep_dive_analyzer.py");
+    const projRoot = process.cwd().replace("/galaxy-iep-accommodations", "");
+    const analyzerPath = path.join(projRoot, "scripts", "deep_dive_analyzer.py");
 
     // Run the analyzer
     const result = await runAnalyzer(analyzerPath, studentId, tempDir);
@@ -122,11 +122,16 @@ async function runAnalyzer(
   workDir: string
 ): Promise<{ success: boolean; error?: string; stdout?: string }> {
   return new Promise((resolve) => {
-    // Create a modified version of the analyzer that uses the temp directory
+    // Resolve the project root from the analyzer script path
+    // analyzerPath = /path/to/AccommodationsAudit/scripts/deep_dive_analyzer.py
+    const projectRoot = path.dirname(path.dirname(analyzerPath));
+    const assessmentProfilePath = path.join(projectRoot, "output", "ASSESSMENT_PROFILE__ALL_CASE_MANAGERS.xlsx");
+    
     const env = {
       ...process.env,
       GALEXII_IEP_FOLDER: path.join(workDir, "ieps"),
       GALEXII_OUTPUT_FOLDER: path.join(workDir, "audit"),
+      GALEXII_ASSESSMENT_PROFILE: assessmentProfilePath,
     };
 
     const proc = spawn("python3", [analyzerPath, "--student", studentId], {

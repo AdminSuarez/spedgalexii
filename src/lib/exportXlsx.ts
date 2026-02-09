@@ -37,9 +37,23 @@ export function exportTrackerToXlsx(t: AnyTracker) {
       ["Student ID", t.student.student_id],
       ["Student", `${t.student.student_last_name ?? ""}, ${t.student.student_first_name ?? ""}`.trim()],
       ["Date", t.date],
+      ["Service Type", t.service_type ?? ""],
+      ["Required Minutes/2wks", t.required_minutes_per_2wks ?? ""],
       [],
-      ["GOAL", "Morning", "Lunch", "Afternoon", "Specials"],
-      ...t.rows.map((r) => [r.goal_text, r.morning ?? "", r.lunch ?? "", r.afternoon ?? "", r.specials ?? ""]),
+      ["GOAL", "Advisory", "P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8", "Notes"],
+      ...t.rows.map((r) => [
+        r.goal_text, 
+        r.advisory ?? "", 
+        r.period_1 ?? "", 
+        r.period_2 ?? "", 
+        r.period_3 ?? "", 
+        r.period_4 ?? "", 
+        r.period_5 ?? "", 
+        r.period_6 ?? "", 
+        r.period_7 ?? "", 
+        r.period_8 ?? "",
+        r.notes ?? ""
+      ]),
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     XLSX.utils.book_append_sheet(wb, ws, "Daily");

@@ -1,0 +1,78 @@
+import { NextRequest } from "next/server";
+import { streamChat, isAIConfigured, type ChatMessage } from "@/lib/ai";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * POST /api/ai/chat
+ * 
+ * Streaming chat endpoint for the Galexii AI assistant.
+ * Accepts messages array + optional analysis context.
+ * Returns Server-Sent Events stream.
+ */
+export async function POST(req: NextRequest) {
+  if (!isAIConfigured()) {
+    return new Response(
+      JSON.stringify({
+        error: "AI features are not configured. Add OPENAI_API_KEY to .env.local",
+      }),
+      { status: 503, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
+  try {
+    const body = await req.json();
+    const messages: ChatMessage[] = body.messages || [];
+    const context: string | undefined = body.context;
+
+    if (!messages.length) {
+      return new Response(
+        JSON.stringify({ error: "No messages provided" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Only allow user/assistant messages from client
+    const sanitized = messages
+      .filter((m: ChatMessage) => m.role === "user" || m.role === "assistant")
+      .map((m: ChatMessage) => ({
+        role: m.role as "user" | "assistant",
+        content: String(m.content).slice(0, 10000), // limit message length
+      }));
+
+    const stream = await streamChat(sanitized, context);
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
+    });
+  } catch (err) {
+    console.error("[AI Chat] Error:", err);
+    return new Response(
+      JSON.stringify({
+        error: err instanceof Error ? err.message : "Chat failed",
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
+
+/**
+ * GET /api/ai/chat
+ * 
+ * Returns AI configuration status.
+ */
+export async function GET() {
+  return new Response(
+    JSON.stringify({
+      configured: isAIConfigured(),
+      model: "gpt-4o-mini",
+      features: ["chat", "analysis", "recommendations"],
+    }),
+    { headers: { "Content-Type": "application/json" } }
+  );
+}

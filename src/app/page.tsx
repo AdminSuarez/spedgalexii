@@ -61,7 +61,7 @@ const MODULES = [
 export default function OrbitHubPage() {
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+      <div className="page w-full">
         {/* Universe Header */}
         <div className="mb-10">
           <div className="heroBrandRow">

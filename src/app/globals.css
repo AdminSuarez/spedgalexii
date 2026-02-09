@@ -228,6 +228,7 @@ h1,h2,h3{
   font-size: clamp(16px, 0.7vw + 13px, 22px) !important;
   font-weight: 800;
   line-height: 1.15;
+  text-transform: uppercase;
 }
 
 .uiLabel{
@@ -620,6 +621,265 @@ h1,h2,h3{
 .popCard--emerald { --a1: rgba(16,185,129,.96); --a2: rgba(34,197,94,.94); --a3: rgba(34,211,238,.80); }
 .popCard--default { --a1: rgba(255,255,255,.15); --a2: rgba(255,255,255,.10); --a3: rgba(255,255,255,.05); }
 
+/* Starfield card - shows stars through semi-transparent background */
+.popCard--starfield {
+  --a1: rgba(168,85,247,.85); 
+  --a2: rgba(124,58,237,.80); 
+  --a3: rgba(34,211,238,.70);
+  background: linear-gradient(180deg, rgba(12, 10, 28, .75), rgba(6, 5, 16, .70)) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.popCard--starfield::after {
+  content: '';
+  display: block !important;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.9) 0 1.5px, transparent 2.5px) 30px 40px/180px 180px,
+    radial-gradient(circle, rgba(255,255,255,.75) 0 1.2px, transparent 2.2px) 80px 100px/240px 240px,
+    radial-gradient(circle, rgba(255,255,255,.6) 0 1px, transparent 2px) 150px 60px/300px 300px,
+    radial-gradient(circle, rgba(200,220,255,.55) 0 0.9px, transparent 1.8px) 40px 160px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.45) 0 0.7px, transparent 1.5px) 120px 200px/160px 160px,
+    radial-gradient(circle, rgba(180,200,255,.4) 0 0.6px, transparent 1.3px) 200px 80px/220px 220px,
+    radial-gradient(circle, rgba(255,248,220,.35) 0 0.5px, transparent 1.2px) 60px 240px/280px 280px;
+  animation: starTwinkle 8s ease-in-out infinite;
+}
+
+.popCard--starfield > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ✨ Enhanced multi-layer starfield for cards */
+.gx-stars {
+  position: relative;
+  overflow: hidden;
+}
+
+.gx-stars::before,
+.gx-stars::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Layer 1: Bright foreground stars */
+.gx-stars::before {
+  opacity: 0.85;
+  background:
+    /* Large bright stars */
+    radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px) 20px 30px/140px 140px,
+    radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 2.8px) 90px 70px/180px 180px,
+    radial-gradient(circle, rgba(200,220,255,.9) 0 1.6px, transparent 2.6px) 50px 120px/200px 200px,
+    /* Medium stars */
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.3px, transparent 2.3px) 130px 40px/160px 160px,
+    radial-gradient(circle, rgba(168,85,247,.7) 0 1.2px, transparent 2.2px) 70px 180px/220px 220px,
+    radial-gradient(circle, rgba(34,211,238,.75) 0 1.2px, transparent 2.2px) 160px 100px/190px 190px,
+    /* Small stars */
+    radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px) 40px 90px/120px 120px,
+    radial-gradient(circle, rgba(255,248,220,.6) 0 0.9px, transparent 1.9px) 100px 150px/170px 170px;
+  animation: starTwinkle1 4s ease-in-out infinite;
+}
+
+/* Layer 2: Distant smaller stars */
+.gx-stars::after {
+  opacity: 0.7;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.55) 0 0.8px, transparent 1.6px) 15px 25px/100px 100px,
+    radial-gradient(circle, rgba(255,255,255,.5) 0 0.7px, transparent 1.5px) 60px 45px/130px 130px,
+    radial-gradient(circle, rgba(200,210,255,.45) 0 0.6px, transparent 1.4px) 35px 80px/150px 150px,
+    radial-gradient(circle, rgba(255,255,255,.4) 0 0.55px, transparent 1.3px) 85px 60px/110px 110px,
+    radial-gradient(circle, rgba(180,200,255,.35) 0 0.5px, transparent 1.2px) 25px 110px/90px 90px,
+    radial-gradient(circle, rgba(255,255,255,.3) 0 0.45px, transparent 1.1px) 70px 130px/140px 140px;
+  animation: starTwinkle2 6s ease-in-out infinite 1s;
+}
+
+.gx-stars > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Twinkling animations */
+@keyframes starTwinkle1 {
+  0%, 100% { opacity: 0.85; }
+  25% { opacity: 0.65; }
+  50% { opacity: 0.95; }
+  75% { opacity: 0.7; }
+}
+
+@keyframes starTwinkle2 {
+  0%, 100% { opacity: 0.7; }
+  33% { opacity: 0.5; }
+  66% { opacity: 0.8; }
+}
+
+/* Color-tinted star variants */
+.gx-stars--violet::before {
+  background:
+    radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px) 20px 30px/140px 140px,
+    radial-gradient(circle, rgba(168,85,247,.95) 0 1.8px, transparent 2.8px) 90px 70px/180px 180px,
+    radial-gradient(circle, rgba(200,180,255,.9) 0 1.6px, transparent 2.6px) 50px 120px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.3px, transparent 2.3px) 130px 40px/160px 160px,
+    radial-gradient(circle, rgba(168,85,247,.7) 0 1.2px, transparent 2.2px) 70px 180px/220px 220px,
+    radial-gradient(circle, rgba(124,58,237,.75) 0 1.2px, transparent 2.2px) 160px 100px/190px 190px,
+    radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px) 40px 90px/120px 120px,
+    radial-gradient(circle, rgba(200,180,255,.6) 0 0.9px, transparent 1.9px) 100px 150px/170px 170px;
+}
+
+.gx-stars--solar::before {
+  background:
+    radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px) 20px 30px/140px 140px,
+    radial-gradient(circle, rgba(251,191,36,.95) 0 1.8px, transparent 2.8px) 90px 70px/180px 180px,
+    radial-gradient(circle, rgba(255,220,150,.9) 0 1.6px, transparent 2.6px) 50px 120px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.3px, transparent 2.3px) 130px 40px/160px 160px,
+    radial-gradient(circle, rgba(249,115,22,.7) 0 1.2px, transparent 2.2px) 70px 180px/220px 220px,
+    radial-gradient(circle, rgba(251,191,36,.75) 0 1.2px, transparent 2.2px) 160px 100px/190px 190px,
+    radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px) 40px 90px/120px 120px,
+    radial-gradient(circle, rgba(255,230,180,.6) 0 0.9px, transparent 1.9px) 100px 150px/170px 170px;
+}
+
+.gx-stars--cyan::before {
+  background:
+    radial-gradient(circle, rgba(255,255,255,1) 0 2px, transparent 3px) 20px 30px/140px 140px,
+    radial-gradient(circle, rgba(34,211,238,.95) 0 1.8px, transparent 2.8px) 90px 70px/180px 180px,
+    radial-gradient(circle, rgba(180,230,255,.9) 0 1.6px, transparent 2.6px) 50px 120px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.3px, transparent 2.3px) 130px 40px/160px 160px,
+    radial-gradient(circle, rgba(6,182,212,.7) 0 1.2px, transparent 2.2px) 70px 180px/220px 220px,
+    radial-gradient(circle, rgba(34,211,238,.75) 0 1.2px, transparent 2.2px) 160px 100px/190px 190px,
+    radial-gradient(circle, rgba(255,255,255,.65) 0 1px, transparent 2px) 40px 90px/120px 120px,
+    radial-gradient(circle, rgba(180,240,255,.6) 0 0.9px, transparent 1.9px) 100px 150px/170px 170px;
+}
+
+/* ✨ DIV-based card stars (avoids pseudo-element conflicts) */
+.card-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.card-stars-layer1,
+.card-stars-layer2 {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Layer 1: Bright foreground stars */
+.card-stars-layer1 {
+  opacity: 1;
+  background:
+    /* Large bright white stars */
+    radial-gradient(circle, rgba(255,255,255,1) 0 3px, transparent 4px) 25px 35px/120px 120px,
+    radial-gradient(circle, rgba(255,255,255,1) 0 2.5px, transparent 3.5px) 95px 75px/150px 150px,
+    radial-gradient(circle, rgba(255,255,255,.95) 0 2.2px, transparent 3.2px) 55px 20px/180px 180px,
+    /* Medium stars */
+    radial-gradient(circle, rgba(255,255,255,.9) 0 2px, transparent 3px) 135px 45px/140px 140px,
+    radial-gradient(circle, rgba(255,255,255,.85) 0 1.8px, transparent 2.8px) 75px 85px/160px 160px,
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.6px, transparent 2.6px) 165px 105px/130px 130px,
+    /* Small stars */
+    radial-gradient(circle, rgba(255,255,255,.75) 0 1.4px, transparent 2.4px) 45px 65px/100px 100px,
+    radial-gradient(circle, rgba(255,255,255,.7) 0 1.2px, transparent 2.2px) 105px 155px/110px 110px;
+  animation: cardStarTwinkle1 4s ease-in-out infinite;
+}
+
+/* Layer 2: Smaller distant stars */
+.card-stars-layer2 {
+  opacity: 0.9;
+  background:
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.2px, transparent 2.2px) 18px 28px/80px 80px,
+    radial-gradient(circle, rgba(255,255,255,.75) 0 1px, transparent 2px) 65px 48px/100px 100px,
+    radial-gradient(circle, rgba(255,255,255,.7) 0 0.9px, transparent 1.9px) 38px 85px/120px 120px,
+    radial-gradient(circle, rgba(255,255,255,.65) 0 0.8px, transparent 1.8px) 88px 15px/90px 90px,
+    radial-gradient(circle, rgba(255,255,255,.6) 0 0.7px, transparent 1.7px) 28px 115px/70px 70px,
+    radial-gradient(circle, rgba(255,255,255,.55) 0 0.6px, transparent 1.6px) 75px 135px/95px 95px;
+  animation: cardStarTwinkle2 6s ease-in-out infinite 1s;
+}
+
+/* Color-tinted variants for card stars */
+.card-stars--violet .card-stars-layer1 {
+  background:
+    /* Large bright stars - use prime numbers for less obvious repeating */
+    radial-gradient(circle, rgba(255,255,255,1) 0 3.5px, transparent 5px) 47px 83px/397px 421px,
+    radial-gradient(circle, rgba(168,85,247,1) 0 3px, transparent 4.5px) 193px 127px/503px 467px,
+    radial-gradient(circle, rgba(255,255,255,1) 0 2.8px, transparent 4px) 311px 251px/587px 523px,
+    /* Medium bright stars - varied offsets */
+    radial-gradient(circle, rgba(200,180,255,1) 0 2.5px, transparent 3.8px) 73px 41px/283px 317px,
+    radial-gradient(circle, rgba(124,58,237,1) 0 2.2px, transparent 3.5px) 157px 189px/347px 379px,
+    radial-gradient(circle, rgba(255,255,255,.95) 0 2px, transparent 3.2px) 89px 143px/263px 289px,
+    radial-gradient(circle, rgba(168,85,247,.95) 0 2px, transparent 3.2px) 241px 67px/331px 353px,
+    /* Medium stars */
+    radial-gradient(circle, rgba(255,255,255,.9) 0 1.8px, transparent 3px) 179px 211px/229px 251px,
+    radial-gradient(circle, rgba(200,180,255,.9) 0 1.6px, transparent 2.8px) 53px 97px/197px 223px,
+    radial-gradient(circle, rgba(168,85,247,.85) 0 1.5px, transparent 2.6px) 131px 163px/211px 239px,
+    /* Small stars */
+    radial-gradient(circle, rgba(255,255,255,.8) 0 1.3px, transparent 2.3px) 37px 59px/167px 181px,
+    radial-gradient(circle, rgba(124,58,237,.8) 0 1.2px, transparent 2.2px) 109px 31px/149px 173px,
+    radial-gradient(circle, rgba(200,180,255,.75) 0 1.1px, transparent 2.1px) 67px 113px/137px 157px;
+  animation: cardStarTwinkle1 4s ease-in-out infinite;
+}
+
+.card-stars--violet .card-stars-layer2 {
+  background:
+    /* Additional scattered stars - use different prime-based sizes */
+    radial-gradient(circle, rgba(255,255,255,.85) 0 1.4px, transparent 2.4px) 23px 71px/191px 199px,
+    radial-gradient(circle, rgba(168,85,247,.8) 0 1.2px, transparent 2.2px) 61px 29px/163px 179px,
+    radial-gradient(circle, rgba(200,180,255,.75) 0 1px, transparent 2px) 97px 103px/139px 151px,
+    radial-gradient(circle, rgba(255,255,255,.7) 0 0.9px, transparent 1.9px) 43px 67px/127px 137px,
+    radial-gradient(circle, rgba(124,58,237,.7) 0 0.85px, transparent 1.85px) 79px 89px/113px 131px,
+    radial-gradient(circle, rgba(168,85,247,.65) 0 0.8px, transparent 1.8px) 31px 47px/101px 109px,
+    radial-gradient(circle, rgba(255,255,255,.6) 0 0.7px, transparent 1.7px) 53px 37px/89px 97px,
+    radial-gradient(circle, rgba(200,180,255,.55) 0 0.6px, transparent 1.6px) 67px 79px/83px 103px;
+  animation: cardStarTwinkle2 6s ease-in-out infinite 1.5s;
+}
+
+.card-stars--solar .card-stars-layer1 {
+  background:
+    radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3.5px) 25px 35px/150px 150px,
+    radial-gradient(circle, rgba(255,230,180,.95) 0 1.9px, transparent 3px) 95px 75px/190px 190px,
+    radial-gradient(circle, rgba(251,191,36,.9) 0 1.7px, transparent 2.8px) 55px 125px/210px 210px,
+    radial-gradient(circle, rgba(255,255,255,.85) 0 1.4px, transparent 2.4px) 135px 45px/170px 170px,
+    radial-gradient(circle, rgba(249,115,22,.75) 0 1.3px, transparent 2.3px) 75px 185px/230px 230px,
+    radial-gradient(circle, rgba(251,191,36,.8) 0 1.2px, transparent 2.2px) 165px 105px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 2px) 45px 95px/130px 130px,
+    radial-gradient(circle, rgba(255,220,150,.65) 0 0.9px, transparent 1.9px) 105px 155px/180px 180px;
+}
+
+.card-stars--cyan .card-stars-layer1 {
+  background:
+    radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3.5px) 25px 35px/150px 150px,
+    radial-gradient(circle, rgba(180,240,255,.95) 0 1.9px, transparent 3px) 95px 75px/190px 190px,
+    radial-gradient(circle, rgba(34,211,238,.9) 0 1.7px, transparent 2.8px) 55px 125px/210px 210px,
+    radial-gradient(circle, rgba(255,255,255,.85) 0 1.4px, transparent 2.4px) 135px 45px/170px 170px,
+    radial-gradient(circle, rgba(6,182,212,.75) 0 1.3px, transparent 2.3px) 75px 185px/230px 230px,
+    radial-gradient(circle, rgba(34,211,238,.8) 0 1.2px, transparent 2.2px) 165px 105px/200px 200px,
+    radial-gradient(circle, rgba(255,255,255,.7) 0 1px, transparent 2px) 45px 95px/130px 130px,
+    radial-gradient(circle, rgba(180,230,255,.65) 0 0.9px, transparent 1.9px) 105px 155px/180px 180px;
+}
+
+/* Card star twinkling animations */
+@keyframes cardStarTwinkle1 {
+  0%, 100% { opacity: 0.9; }
+  25% { opacity: 0.7; }
+  50% { opacity: 1; }
+  75% { opacity: 0.75; }
+}
+
+@keyframes cardStarTwinkle2 {
+  0%, 100% { opacity: 0.75; }
+  33% { opacity: 0.55; }
+  66% { opacity: 0.85; }
+}
+
 .cardsGrid, .page, .panel { overflow: visible; }
 
 /* -----------------------------
@@ -714,6 +974,47 @@ h1,h2,h3{
 .sidebarTile--violet{ box-shadow: 0 18px 54px rgba(0,0,0,.45); }
 .sidebarTile--mint{   box-shadow: 0 18px 54px rgba(0,0,0,.45); }
 .sidebarTile--solar{  box-shadow: 0 18px 54px rgba(0,0,0,.45); }
+
+/* 🌌 Starfield variant - translucent with star glow */
+.sidebarTile--starfield {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(12, 10, 28, .75), rgba(6, 5, 16, .80)) !important;
+  border: 1px solid rgba(34, 211, 238, .15);
+  box-shadow:
+    0 18px 54px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 0 40px rgba(34,211,238,.08);
+}
+
+.sidebarTile--starfield::before {
+  content: '';
+  position: absolute;
+  inset: -100px;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1.5px 1.5px at 10% 15%, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1px 1px at 25% 35%, rgba(168,85,247,0.7), transparent),
+    radial-gradient(1.2px 1.2px at 45% 10%, rgba(34,211,238,0.8), transparent),
+    radial-gradient(0.8px 0.8px at 60% 55%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 75% 20%, rgba(251,191,36,0.65), transparent),
+    radial-gradient(1.5px 1.5px at 90% 45%, rgba(34,211,238,0.7), transparent),
+    radial-gradient(0.8px 0.8px at 15% 70%, rgba(168,85,247,0.5), transparent),
+    radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.2px 1.2px at 80% 75%, rgba(34,211,238,0.6), transparent);
+  animation: starfield-drift 120s linear infinite;
+}
+
+.sidebarTile--starfield > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes starfield-drift {
+  0%   { transform: translateX(0) translateY(0); }
+  100% { transform: translateX(-20px) translateY(-15px); }
+}
 
 /* Apply to scroll containers via className="scrollCosmic" */
 .scrollCosmic{
@@ -919,4 +1220,132 @@ code,
   border-radius: 50%;
   background: radial-gradient(circle, #a855f7 0%, #7c3aed 100%);
   box-shadow: 0 0 6px #a855f7;
+}
+
+/* -----------------------------
+   9) Form inputs — cosmic glow
+------------------------------ */
+.gx-input {
+  width: 100%;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  color: rgba(255,255,255,.95);
+  background: linear-gradient(180deg, rgba(12, 10, 28, .95), rgba(6, 5, 16, .98));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 0 0 1px rgba(255,255,255,.12),
+    0 8px 24px rgba(0,0,0,.35);
+}
+
+.gx-input::placeholder {
+  color: rgba(255,255,255,.45);
+  font-weight: 500;
+}
+
+.gx-input:focus {
+  box-shadow: 
+    0 0 0 2px rgba(34,211,238,.5),
+    0 0 20px rgba(34,211,238,.25),
+    0 8px 24px rgba(0,0,0,.35);
+}
+
+.gx-input:hover:not(:focus) {
+  box-shadow: 
+    0 0 0 1px rgba(255,255,255,.22),
+    0 8px 24px rgba(0,0,0,.35);
+}
+
+/* Textarea with cosmic glow */
+.gx-textarea {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: rgba(255,255,255,.95);
+  background: linear-gradient(180deg, rgba(8, 6, 20, .92), rgba(4, 3, 12, .95));
+  border: 1px solid rgba(255,255,255,.12);
+  outline: none;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.gx-textarea::placeholder {
+  color: rgba(255,255,255,.35);
+}
+
+.gx-textarea:focus {
+  border-color: rgba(168,85,247,.5);
+  box-shadow: 
+    0 0 0 1px rgba(168,85,247,.3),
+    0 0 16px rgba(168,85,247,.15),
+    inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+.gx-textarea:hover:not(:focus) {
+  border-color: rgba(255,255,255,.22);
+}
+
+/* -----------------------------
+   10) Tables — cosmic styling
+------------------------------ */
+.gx-table-wrap {
+  border-radius: 16px;
+  position: relative;
+  background: linear-gradient(180deg, rgba(12, 10, 28, .85), rgba(6, 5, 16, .92));
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 
+    0 0 0 1px rgba(255,255,255,.10),
+    0 12px 36px rgba(0,0,0,.45);
+  overflow: hidden;
+}
+
+/* Gradient border effect for table */
+.gx-table-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(34,211,238,.6), rgba(168,85,247,.5), rgba(251,191,36,.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.gx-table-header {
+  background: linear-gradient(90deg, 
+    rgba(168,85,247,.15), 
+    rgba(34,211,238,.10), 
+    rgba(251,191,36,.08)
+  );
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+.gx-table-row {
+  border-top: 1px solid rgba(255,255,255,.08);
+  transition: background 0.15s ease;
+}
+
+.gx-table-row:hover {
+  background: rgba(168,85,247,.08);
+}
+
+.gx-table-row:nth-child(even) {
+  background: rgba(255,255,255,.02);
+}
+
+.gx-table-row:nth-child(even):hover {
+  background: rgba(168,85,247,.10);
 }

@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function AboutPage() {
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6 max-w-4xl mx-auto">
+      <div className="page w-full max-w-4xl mx-auto">
         {/* Hero Header */}
         <div className="mb-10">
           <div className="heroBrandRow">
@@ -29,7 +29,7 @@ export default function AboutPage() {
         </div>
 
         {/* Origin Story */}
-        <GXCard className="rounded-2xl popCard popCard--violet mb-6">
+        <GXCard className="rounded-2xl popCard popCard--starfield mb-6">
           <h2 className="text-2xl font-bold text-white mb-4">The Story Behind SpEdGalexii</h2>
           <div className="text-white/80 leading-relaxed space-y-4">
             <p>

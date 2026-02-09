@@ -2,6 +2,7 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 
 type ResourceCategory = "Reading" | "Vocabulary" | "Executive Function" | "TEA Guidance";
@@ -16,13 +17,39 @@ type ResourceItem = {
 
 function Header() {
   return (
-    <div className="sidebarTile sidebarTile--solar p-5 md:p-6">
-      <div className="uiLabel text-white/70">Knowledge Vault</div>
-      <h1 className="moduleTitle mt-2">Resources</h1>
-      <div className="cardBody mt-3 text-white/80">
-        Search goal banks, guidance, and templates. Copy what you need or send it straight into
-        Goals Galexii.
+    <div className="mb-10">
+      <div className="heroBrandRow">
+        <div className="heroIconWrap">
+          <Image
+            src="/brand/galexii-logo-round.png"
+            alt="SpEdGalexii"
+            width={140}
+            height={140}
+            priority
+            className="heroIcon rounded-full bg-black"
+          />
+        </div>
+
+        <div className="min-w-0 heroAura">
+          <h1 className="heroTitle wrap-break-word">
+            Resources Galexii
+          </h1>
+
+          <div className="cardMeta mt-3 text-white/70">
+            Knowledge Vault — Search goal banks, guidance, and templates
+          </div>
+        </div>
       </div>
+
+      <p className="cardBody mt-6 max-w-3xl text-white/80">
+        Copy what you need or send it straight into Goals Galexii. Filter by category 
+        to find reading strategies, vocabulary techniques, executive function supports, 
+        and TEA guidance documents.
+      </p>
+
+      <p className="cardMeta mt-3 text-violet-300/80 italic">
+        "Knowledge shared is knowledge multiplied."
+      </p>
     </div>
   );
 }
@@ -118,9 +145,10 @@ export default function Page() {
 
   return (
     <GalaxyShell>
-      <Header />
+      <div className="page w-full">
+        <Header />
 
-      <div className="mt-6 gx-card gx-stroke">
+        <div className="mt-6 gx-card gx-stroke">
         <div className="cardTitle text-white">Search + Filter</div>
 
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_auto]">
@@ -199,6 +227,7 @@ export default function Page() {
           {toast}
         </div>
       ) : null}
+      </div>
     </GalaxyShell>
   );
 }

@@ -88,7 +88,7 @@ export default function ResultsPage({ params }: { params: { runId: string } }) {
 
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+      <div className="page w-full">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="uiLabel text-white/70">Results Hub</div>

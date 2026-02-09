@@ -28,13 +28,21 @@ export type DailyTracker = {
   type: "daily";
   student: StudentRef;
   date: string;
+  service_type?: string; // e.g., "SpEd Inclusion", "Resource", "Speech", etc.
+  required_minutes_per_2wks?: number; // IEP mandated minutes per 2-week cycle
   rows: Array<{
     goal_id?: string;
     goal_text: string;
-    morning?: string;
-    lunch?: string;
-    afternoon?: string;
-    specials?: string;
+    advisory?: string; // Advisory period (block schedule)
+    period_1?: string; // minutes per class period
+    period_2?: string;
+    period_3?: string;
+    period_4?: string;
+    period_5?: string;
+    period_6?: string;
+    period_7?: string;
+    period_8?: string;
+    notes?: string;
   }>;
 };
 
@@ -82,7 +90,9 @@ export function blankDaily(student: StudentRef, date: string): DailyTracker {
     type: "daily",
     student,
     date,
-    rows: [{ goal_text: "" }, { goal_text: "" }, { goal_text: "" }, { goal_text: "" }],
+    service_type: "",
+    required_minutes_per_2wks: 0,
+    rows: [{ goal_text: "" }, { goal_text: "" }, { goal_text: "" }],
   };
 }
 

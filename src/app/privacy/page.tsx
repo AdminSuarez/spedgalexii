@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function PrivacyPolicyPage() {
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6 max-w-4xl mx-auto">
+      <div className="page w-full max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-10">
           <div className="heroBrandRow">

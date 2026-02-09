@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Providers } from "./providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -43,7 +44,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        <div className="galaxy-content min-h-dvh">{children}</div>
+        <div className="galaxy-content min-h-dvh"><Providers>{children}</Providers></div>
       </body>
     </html>
   );

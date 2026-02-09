@@ -1,9 +1,34 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { GXCard } from "@/components/ui/GXCard";
 import ReactMarkdown from "react-markdown";
+import {
+  saveFiles,
+  getSessionFiles,
+  getAllSessions,
+  saveSession,
+  clearSession,
+  generateSessionId,
+  storedFileToFile,
+  type StoredFile,
+  type UploadSession,
+} from "@/lib/fileStorage";
+import {
+  checkCloudSyncStatus,
+  saveFilesHybrid,
+  getAllSessionsHybrid,
+  getSessionFilesHybrid,
+  clearSessionHybrid,
+  saveAnalysisResultsHybrid,
+  type SyncStatus,
+  type HybridSession,
+} from "@/lib/hybridStorage";
+import { CloudSyncStatus, SyncBadge } from "@/components/ui/CloudSyncStatus";
+import { addToOutputRepository } from "@/lib/outputRepository";
+import { AIInsights } from "@/components/galaxy/AIInsights";
+import { useSharedFiles } from "@/lib/SharedFileContext";
 
 type AlertSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
@@ -78,46 +103,209 @@ type ApiResponse = {
 };
 
 export default function DeepDivePage() {
+  const shared = useSharedFiles();
   const [files, setFiles] = useState<File[]>([]);
+  const [storedFiles, setStoredFiles] = useState<StoredFile[]>([]);
   const [studentId, setStudentId] = useState("");
+  const [sessionId, setSessionId] = useState<string>("");
+  const [previousSessions, setPreviousSessions] = useState<HybridSession[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [result, setResult] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"summary" | "report">("summary");
+  const [showPreviousSessions, setShowPreviousSessions] = useState(false);
+  const sessionInitialized = useRef(false);
+  
+  // Cloud sync state
+  const [cloudSyncEnabled, setCloudSyncEnabled] = useState(false);
+  const [currentSyncStatus, setCurrentSyncStatus] = useState<SyncStatus>('local-only');
 
-  const handleFileDrop = useCallback((e: React.DragEvent) => {
+  // Load previous sessions, auto-restore last active session, and check cloud sync on mount
+  useEffect(() => {
+    async function initPage() {
+      try {
+        // Check cloud sync status
+        const cloudStatus = await checkCloudSyncStatus();
+        setCloudSyncEnabled(cloudStatus.hasSubscription);
+        
+        // Load sessions using hybrid storage
+        const sessions = await getAllSessionsHybrid();
+        const activeSessions = sessions.filter(s => s.fileCount > 0);
+        
+        // Auto-restore the most recent incomplete session so files survive navigation
+        const lastIncomplete = activeSessions
+          .filter(s => !s.analysisComplete)
+          .sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)[0];
+        
+        if (lastIncomplete && !sessionInitialized.current) {
+          const restoredFiles = await getSessionFilesHybrid(lastIncomplete.id);
+          if (restoredFiles.length > 0) {
+            setStoredFiles(restoredFiles);
+            setFiles(restoredFiles.map(storedFileToFile));
+            setStudentId(lastIncomplete.studentId);
+            setSessionId(lastIncomplete.id);
+            setCurrentSyncStatus(lastIncomplete.syncStatus);
+            sessionInitialized.current = true;
+            // Show remaining previous sessions (excluding the auto-restored one)
+            setPreviousSessions(activeSessions.filter(s => s.id !== lastIncomplete.id));
+          } else {
+            setPreviousSessions(activeSessions);
+          }
+        } else {
+          setPreviousSessions(activeSessions);
+        }
+      } catch (e) {
+        console.error("Failed to load sessions:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    initPage();
+  }, []);
+
+  // Initialize session ID if none was restored
+  useEffect(() => {
+    if (!sessionInitialized.current && !sessionId) {
+      setSessionId(generateSessionId());
+      sessionInitialized.current = true;
+    }
+  }, [sessionId]);
+
+  // Load files from a previous session
+  const loadPreviousSession = async (session: HybridSession) => {
+    try {
+      setIsLoading(true);
+      const files = await getSessionFilesHybrid(session.id);
+      if (files.length > 0) {
+        setStoredFiles(files);
+        setFiles(files.map(storedFileToFile));
+        setStudentId(session.studentId);
+        setSessionId(session.id);
+        setCurrentSyncStatus(session.syncStatus);
+        setShowPreviousSessions(false);
+      }
+    } catch (e) {
+      setError("Failed to load previous session");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Delete a previous session
+  const deletePreviousSession = async (sessionToDelete: HybridSession) => {
+    try {
+      await clearSessionHybrid(sessionToDelete.id);
+      setPreviousSessions(prev => prev.filter(s => s.id !== sessionToDelete.id));
+    } catch (e) {
+      console.error("Failed to delete session:", e);
+    }
+  };
+
+  const handleFileDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     const droppedFiles = Array.from(e.dataTransfer.files).filter(
       (f) => f.type === "application/pdf" || f.name.endsWith(".pdf")
     );
-    setFiles((prev) => [...prev, ...droppedFiles]);
+    
+    if (droppedFiles.length === 0) return;
 
-    // Try to extract student ID from first filename
+    // Extract student ID if not set
+    let currentStudentId = studentId;
     const firstFile = droppedFiles[0];
-    if (firstFile && !studentId) {
+    if (firstFile && !currentStudentId) {
       const match = firstFile.name.match(/^(\d{8})/);
       if (match?.[1]) {
-        setStudentId(match[1]);
+        currentStudentId = match[1];
+        setStudentId(currentStudentId);
       }
     }
-  }, [studentId]);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Save using hybrid storage (local + cloud if available)
+    if (currentStudentId && sessionId) {
+      try {
+        setCurrentSyncStatus('syncing');
+        const { files: saved, syncStatus } = await saveFilesHybrid(droppedFiles, currentStudentId, sessionId);
+        setStoredFiles(prev => [...prev, ...saved]);
+        setCurrentSyncStatus(syncStatus);
+        
+        // Update session record
+        await saveSession({
+          id: sessionId,
+          studentId: currentStudentId,
+          createdAt: Date.now(),
+          lastAccessedAt: Date.now(),
+          fileCount: storedFiles.length + saved.length,
+          analysisComplete: false,
+        });
+      } catch (err) {
+        console.error("Failed to persist files:", err);
+        setCurrentSyncStatus('error');
+      }
+    }
+
+    setFiles((prev) => [...prev, ...droppedFiles]);
+    
+    // Save to shared file store so other module tabs can access
+    void shared.addFiles(droppedFiles, "deep-space", currentStudentId);
+  }, [studentId, sessionId, storedFiles.length, shared]);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...selectedFiles]);
-
+      
+      // Extract student ID if not set
+      let currentStudentId = studentId;
       const firstFile = selectedFiles[0];
-      if (firstFile && !studentId) {
+      if (firstFile && !currentStudentId) {
         const match = firstFile.name.match(/^(\d{8})/);
         if (match?.[1]) {
-          setStudentId(match[1]);
+          currentStudentId = match[1];
+          setStudentId(currentStudentId);
         }
       }
+
+      // Save using hybrid storage (local + cloud if available)
+      if (currentStudentId && sessionId) {
+        try {
+          setCurrentSyncStatus('syncing');
+          const { files: saved, syncStatus } = await saveFilesHybrid(selectedFiles, currentStudentId, sessionId);
+          setStoredFiles(prev => [...prev, ...saved]);
+          setCurrentSyncStatus(syncStatus);
+          
+          // Update session record
+          await saveSession({
+            id: sessionId,
+            studentId: currentStudentId,
+            createdAt: Date.now(),
+            lastAccessedAt: Date.now(),
+            fileCount: storedFiles.length + saved.length,
+            analysisComplete: false,
+          });
+        } catch (err) {
+          console.error("Failed to persist files:", err);
+          setCurrentSyncStatus('error');
+        }
+      }
+
+      setFiles((prev) => [...prev, ...selectedFiles]);
+      
+      // Save to shared file store so other module tabs can access
+      void shared.addFiles(selectedFiles, "deep-space", currentStudentId);
     }
   };
 
-  const removeFile = (index: number) => {
+  const removeFile = async (index: number) => {
+    const fileToRemove = storedFiles[index];
+    if (fileToRemove) {
+      try {
+        const { removeFile: removeFromDB } = await import("@/lib/fileStorage");
+        await removeFromDB(fileToRemove.id);
+        setStoredFiles(prev => prev.filter((_, i) => i !== index));
+      } catch (err) {
+        console.error("Failed to remove file from storage:", err);
+      }
+    }
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
@@ -148,11 +336,99 @@ export default function DeepDivePage() {
       }
 
       setResult(data);
+      
+      // Auto-save results to Output Repository
+      if (data.analysis) {
+        const studentName = data.analysis.student_info?.name || `Student_${studentId}`;
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        
+        // Save JSON analysis
+        if (data.analysis) {
+          const jsonStr = JSON.stringify(data.analysis, null, 2);
+          addToOutputRepository({
+            name: `DEEP_DIVE_${studentName.replace(/\s+/g, '_')}_${timestamp}.json`,
+            type: 'json',
+            size: `${Math.round(jsonStr.length / 1024)} KB`,
+            module: 'Deep Space',
+            data: btoa(unescape(encodeURIComponent(jsonStr))), // Base64 encode
+          });
+        }
+        
+        // Save Markdown report
+        if (data.report) {
+          addToOutputRepository({
+            name: `DEEP_DIVE_${studentName.replace(/\s+/g, '_')}_${timestamp}.md`,
+            type: 'md',
+            size: `${Math.round(data.report.length / 1024)} KB`,
+            module: 'Deep Space',
+            data: btoa(unescape(encodeURIComponent(data.report))), // Base64 encode
+          });
+        }
+        
+        // Update session as analysis complete
+        if (sessionId) {
+          await saveSession({
+            id: sessionId,
+            studentId,
+            createdAt: Date.now(),
+            lastAccessedAt: Date.now(),
+            fileCount: files.length,
+            analysisComplete: true,
+            analysisResult: {
+              summary: `${data.analysis.document_count} documents analyzed`,
+              alertCount: data.analysis.alerts?.length || 0,
+              criticalCount: data.analysis.critical_count || 0,
+            },
+          });
+          
+          // Sync analysis results to cloud if available
+          if (cloudSyncEnabled) {
+            setCurrentSyncStatus('syncing');
+            const jsonStr = JSON.stringify(data.analysis, null, 2);
+            const cloudStatus = await saveAnalysisResultsHybrid(
+              sessionId,
+              studentId,
+              data.analysis.student_info?.name || null,
+              {
+                documentCount: data.analysis.document_count,
+                alertCount: data.analysis.alerts?.length || 0,
+                criticalCount: data.analysis.critical_count || 0,
+              },
+              jsonStr,
+              data.report || ''
+            );
+            setCurrentSyncStatus(cloudStatus);
+          }
+        }
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Download functions for manual export
+  const downloadJSON = () => {
+    if (!result?.analysis) return;
+    const blob = new Blob([JSON.stringify(result.analysis, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DEEP_DIVE_${studentId}_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const downloadReport = () => {
+    if (!result?.report) return;
+    const blob = new Blob([result.report], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DEEP_DIVE_${studentId}_${new Date().toISOString().slice(0,10)}_REPORT.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const getSeverityColor = (severity: AlertSeverity) => {
@@ -185,7 +461,7 @@ export default function DeepDivePage() {
 
   return (
     <GalaxyShell>
-      <div className="page w-full px-2 pt-8 pb-4 md:px-4 md:pt-12 md:pb-6">
+      <div className="page w-full">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -225,10 +501,83 @@ export default function DeepDivePage() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-violet-300 animate-pulse">Loading...</div>
+          </div>
+        )}
+
+        {/* Previous Sessions Banner */}
+        {!isLoading && !result && previousSessions.length > 0 && (
+          <div className="mb-6">
+            <button
+              onClick={() => setShowPreviousSessions(!showPreviousSessions)}
+              className="flex items-center gap-2 text-violet-300 hover:text-violet-200 transition-colors text-sm"
+            >
+              <span>{showPreviousSessions ? '▼' : '▶'}</span>
+              <span>{previousSessions.length} previous session(s) available</span>
+              <span className="text-violet-400/60 text-xs">(local: 24hr • cloud: 30 days)</span>
+            </button>
+            
+            {showPreviousSessions && (
+              <div className="mt-3 space-y-2">
+                {previousSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className="flex items-center justify-between bg-white/5 rounded-lg px-4 py-3 border border-white/10"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-white/90 text-sm font-medium">
+                        Student {session.studentId}
+                        <SyncBadge status={session.syncStatus} />
+                      </div>
+                      <div className="text-white/50 text-xs">
+                        {session.fileCount} files • {new Date(session.lastAccessedAt).toLocaleString()}
+                        {session.analysisComplete && (
+                          <span className="ml-2 text-green-400">✓ Analysis complete</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => loadPreviousSession(session)}
+                        className="px-3 py-1 text-xs rounded bg-violet-500/30 text-violet-200 hover:bg-violet-500/50 transition-colors"
+                      >
+                        Load
+                      </button>
+                      <button
+                        onClick={() => deletePreviousSession(session)}
+                        className="px-3 py-1 text-xs rounded bg-red-500/30 text-red-200 hover:bg-red-500/50 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Upload Section */}
-        {!result && (
+        {!isLoading && !result && (
           <GXCard className="mb-6 rounded-2xl popCard popCard--violet">
             <h2 className="cardTitle text-white mb-4">Initiate Deep Space Scan</h2>
+
+            {/* Persistence & Cloud Sync Notice */}
+            <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg text-sm">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="text-green-200">
+                  <span className="font-medium">✓ Files persist</span> — Saved locally, survive refresh.
+                  {cloudSyncEnabled ? ' Cloud sync enabled!' : ' Expires in 24 hours.'}
+                </div>
+                <CloudSyncStatus 
+                  status={currentSyncStatus} 
+                  isEnabled={cloudSyncEnabled}
+                />
+              </div>
+            </div>
 
             {/* Student ID Input */}
             <div className="mb-4">
@@ -338,17 +687,46 @@ export default function DeepDivePage() {
                   <div className="text-violet-300/80 text-sm mt-2 italic">
                     "Clarity achieved through rigorous analysis"
                   </div>
+                  
+                  {/* Auto-saved notice */}
+                  <div className="mt-3 p-2 bg-green-500/10 border border-green-500/30 rounded-lg text-xs flex items-center justify-between flex-wrap gap-2">
+                    <span className="text-green-200">
+                      ✓ Results auto-saved to Output Repository — check sidebar to download
+                    </span>
+                    <CloudSyncStatus 
+                      status={currentSyncStatus} 
+                      isEnabled={cloudSyncEnabled}
+                    />
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    setResult(null);
-                    setFiles([]);
-                    setStudentId("");
-                  }}
-                  className="px-4 py-2 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
-                >
-                  New Scan
-                </button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={downloadJSON}
+                      className="px-3 py-1.5 text-sm rounded-lg bg-violet-500/30 text-violet-200 hover:bg-violet-500/50 transition-colors"
+                    >
+                      ↓ JSON
+                    </button>
+                    <button
+                      onClick={downloadReport}
+                      className="px-3 py-1.5 text-sm rounded-lg bg-cyan-500/30 text-cyan-200 hover:bg-cyan-500/50 transition-colors"
+                    >
+                      ↓ Report
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setResult(null);
+                      setFiles([]);
+                      setStoredFiles([]);
+                      setStudentId("");
+                      setSessionId(generateSessionId());
+                    }}
+                    className="px-4 py-2 rounded-lg bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors"
+                  >
+                    New Scan
+                  </button>
+                </div>
               </div>
             </GXCard>
 
@@ -574,6 +952,13 @@ export default function DeepDivePage() {
                 Export Report (MD)
               </button>
             </div>
+
+            {/* AI Insights Panel */}
+            {result.analysis && (
+              <AIInsights
+                analysisData={result.analysis as unknown as Record<string, unknown>}
+              />
+            )}
           </div>
         )}
 

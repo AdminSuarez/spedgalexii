@@ -14,7 +14,9 @@ import {
   Sheet,
   FileDown,
   History,
+  FolderOpen,
 } from "lucide-react";
+import { useSharedFiles } from "@/lib/SharedFileContext";
 
 type Scope = "all" | "case_manager";
 type ArtifactFormat = "xlsx" | "pdf" | "gsheet" | "gform";
@@ -229,6 +231,8 @@ function keyFromName(name: string): string {
 
 export function UploadCard({ module = "accommodations" }: { module?: GalexiiModule }) {
   const COPY = moduleCopy(module);
+  const shared = useSharedFiles();
+  const [useSharedMode, setUseSharedMode] = useState(false);
 
   const [files, setFiles] = useState<FileList | null>(null);
   const [busy, setBusy] = useState(false);
@@ -251,12 +255,18 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
   const [lastRun, setLastRun] = useState<LastRunCache | null>(null);
 
   const fileCount = files?.length ?? 0;
-  const hasFiles = fileCount > 0;
+  const hasLocalFiles = fileCount > 0;
+  const hasSharedFiles = shared.loaded && shared.fileCount > 0;
+  const hasFiles = hasLocalFiles || (useSharedMode && hasSharedFiles);
+  const effectiveFileCount = useSharedMode && !hasLocalFiles ? shared.fileCount : fileCount;
 
   const fileNames = useMemo(() => {
+    if (useSharedMode && !files?.length && shared.files.length > 0) {
+      return shared.files.map((f) => f.name);
+    }
     if (!files) return [];
     return Array.from(files).map((f) => f.name);
-  }, [files]);
+  }, [files, useSharedMode, shared.files]);
 
   const isDone = useMemo(() => looksDone(log), [log]);
   const isSuccess = useMemo(() => looksSuccess(log), [log]);
@@ -548,8 +558,18 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
   async function onSubmit() {
     if (busy) return;
 
-    if (!files || files.length === 0) {
-      setMsg("Pick files first (IEP PDFs + roster/crosswalk/TestHound export).");
+    // Determine which files to use: local picker or shared store
+    let filesToUpload: File[] = [];
+    
+    if (files && files.length > 0) {
+      filesToUpload = Array.from(files);
+    } else if (useSharedMode && shared.fileCount > 0) {
+      // Pull full File objects from the shared IndexedDB store
+      filesToUpload = await shared.getFileObjects();
+    }
+
+    if (filesToUpload.length === 0) {
+      setMsg("Pick files first, or use shared files from Deep Space.");
       return;
     }
 
@@ -581,7 +601,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
     try {
       // Upload
       const fd = new FormData();
-      for (const f of Array.from(files)) fd.append("files", f);
+      for (const f of filesToUpload) fd.append("files", f);
 
       const up = await fetch("/api/upload", { method: "POST", body: fd });
       const upJson: unknown = await up.json();
@@ -833,20 +853,82 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
         </div>
       </div>
 
+      {/* Shared Files Banner */}
+      {shared.loaded && hasSharedFiles && (
+        <div className="mt-6 min-w-0">
+          <div className={`popCard min-w-0 overflow-hidden rounded-2xl border ${useSharedMode ? 'popCard--solar border-amber-400/40' : 'popCard--violet border-violet-400/30'}`}>
+            <div className="flex min-w-0 items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 min-w-0">
+                <FolderOpen size={18} className="shrink-0 text-amber-300/80" />
+                <div className="min-w-0">
+                  <div className="cardTitle text-white text-sm">
+                    {shared.fileCount} shared file{shared.fileCount !== 1 ? 's' : ''} available
+                  </div>
+                  <div className="cardMeta text-white/60 text-xs">
+                    Uploaded via {shared.files.some(f => f.source === 'deep-space') ? 'Deep Space' : 'another module'} 
+                    {shared.studentId ? ` • Student ${shared.studentId}` : ''}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setUseSharedMode(!useSharedMode)}
+                  className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                    useSharedMode 
+                      ? 'bg-amber-500/30 text-amber-200 border border-amber-400/40 hover:bg-amber-500/40' 
+                      : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
+                  }`}
+                >
+                  {useSharedMode ? '✓ Using Shared Files' : 'Use These Files'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void shared.clearAll()}
+                  className="px-2 py-1.5 text-xs rounded-lg bg-red-500/20 text-red-200 border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                  title="Clear shared files"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            {useSharedMode && (
+              <div className="mt-3 max-h-24 overflow-auto rounded-xl border border-white/10 bg-black/20 p-2 text-white/70 min-w-0">
+                <ul className="cardBody space-y-0.5 text-white/80 text-xs min-w-0">
+                  {shared.files.map((f) => (
+                    <li key={f.id} className="truncate font-mono min-w-0 flex items-center gap-1" title={f.name}>
+                      <FileText size={10} className="shrink-0 opacity-60" />
+                      {f.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Upload area */}
       <div className="mt-6 min-w-0">
         <div className="popCard popCard--violet min-w-0 overflow-hidden">
           <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
             <div className="cardTitle min-w-0 truncate text-white">Files</div>
             <div className="cardMeta shrink-0 text-white/70">
-              {hasFiles ? `${fileCount} selected` : "Choose PDFs + CSV/XLSX"}
+              {hasLocalFiles ? `${fileCount} selected` : useSharedMode && hasSharedFiles ? `${shared.fileCount} shared` : "Choose PDFs + CSV/XLSX"}
             </div>
           </div>
 
           <input
             type="file"
             multiple
-            onChange={(e) => setFiles(e.target.files)}
+            onChange={(e) => {
+              setFiles(e.target.files);
+              // Also save to shared store so other modules can access
+              if (e.target.files && e.target.files.length > 0) {
+                const newFiles = Array.from(e.target.files);
+                void shared.addFiles(newFiles, "upload-card");
+              }
+            }}
             className="block w-full min-w-0 cursor-pointer rounded-2xl border border-white/10 bg-black/30 p-3 text-white/80 file:mr-3 file:rounded-xl file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-white hover:bg-black/40 cardBody"
           />
 
@@ -873,7 +955,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
           className="ctaBtn ctaBtn--deep inline-flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Upload size={16} />
-          {busy ? "Working…" : "Upload + Run"}
+          {busy ? "Working…" : useSharedMode && !hasLocalFiles ? `Run with ${shared.fileCount} Shared Files` : "Upload + Run"}
         </button>
 
         <button
