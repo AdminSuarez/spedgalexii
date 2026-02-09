@@ -182,7 +182,7 @@ export function GalexiiChat({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full
+        className="fixed bottom-20 right-6 z-50 flex items-center gap-2 rounded-full
           bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 
           text-white font-semibold text-sm shadow-lg shadow-violet-500/30
           hover:shadow-violet-500/50 hover:scale-105 transition-all duration-200
@@ -207,7 +207,7 @@ export function GalexiiChat({
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 ${panelWidth} ${panelHeight} 
+      className={`fixed bottom-20 right-6 z-50 ${panelWidth} ${panelHeight} 
         flex flex-col rounded-2xl overflow-hidden
         bg-[#0c0a1a]/95 backdrop-blur-xl border border-violet-500/30
         shadow-2xl shadow-violet-900/40 transition-all duration-300`}

@@ -119,8 +119,8 @@ export function RunAllButton() {
     const res = await fetch("/api/upload", { method: "POST", body: formData });
     const json: unknown = await res.json();
 
-    if (json && typeof json === "object" && "batchId" in json) {
-      return (json as { batchId: string }).batchId;
+    if (json && typeof json === "object" && "uploadBatchId" in json) {
+      return (json as { uploadBatchId: string }).uploadBatchId;
     }
     throw new Error("Upload failed");
   }

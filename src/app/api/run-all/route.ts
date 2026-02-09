@@ -51,13 +51,11 @@ export async function POST(request: Request) {
     for (const mod of modulesToRun) {
       try {
         const runBody = {
+          module: mod,
+          scope: scope || "all",
           uploadBatchId,
-          selection: {
-            module: mod,
-            scope: scope || "all",
-            ...(scope === "case_manager" && caseManagerKey ? { caseManagerKey } : {}),
-            ...(scope === "case_manager" && caseManagerName ? { caseManagerName } : {}),
-          },
+          ...(scope === "case_manager" && caseManagerKey ? { caseManagerKey } : {}),
+          ...(scope === "case_manager" && caseManagerName ? { caseManagerName } : {}),
         };
 
         // Call the main /api/run endpoint
