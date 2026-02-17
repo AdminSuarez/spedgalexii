@@ -26,22 +26,22 @@ type IEPField = {
 
 type DeepDiveData = {
   student_info?: {
-    name?: string;
-    dob?: string;
-    grade?: string;
-    school?: string;
-    disability?: string;
+    name?: string | null;
+    dob?: string | null;
+    grade?: string | null;
+    school?: string | null;
+    disability?: string | null;
   };
   evaluation_status?: {
-    last_full_eval_date?: string;
-    initial_fie_date?: string;
+    last_full_eval_date?: string | null;
+    initial_fie_date?: string | null;
     eval_overdue?: boolean;
-    alert?: string;
+    alert?: string | null;
   };
   deliberations?: {
     meeting_info?: {
-      ard_date?: string;
-      purpose?: string;
+      ard_date?: string | null;
+      purpose?: string | null;
     };
     committee_members?: Array<{ name: string; role: string; present: string }>;
     parent_concerns?: string[];
@@ -87,6 +87,99 @@ type DeepDiveData = {
   map_assessment?: {
     reading?: { rit?: number; percentile?: number; staar_projection?: string };
     math?: { rit?: number; percentile?: number; staar_projection?: string };
+  };
+  attendance_analysis?: {
+    history?: Array<{ date: string; days_absent: number }>;
+    chronic_pattern?: boolean;
+    improving?: boolean;
+    housing_barriers?: boolean;
+  };
+  dyslexia_status?: {
+    receives_services?: boolean;
+    in_dyslexia_class?: boolean;
+    phonological_eval_exists?: boolean;
+    recommendation?: string | null;
+  };
+  attention_red_flags?: {
+    indicators_found?: Array<{
+      indicator: string;
+      document: string;
+      date: string | null;
+    }>;
+    evaluation_exists?: boolean;
+    recommendation?: string | null;
+  };
+  assessment_profile?: {
+    primary_disability?: string | null;
+    secondary_disability?: string | null;
+    tertiary_disability?: string | null;
+    assessment_pathway?: string | null;
+    staar_alt_2?: string | null;
+    staar_alt_2_summary?: string | null;
+    considered_for_staar_alt_2?: string | null;
+    telpas_type?: string | null;
+    telpas_alt?: string | null;
+    testing_accommodation_count?: number;
+    testing_accommodations?: string | null;
+    all_accommodation_count?: number;
+    all_accommodations?: string | null;
+  };
+  student_profile?: {
+    contact_info?: {
+      parent_first_name?: string;
+      parent_last_name?: string;
+      parent_cell?: string;
+      parent_email?: string;
+      relation?: string;
+      address?: string;
+      city?: string;
+      zip?: string;
+      student_household_note?: string;
+    };
+    current_year_courses?: Array<{
+      teacher?: string;
+      course_title?: string;
+      first_9wk?: string;
+      second_9wk?: string;
+      s1_avg?: string;
+      s2_avg?: string;
+      year_avg?: string;
+      year_attendance?: string;
+    }>;
+    prior_year_courses?: Array<{
+      teacher?: string;
+      course_title?: string;
+      first_9wk?: string;
+      second_9wk?: string;
+      s1_avg?: string;
+      s2_avg?: string;
+      year_avg?: string;
+      year_attendance?: string;
+    }>;
+    staar?: Array<{
+      date?: string;
+      subject?: string;
+      percentile?: string;
+      scaled_score?: string;
+      lexile?: string;
+      meets?: string;
+      masters?: string;
+    }>;
+    attendance?: {
+      by_course?: Array<{
+        course_title?: string;
+        term?: string;
+        days?: string;
+        absences?: string;
+        percent?: string;
+      }>;
+      year_to_date?: {
+        days_enrolled_lively?: string;
+        days_enrolled_lively_pct?: string;
+        days_in_class_lively?: string;
+        days_in_class_lively_pct?: string;
+      };
+    };
   };
 };
 
@@ -238,6 +331,7 @@ const IEP_SECTIONS: IEPSection[] = [
       { key: "district_available", label: "District Assessments Available?", type: "yesno" },
       { key: "can_participate", label: "Can Participate?", type: "yesno" },
       { key: "map_results", label: "MAP Results", type: "textarea" },
+      { key: "staar_history", label: "STAAR History (Summary)", type: "textarea" },
     ],
   },
   {
@@ -409,7 +503,7 @@ export default function IEPPrepPage() {
       
       // Student info
       if (data.student_info) {
-        newFormData.primary_disability = data.student_info.disability || "";
+        newFormData.primary_disability = (data.student_info.disability || data.assessment_profile?.primary_disability || "");
       }
       
       // Evaluation
@@ -492,8 +586,246 @@ export default function IEPPrepPage() {
           const m = data.map_assessment.math;
           mapResults.push(`Math: RIT ${m.rit}, ${m.percentile}%ile, STAAR: ${m.staar_projection}`);
         }
+        // Simple district assessment summary line
+        const projections: string[] = [];
+        if (data.map_assessment.reading?.staar_projection) {
+          projections.push(`Reading projection: ${data.map_assessment.reading.staar_projection}`);
+        }
+        if (data.map_assessment.math?.staar_projection) {
+          projections.push(`Math projection: ${data.map_assessment.math.staar_projection}`);
+        }
+        if (projections.length > 0) {
+          mapResults.push("", "Summary: " + projections.join("; "));
+        }
         newFormData.map_results = mapResults.join("\n");
       }
+
+      // Draft Disability Impact Statement from disability + MAP + attendance
+      const disability = data.student_info?.disability || data.assessment_profile?.primary_disability || "";
+      const grade = data.student_info?.grade || "";
+      const mapRead = data.map_assessment?.reading;
+      const mapMath = data.map_assessment?.math;
+      const att = data.attendance_analysis;
+      const impactParts: string[] = [];
+      if (disability) {
+        impactParts.push(`Student is identified with ${disability}, which impacts access to grade-level TEKS and the pace at which new skills are acquired.`);
+      }
+      if (grade) {
+        impactParts.push(`In the current grade (${grade}), the student requires specially designed instruction and accommodations to make progress in the general curriculum.`);
+      }
+      if (mapRead || mapMath) {
+        const mapLines: string[] = [];
+        if (mapRead) {
+          mapLines.push(`Reading performance (MAP): RIT ${mapRead.rit}, ${mapRead.percentile}%ile, STAAR projection ${mapRead.staar_projection}.`);
+        }
+        if (mapMath) {
+          mapLines.push(`Math performance (MAP): RIT ${mapMath.rit}, ${mapMath.percentile}%ile, STAAR projection ${mapMath.staar_projection}.`);
+        }
+        impactParts.push("Recent district assessment data indicates that without targeted support, the student is at risk of not meeting grade-level expectations:");
+        impactParts.push(mapLines.join(" "));
+      }
+      if (att && (att.chronic_pattern || att.housing_barriers)) {
+        const attBits: string[] = [];
+        if (att.chronic_pattern) {
+          attBits.push("a pattern of chronic absenteeism");
+        }
+        if (att.housing_barriers) {
+          attBits.push("documented housing/transportation barriers");
+        }
+        if (attBits.length > 0) {
+          impactParts.push(`Access to instruction is further impacted by ${attBits.join(" and ")}, which reduces time in class and opportunities for re-teaching.`);
+        }
+      }
+      if (impactParts.length > 0) {
+        newFormData.disability_impact = impactParts.join("\n\n");
+      }
+      
+      // Attendance analysis → Independent/health needs
+      if (data.attendance_analysis) {
+        const att = data.attendance_analysis;
+        const pieces: string[] = [];
+        if (att.history && att.history.length > 0) {
+          const totalAbsent = att.history.reduce((sum, h) => sum + (h.days_absent || 0), 0);
+          pieces.push(`Attendance: ${totalAbsent} days absent across documented periods.`);
+        }
+        if (att.chronic_pattern) {
+          pieces.push("Pattern suggests chronic absenteeism impacting access to instruction.");
+        }
+        if (att.improving) {
+          pieces.push("Recent data indicates attendance is improving compared to prior periods.");
+        }
+        if (att.housing_barriers) {
+          pieces.push("Housing/transportation barriers noted in records and should be considered in planning.");
+        }
+        if (pieces.length > 0) {
+          const existing = (newFormData.needs_independent as string) || "";
+          newFormData.needs_independent = [existing, pieces.join(" \n")].filter(Boolean).join("\n\n");
+        }
+      }
+      
+      // Dyslexia status → conditional dyslexia section
+      if (data.dyslexia_status) {
+        if (data.dyslexia_status.receives_services || data.dyslexia_status.in_dyslexia_class) {
+          newFormData.dyslexia_identified = "Yes";
+          if (data.dyslexia_status.recommendation) {
+            newFormData.dyslexia_services_code = data.dyslexia_status.recommendation;
+          }
+        }
+      }
+      
+      // Attention red flags → Social/emotional needs note
+      if (data.attention_red_flags && data.attention_red_flags.indicators_found && data.attention_red_flags.indicators_found.length > 0) {
+        const indicatorsText = data.attention_red_flags.indicators_found
+          .map(i => `• ${i.indicator} (${i.document}${i.date ? `, ${i.date}` : ""})`)
+          .join("\n");
+        const header = "Attention/Executive Functioning Indicators from record review:";
+        const existingSocial = (newFormData.needs_social as string) || "";
+        newFormData.needs_social = [existingSocial, `${header}\n${indicatorsText}`].filter(Boolean).join("\n\n");
+      }
+      
+      // Assessment profile → STAAR/district participation and accommodations
+      if (data.assessment_profile) {
+        const ap = data.assessment_profile;
+        if (ap.staar_alt_2 && ap.staar_alt_2.toString().toLowerCase().startsWith("y")) {
+          newFormData.staar_alt2 = "Yes";
+          newFormData.staar_participation = "No";
+        }
+        if (ap.testing_accommodations) {
+          const list = ap.testing_accommodations.split(/;|,|\n/).map(s => s.trim()).filter(Boolean);
+          if (list.length > 0) {
+            newFormData.testing_accommodations = list;
+            newFormData.staar_accommodations = list;
+          }
+        }
+        if (ap.all_accommodations) {
+          const list = ap.all_accommodations.split(/;|,|\n/).map(s => s.trim()).filter(Boolean);
+          if (list.length > 0) {
+            newFormData.classroom_accommodations = list;
+          }
+        }
+      }
+
+      // Student profile (SIS + STAAR + attendance via jacob.csv template)
+      if (data.student_profile) {
+        const sp = data.student_profile;
+
+        // Course grades summary for current and prior year → PLAAFP curriculum strengths
+        const formatCourseLine = (c: { course_title?: string; teacher?: string; first_9wk?: string; second_9wk?: string; s1_avg?: string; s2_avg?: string; year_avg?: string; year_attendance?: string; }) => {
+          const parts: string[] = [];
+          if (c.first_9wk || c.second_9wk || c.s1_avg || c.s2_avg || c.year_avg) {
+            const gradeBits: string[] = [];
+            if (c.first_9wk) gradeBits.push(`Q1 ${c.first_9wk}`);
+            if (c.second_9wk) gradeBits.push(`Q2 ${c.second_9wk}`);
+            if (c.s1_avg) gradeBits.push(`S1 Avg ${c.s1_avg}`);
+            if (c.s2_avg) gradeBits.push(`S2 Avg ${c.s2_avg}`);
+            if (c.year_avg) gradeBits.push(`YR Avg ${c.year_avg}`);
+            parts.push(gradeBits.join(", "));
+          }
+          if (c.year_attendance) {
+            parts.push(`Attendance ${c.year_attendance}`);
+          }
+          const details = parts.join("; ");
+          const label = c.course_title || "Course";
+          const teacher = c.teacher ? ` (${c.teacher})` : "";
+          return details ? `${label}${teacher}: ${details}` : "";
+        };
+
+        const currentCourses = sp.current_year_courses || [];
+        const priorCourses = sp.prior_year_courses || [];
+        const currentLines = currentCourses
+          .map(c => formatCourseLine(c))
+          .filter(line => line.length > 0);
+        const priorLines = priorCourses
+          .map(c => formatCourseLine(c))
+          .filter(line => line.length > 0);
+
+        const gradesBlocks: string[] = [];
+        if (currentLines.length > 0) {
+          gradesBlocks.push("Current Year Course Performance:\n" + currentLines.join("\n"));
+        }
+        if (priorLines.length > 0) {
+          gradesBlocks.push("Prior Year Course Performance:\n" + priorLines.join("\n"));
+        }
+        if (gradesBlocks.length > 0) {
+          const existingStrengths = (newFormData.strengths_curriculum as string) || "";
+          newFormData.strengths_curriculum = [existingStrengths, gradesBlocks.join("\n\n")].filter(Boolean).join("\n\n");
+        }
+
+        // STAAR history summary → District Assessment section
+        if (sp.staar && sp.staar.length > 0) {
+          const staarLines = sp.staar
+            .filter(s => s.date && s.subject)
+            .map(s => {
+              const perfBits: string[] = [];
+              if (s.meets) perfBits.push(`Meets: ${s.meets}`);
+              if (s.masters) perfBits.push(`Masters: ${s.masters}`);
+              const perf = perfBits.length > 0 ? ` (${perfBits.join(", ")})` : "";
+              const scaled = s.scaled_score ? `, Scaled ${s.scaled_score}` : "";
+              const pct = s.percentile ? `, %ile ${s.percentile}` : "";
+              const lex = s.lexile ? `, Lexile ${s.lexile}` : "";
+              return `${s.date} – ${s.subject}${scaled}${pct}${lex}${perf}`;
+            });
+          const staarSummary = [
+            "Recent STAAR Performance:",
+            ...staarLines,
+          ].join("\n");
+          const existingStaarHistory = (newFormData.staar_history as string) || "";
+          newFormData.staar_history = [existingStaarHistory, staarSummary].filter(Boolean).join("\n\n");
+        }
+
+        // Attendance summary from SIS → Independent functioning needs
+        if (sp.attendance?.year_to_date) {
+          const ytd = sp.attendance.year_to_date;
+          const pieces: string[] = [];
+          if (ytd.days_in_class_lively && ytd.days_enrolled_lively) {
+            pieces.push(
+              `Year-to-date attendance (Lively): in class ${ytd.days_in_class_lively} of ${ytd.days_enrolled_lively} days (${ytd.days_in_class_lively_pct || ""}).`
+            );
+          }
+          if (pieces.length > 0) {
+            const existingNeedsInd = (newFormData.needs_independent as string) || "";
+            newFormData.needs_independent = [existingNeedsInd, pieces.join(" ")].filter(Boolean).join("\n\n");
+          }
+        }
+
+        // Parent contact/household note → Student & Parent Input section (as starter text)
+        if (sp.contact_info) {
+          const ci = sp.contact_info;
+          const parentLabel = [ci.parent_first_name, ci.parent_last_name].filter(Boolean).join(" ");
+          const rel = ci.relation ? ` (${ci.relation})` : "";
+          const contactBits: string[] = [];
+          if (ci.parent_cell) contactBits.push(`Cell: ${ci.parent_cell}`);
+          if (ci.parent_email) contactBits.push(`Email: ${ci.parent_email}`);
+          if (ci.address) {
+            const addrLine = [ci.address, ci.city, ci.zip].filter(Boolean).join(", ");
+            if (addrLine) contactBits.push(`Address: ${addrLine}`);
+          }
+          const household = ci.student_household_note ? `Household: ${ci.student_household_note}` : "";
+          const lines: string[] = [];
+          if (parentLabel) {
+            lines.push(`Primary contact: ${parentLabel}${rel}`);
+          }
+          if (contactBits.length > 0) {
+            lines.push(contactBits.join("; "));
+          }
+          if (household) {
+            lines.push(household);
+          }
+          if (lines.length > 0) {
+            const existingParentInput = (newFormData.parent_input as string) || "";
+            newFormData.parent_input = [existingParentInput, lines.join("\n")].filter(Boolean).join("\n\n");
+          }
+        }
+      }
+      
+      // Data sources checked
+      newFormData.data_sources = [
+        "Current IEP",
+        "Previous IEPs",
+        "FIE/REED reports",
+        "Assessment Profile",
+        "MAP assessments",
+      ];
       
       // Default yes/no values
       newFormData.disability_impacts_curriculum = "Yes";
@@ -684,7 +1016,7 @@ export default function IEPPrepPage() {
               ? "Upload a Deep Dive to begin populating sections" 
               : filledCount === totalFields 
                 ? "✨ All systems go — ready for launch!" 
-                : `${Math.round((filledCount / totalFields) * 100)}% of IEP sections populated`}
+                : `${Math.round((filledCount / totalFields) * 100)}% of IEP fields have starter text. Review and edit as needed.`}
           </p>
         </div>
 

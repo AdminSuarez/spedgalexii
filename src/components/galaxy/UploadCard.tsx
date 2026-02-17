@@ -867,6 +867,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                   <div className="cardMeta text-white/60 text-xs">
                     Uploaded via {shared.files.some(f => f.source === 'deep-space') ? 'Deep Space' : 'another module'} 
                     {shared.studentId ? ` • Student ${shared.studentId}` : ''}
+                    <span className="ml-1 text-white/50">(Reset uploads to start fresh.)</span>
                   </div>
                 </div>
               </div>
@@ -886,9 +887,9 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
                   type="button"
                   onClick={() => void shared.clearAll()}
                   className="px-2 py-1.5 text-xs rounded-lg bg-red-500/20 text-red-200 border border-red-500/30 hover:bg-red-500/30 transition-colors"
-                  title="Clear shared files"
+                  title="Reset all shared uploads for this browser"
                 >
-                  ×
+                  Reset uploads
                 </button>
               </div>
             </div>
@@ -915,6 +916,19 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             <div className="cardTitle min-w-0 truncate text-white">Files</div>
             <div className="cardMeta shrink-0 text-white/70">
               {hasLocalFiles ? `${fileCount} selected` : useSharedMode && hasSharedFiles ? `${shared.fileCount} shared` : "Choose PDFs + CSV/XLSX"}
+              {hasFiles && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFiles(null);
+                    void shared.clearAll();
+                    setUseSharedMode(false);
+                  }}
+                  className="ml-3 inline-flex items-center gap-1 rounded-xl border border-white/15 bg-white/5 px-2 py-1 text-[11px] text-white/75 hover:bg-white/10"
+                >
+                  Reset uploads
+                </button>
+              )}
             </div>
           </div>
 

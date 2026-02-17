@@ -22,6 +22,7 @@ import {
   Search,
   Sparkles,
   CreditCard,
+  Image as ImageIcon,
 } from "lucide-react";
 
 type NavItem = {
@@ -123,7 +124,15 @@ const NAV: NavItem[] = [
     sub: "Goal banks, templates, checklists",
     icon: <BookOpen className="h-4 w-4" />,
     href: "/resources",
-    status: "coming",
+    status: "live",
+  },
+  {
+    key: "image-ocr",
+    label: "Image → Text",
+    sub: "Turn screenshots/photos into copyable text",
+    icon: <ImageIcon className="h-4 w-4" />,
+    href: "/image-ocr",
+    status: "live",
   },
   {
     key: "pricing",

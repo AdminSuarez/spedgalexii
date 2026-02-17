@@ -430,27 +430,34 @@ function pickPreferredXlsx(files: FoundFile[], sinceMs: number, selection?: RunS
   }
 
   // Accommodations module (default)
-  if (selection?.scope === "case_manager" && selection.caseManagerKey) {
-    const wanted = `required_audit_table__${selection.caseManagerKey}.xlsx`.toLowerCase();
-    const hit = xlsxFiles.find((f) => path.basename(f.relToOutput).toLowerCase() === wanted);
-    if (hit) return hit.relToOutput;
+  if (!selection?.module || selection.module === "accommodations") {
+    if (selection?.scope === "case_manager" && selection.caseManagerKey) {
+      const wanted = `required_audit_table__${selection.caseManagerKey}.xlsx`.toLowerCase();
+      const hit = xlsxFiles.find((f) => path.basename(f.relToOutput).toLowerCase() === wanted);
+      if (hit) return hit.relToOutput;
+    }
+
+    const priorityNames = [
+      "FINAL_STAAR_IEP_TestHound_Audit.xlsx",
+      "REQUIRED_AUDIT_TABLE__ALL_CASE_MANAGERS.xlsx",
+      "REQUIRED_AUDIT_TABLE.xlsx",
+      "Mismatch_Report.xlsx",
+      "Mismatch_DeepDive.xlsx",
+    ].map((s) => s.toLowerCase());
+
+    for (const p of priorityNames) {
+      const hit = xlsxFiles.find((f) => path.basename(f.relToOutput).toLowerCase() === p);
+      if (hit) return hit.relToOutput;
+    }
   }
 
-  const priorityNames = [
-    "FINAL_STAAR_IEP_TestHound_Audit.xlsx",
-    "REQUIRED_AUDIT_TABLE__ALL_CASE_MANAGERS.xlsx",
-    "REQUIRED_AUDIT_TABLE.xlsx",
-    "Mismatch_Report.xlsx",
-    "Mismatch_DeepDive.xlsx",
-  ].map((s) => s.toLowerCase());
-
-  for (const p of priorityNames) {
-    const hit = xlsxFiles.find((f) => path.basename(f.relToOutput).toLowerCase() === p);
-    if (hit) return hit.relToOutput;
-  }
-
+  // For non-accommodations modules, if we didn't find a
+  // module-specific workbook above, do NOT fall back to the
+  // accommodations audit file. Instead, signal "no best Excel"
+  // so the UI can tell the user that this module hasn't produced
+  // an Excel yet.
   xlsxFiles.sort((a, b) => b.mtimeMs - a.mtimeMs);
-  return xlsxFiles[0]?.relToOutput;
+  return selection?.module && selection.module !== "accommodations" ? undefined : xlsxFiles[0]?.relToOutput;
 }
 
 async function latestUploadBatchId(): Promise<string | null> {
