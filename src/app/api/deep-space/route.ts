@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Read the generated files
+    // Read the generated files from the temporary audit directory
     const jsonPath = path.join(auditDir, `DEEP_DIVE_${studentId}.json`);
     const mdPath = path.join(auditDir, `DEEP_DIVE_${studentId}_REPORT.md`);
 
@@ -83,6 +83,33 @@ export async function POST(req: NextRequest) {
       reportMarkdown = await readFile(mdPath, "utf-8");
     } catch (e) {
       console.error("Failed to read report markdown:", e);
+    }
+
+    // Persist Deep Dive artifacts to the main audit folder so
+    // other tools (IEP Prep, ARD packet builder) can reuse them
+    try {
+      if (analysisJson) {
+        const auditRoot = path.resolve(process.cwd(), "..");
+        const canonicalAudit = path.join(auditRoot, "audit");
+        await mkdir(canonicalAudit, { recursive: true });
+
+        const canonicalJsonPath = path.join(canonicalAudit, `DEEP_DIVE_${studentId}.json`);
+        await writeFile(
+          canonicalJsonPath,
+          JSON.stringify(analysisJson, null, 2),
+          "utf-8",
+        );
+
+        if (reportMarkdown) {
+          const canonicalMdPath = path.join(
+            canonicalAudit,
+            `DEEP_DIVE_${studentId}_REPORT.md`,
+          );
+          await writeFile(canonicalMdPath, reportMarkdown, "utf-8");
+        }
+      }
+    } catch (e) {
+      console.error("Failed to persist Deep Dive artifacts to audit/:", e);
     }
 
     // Cleanup temp files

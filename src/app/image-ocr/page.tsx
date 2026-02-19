@@ -152,7 +152,7 @@ export default function ImageOcrPage() {
             </button>
           </div>
 
-          <pre className="mt-4 max-h-[360px] overflow-auto whitespace-pre-wrap break-words rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white/85">
+          <pre className="mt-4 max-h-90 overflow-auto whitespace-pre-wrap wrap-break-word rounded-2xl border border-white/10 bg-black/30 p-3 text-sm text-white/85">
             {text || "Run OCR to see extracted text here."}
           </pre>
         </div>

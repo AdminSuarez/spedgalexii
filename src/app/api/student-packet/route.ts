@@ -49,28 +49,70 @@ export async function POST(req: Request): Promise<NextResponse> {
 
     const deepDivePath = path.join(auditDir, `DEEP_DIVE_${sid}.json`);
     if (!(await fileExists(deepDivePath))) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: `Deep Dive JSON not found for student ${sid}. Run Deep Dive/IEP Prep first.`,
-        },
-        { status: 400 },
-      );
+      const venvPython = path.join(AUDIT_ROOT, ".venv", "bin", "python");
+      const pythonCmd = (await fileExists(venvPython)) ? venvPython : "python3";
+
+      try {
+        await runPython(
+          pythonCmd,
+          [
+            path.join(AUDIT_ROOT, "scripts", "deep_dive_analyzer.py"),
+            "--student",
+            sid,
+          ],
+          AUDIT_ROOT,
+        );
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              `Deep Dive analysis failed for student ${sid}. Check analyzer logs. (${msg})`,
+          },
+          { status: 500 },
+        );
+      }
+
+      if (!(await fileExists(deepDivePath))) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: `Deep Dive JSON still not found for student ${sid} after running analyzer.`,
+          },
+          { status: 500 },
+        );
+      }
     }
 
     const iepsEntries = await fs.readdir(iepsDir).catch(() => [] as string[]);
-    const pptxName = iepsEntries.find((name) => name.toLowerCase().endsWith(".pptx"));
-    if (!pptxName) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "No PPTX template found in ieps/. Save your ARD template PPTX there.",
-        },
-        { status: 400 },
-      );
-    }
+    // Prefer the styled Galexii template if present, otherwise fall back to
+    // the first PPTX we find, then to the legacy output template.
+    const lower = iepsEntries.map((name) => name.toLowerCase());
+    const preferredName = "ard_template_galexii_blank.pptx";
+    const exactIdx = lower.indexOf(preferredName);
+    const chosenName =
+      exactIdx >= 0 ? iepsEntries[exactIdx] : iepsEntries.find((name) => name.toLowerCase().endsWith(".pptx"));
 
-    const templatePath = path.join(iepsDir, pptxName);
+    let templatePath: string;
+    if (chosenName) {
+      templatePath = path.join(iepsDir, chosenName);
+    } else {
+      // Fallback: use a template in output/ if available (e.g. ARD_Template_PowerPoint.pptx)
+      const defaultOutputTemplate = path.join(outputDir, "ARD_Template_PowerPoint.pptx");
+      if (await fileExists(defaultOutputTemplate)) {
+        templatePath = defaultOutputTemplate;
+      } else {
+        return NextResponse.json(
+          {
+            ok: false,
+            error:
+              "No PPTX template found. Save a template in ieps/ or place ARD_Template_PowerPoint.pptx in output/.",
+          },
+          { status: 400 },
+        );
+      }
+    }
     const outputPpt = path.join(outputDir, `ARD_Summary_${sid}.pptx`);
 
     const venvPython = path.join(AUDIT_ROOT, ".venv", "bin", "python");

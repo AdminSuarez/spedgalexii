@@ -93,23 +93,23 @@ function PricingCard({ plan }: { plan: PlanTier }) {
     >
 
       {plan.popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold uppercase tracking-wide shadow-lg z-10">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-linear-to-r from-amber-500 to-orange-500 text-white text-xs font-bold uppercase tracking-wide shadow-lg z-10">
           Most Popular
         </div>
       )}
 
-      <div className="uiLabel text-white/70 relative z-[1]">{plan.interval === "month" ? "Monthly" : "Annual"}</div>
+      <div className="uiLabel text-white/70 relative z-1">{plan.interval === "month" ? "Monthly" : "Annual"}</div>
       
-      <h3 className="cardTitle mt-2 text-white relative z-[1]">{plan.name}</h3>
+      <h3 className="cardTitle mt-2 text-white relative z-1">{plan.name}</h3>
       
-      <p className="cardBody mt-2 text-white/70 relative z-[1]">{plan.description}</p>
+      <p className="cardBody mt-2 text-white/70 relative z-1">{plan.description}</p>
 
-      <div className="mt-4 flex items-baseline gap-1 relative z-[1]">
+      <div className="mt-4 flex items-baseline gap-1 relative z-1">
         <span className="text-4xl font-bold text-white">${plan.price}</span>
         <span className="text-white/60">/{plan.interval}</span>
       </div>
 
-      <ul className="mt-6 space-y-3 flex-1 relative z-[1]">
+      <ul className="mt-6 space-y-3 flex-1 relative z-1">
         {plan.features.map((feature, idx) => (
           <li key={idx} className="flex items-start gap-2 text-white/80">
             <Check className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
@@ -120,7 +120,7 @@ function PricingCard({ plan }: { plan: PlanTier }) {
 
       <button
         onClick={handleSubscribe}
-        className={`mt-6 w-full ctaBtn relative z-[1] ${plan.popular ? "ctaBtn--solar" : "ctaBtn--violet"}`}
+        className={`mt-6 w-full ctaBtn relative z-1 ${plan.popular ? "ctaBtn--solar" : "ctaBtn--violet"}`}
       >
         Get Started
       </button>
@@ -160,7 +160,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Cards Section */}
-        <div className="popCard popCard--violet rounded-3xl p-6 md:p-8 max-w-5xl mx-auto relative z-[1]">
+        <div className="popCard popCard--violet rounded-3xl p-6 md:p-8 max-w-5xl mx-auto relative z-1">
           <div className="grid gap-6 md:grid-cols-3">
             {PLANS.map((plan) => (
               <PricingCard key={plan.id} plan={plan} />
@@ -169,7 +169,7 @@ export default function PricingPage() {
         </div>
 
         {/* Time Savings Banner */}
-        <GXCard className="mt-8 rounded-3xl popCard popCard--emerald max-w-3xl mx-auto text-center relative z-[1]">
+        <GXCard className="mt-8 rounded-3xl popCard popCard--emerald max-w-3xl mx-auto text-center relative z-1">
           <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
             <div>
               <div className="text-5xl font-bold text-emerald-300">4-6 hrs</div>
@@ -187,7 +187,7 @@ export default function PricingPage() {
         </GXCard>
 
         {/* FAQ / Info Section */}
-        <GXCard className="mt-10 rounded-3xl popCard popCard--cyan max-w-3xl mx-auto relative z-[1]">
+        <GXCard className="mt-10 rounded-3xl popCard popCard--cyan max-w-3xl mx-auto relative z-1">
           <div className="uiLabel text-white/70">Questions?</div>
           <h2 className="moduleTitle mt-2">Frequently Asked</h2>
 

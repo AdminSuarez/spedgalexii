@@ -315,8 +315,8 @@ function GoalBankBrowser({
         className="flex items-center justify-between cursor-pointer"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500/30 to-cyan-500/30 border border-white/15 grid place-items-center">
+          <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-violet-500/30 to-cyan-500/30 border border-white/15 grid place-items-center">
             <Sparkles className="h-5 w-5 text-cyan-300" />
           </div>
           <div>
@@ -359,7 +359,7 @@ function GoalBankBrowser({
                   className={cx(
                     "relative px-3 py-1.5 rounded-full text-xs font-semibold transition-all border",
                     isActive
-                      ? "bg-gradient-to-r from-cyan-500/25 to-violet-500/25 border-cyan-400/40 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)]"
+                      ? "bg-linear-to-r from-cyan-500/25 to-violet-500/25 border-cyan-400/40 text-cyan-100 shadow-[0_0_16px_rgba(34,211,238,0.3)]"
                       : "bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white"
                   )}
                 >
@@ -368,7 +368,7 @@ function GoalBankBrowser({
 
                   {/* Active glow bar */}
                   {isActive && (
-                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-[2px] rounded-full bg-cyan-400 shadow-[0_0_8px_2px_rgba(34,211,238,0.5)]" />
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[60%] h-0.5 rounded-full bg-cyan-400 shadow-[0_0_8px_2px_rgba(34,211,238,0.5)]" />
                   )}
                 </button>
               );
@@ -396,7 +396,7 @@ function GoalBankBrowser({
           </div>
 
           {/* Goals List */}
-          <div className="space-y-2 max-h-[320px] overflow-y-auto scrollCosmic pr-2">
+          <div className="space-y-2 max-h-80 overflow-y-auto scrollCosmic pr-2">
             {categoryGoals.length === 0 ? (
               <div className="text-center py-8 text-white/50">
                 {searchQuery ? `No goals match "${searchQuery}"` : "No goals in this category"}
@@ -573,8 +573,8 @@ function GoalsPageInner() {
             <div className="mt-4 space-y-3">
               <div>
                 <div className="uiLabel text-white/70">Goal text</div>
-                <textarea
-                  className="mt-2 w-full min-h-[160px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  <textarea
+                  className="mt-2 w-full min-h-40 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={goalText}
                   onChange={(e) => setGoalText(e.target.value)}
                   placeholder="Paste a measurable annual goal here…"

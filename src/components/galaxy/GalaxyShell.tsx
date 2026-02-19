@@ -127,6 +127,14 @@ const NAV: NavItem[] = [
     status: "live",
   },
   {
+    key: "packets",
+    label: "ARD Packets",
+    sub: "Build PPT + packet by student ID",
+    icon: <FileText className="h-4 w-4" />,
+    href: "/packets",
+    status: "live",
+  },
+  {
     key: "image-ocr",
     label: "Image → Text",
     sub: "Turn screenshots/photos into copyable text",
@@ -362,6 +370,51 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const shared = useSharedFiles();
 
+  // User-adjustable sidebar width (desktop only), persisted per browser.
+  const [sidebarWidth, setSidebarWidth] = React.useState<number>(520);
+  const dragActive = React.useRef(false);
+
+  React.useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("galexii-sidebar-width");
+      if (stored) {
+        const n = parseInt(stored, 10);
+        if (!Number.isNaN(n) && n >= 360 && n <= 800) {
+          setSidebarWidth(n);
+        }
+      }
+    } catch {
+      // ignore localStorage errors (e.g., SSR or private mode)
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      if (!dragActive.current) return;
+      const min = 360;
+      const max = 800;
+      // Sidebar width is roughly the distance from the left edge to the drag handle.
+      const next = Math.min(max, Math.max(min, e.clientX - 24));
+      setSidebarWidth(next);
+      try {
+        window.localStorage.setItem("galexii-sidebar-width", String(next));
+      } catch {
+        // ignore
+      }
+    };
+
+    const handleUp = () => {
+      dragActive.current = false;
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, []);
+
   // Modules that support shared files
   const SHARED_FILE_MODULES = new Set([
     "/accommodations", "/goals", "/plaafp", "/services", "/compliance", "/assessments",
@@ -372,8 +425,11 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
       <MusicSidebar />
 
       <div className="relative mx-auto flex h-full min-h-0 w-full gap-6 px-3 py-4 md:px-6 md:py-6">
-        {/* ✅ Wider sidebar so headings are readable */}
-        <aside className="hidden shrink-0 md:block md:w-[440px] lg:w-[500px] xl:w-[560px] min-h-0">
+        {/* ✅ Sidebar with adjustable width on desktop */}
+        <aside
+          className="hidden shrink-0 md:block min-h-0"
+          style={{ width: `${sidebarWidth}px` }}
+        >
           <div className="sticky top-6">
             <div className="panel popCard popCard--violet overflow-hidden relative">
               {/* Stars in the sidebar gutter */}
@@ -561,6 +617,15 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </aside>
+
+        {/* Drag handle to resize sidebar vs main content (desktop only) */}
+        <div
+          className="hidden md:block h-full w-[6px] cursor-col-resize rounded-full bg-white/5 hover:bg-cyan-400/60 transition-colors"
+          onMouseDown={() => {
+            dragActive.current = true;
+          }}
+          aria-hidden="true"
+        />
 
         <main className="min-w-0 flex-1 min-h-0 flex flex-col">
           <div className="scrollCosmic flex-1 min-h-0 overflow-y-auto pr-1 md:pr-2">

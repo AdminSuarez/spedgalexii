@@ -35,7 +35,7 @@ export default function ContactPage() {
             Have questions, feedback, or need technical support? We'd love to hear from you!
           </p>
           
-          <div className="bg-gradient-to-r from-fuchsia-500/20 to-violet-500/20 rounded-xl p-6 border border-white/10">
+          <div className="bg-linear-to-r from-fuchsia-500/20 to-violet-500/20 rounded-xl p-6 border border-white/10">
             <div className="text-center">
               <p className="text-white/60 text-sm uppercase tracking-wider mb-2">Email Us</p>
               <a 

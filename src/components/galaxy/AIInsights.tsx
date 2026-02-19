@@ -52,35 +52,38 @@ const GRADE_CONFIG: Record<
   string,
   { color: string; bg: string; border: string; emoji: string }
 > = {
-  A: { color: "text-emerald-300", bg: "bg-emerald-500/15", border: "border-emerald-500/30", emoji: "🌟" },
-  B: { color: "text-cyan-300", bg: "bg-cyan-500/15", border: "border-cyan-500/30", emoji: "✨" },
-  C: { color: "text-amber-300", bg: "bg-amber-500/15", border: "border-amber-500/30", emoji: "⚠️" },
-  D: { color: "text-orange-300", bg: "bg-orange-500/15", border: "border-orange-500/30", emoji: "🔶" },
-  F: { color: "text-red-300", bg: "bg-red-500/15", border: "border-red-500/30", emoji: "🚨" },
+  // Use high-opacity, dark-tinted backgrounds so stars do not bleed
+  // through the grade card while still conveying color.
+  A: { color: "text-emerald-300", bg: "bg-emerald-950/90", border: "border-emerald-500/50", emoji: "🌟" },
+  B: { color: "text-cyan-300", bg: "bg-cyan-950/90", border: "border-cyan-500/50", emoji: "✨" },
+  C: { color: "text-amber-300", bg: "bg-amber-950/90", border: "border-amber-500/50", emoji: "⚠️" },
+  D: { color: "text-orange-300", bg: "bg-orange-950/90", border: "border-orange-500/50", emoji: "🔶" },
+  F: { color: "text-red-300", bg: "bg-red-950/90", border: "border-red-500/50", emoji: "🚨" },
 };
 
 const SEVERITY_CONFIG: Record<
   string,
   { color: string; bg: string; icon: React.ReactNode }
 > = {
+  // High-opacity concern cards so text stays readable over the galaxy theme.
   critical: {
     color: "text-red-300",
-    bg: "bg-red-500/10 border-red-500/20",
+    bg: "bg-red-950/90 border-red-500/50",
     icon: <AlertTriangle className="h-4 w-4 text-red-400" />,
   },
   high: {
     color: "text-orange-300",
-    bg: "bg-orange-500/10 border-orange-500/20",
+    bg: "bg-orange-950/90 border-orange-500/50",
     icon: <AlertTriangle className="h-4 w-4 text-orange-400" />,
   },
   medium: {
     color: "text-amber-300",
-    bg: "bg-amber-500/10 border-amber-500/20",
+    bg: "bg-amber-950/90 border-amber-500/50",
     icon: <Info className="h-4 w-4 text-amber-400" />,
   },
   low: {
     color: "text-blue-300",
-    bg: "bg-blue-500/10 border-blue-500/20",
+    bg: "bg-blue-950/90 border-blue-500/50",
     icon: <Info className="h-4 w-4 text-blue-400" />,
   },
 };
@@ -117,10 +120,10 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border border-white/[0.06] rounded-xl overflow-hidden">
+    <div className="border border-white/15 rounded-xl overflow-hidden bg-slate-950/95 backdrop-blur-sm">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.05] transition text-left"
+        className="w-full flex items-center gap-2 px-4 py-3 bg-slate-950/95 hover:bg-slate-900/95 transition text-left"
       >
         {icon}
         <span className="flex-1 font-semibold text-sm text-white/90">{title}</span>
@@ -131,7 +134,7 @@ function CollapsibleSection({
           <ChevronDown className="h-4 w-4 text-white/40" />
         )}
       </button>
-      {open && <div className="px-4 py-3 space-y-3">{children}</div>}
+      {open && <div className="px-4 py-3 space-y-3 bg-slate-950/98">{children}</div>}
     </div>
   );
 }
@@ -222,7 +225,7 @@ export function AIInsights({
         <button
           onClick={runAnalysis}
           className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl
-            bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400
+            bg-linear-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400
             text-white font-semibold text-sm shadow-lg shadow-violet-500/20
             hover:shadow-violet-500/40 transition-all duration-200"
         >
@@ -267,7 +270,7 @@ export function AIInsights({
           <Sparkles className="h-5 w-5 text-violet-300" />
           <h3 className="text-lg font-bold text-white/95">Galexii AI Insights</h3>
         </div>
-        <div className="flex items-center gap-1 bg-white/[0.04] rounded-lg p-0.5">
+        <div className="flex items-center gap-1 bg-white/4 rounded-lg p-0.5">
           <button
             onClick={() => setActiveTab("insights")}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
@@ -323,13 +326,13 @@ export function AIInsights({
       {activeTab === "insights" && (
         <div className="space-y-4">
           {/* Grade Card */}
-          <div className={`${grade.bg} border ${grade.border} rounded-2xl p-5 flex items-center gap-4`}>
+          <div className={`${grade.bg} border ${grade.border} rounded-2xl p-5 flex items-center gap-4 shadow-[0_0_22px_rgba(15,23,42,0.9)]`}>
             <div className={`text-5xl font-black ${grade.color}`}>
               {grade.emoji} {result.overallGrade}
             </div>
             <div className="flex-1">
               <p className={`font-semibold ${grade.color}`}>Overall IEP Grade</p>
-              <p className="text-sm text-white/60 mt-1">{result.gradeSummary}</p>
+              <p className="text-sm text-white/95 mt-1">{result.gradeSummary}</p>
             </div>
             <button
               onClick={runAnalysis}
@@ -354,7 +357,7 @@ export function AIInsights({
             >
               <ul className="space-y-2">
                 {result.strengths.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-white/75">
+                  <li key={i} className="flex items-start gap-2 text-sm text-white/95">
                     <Star className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
                     {s}
                   </li>
@@ -394,12 +397,12 @@ export function AIInsights({
                           <span className="text-xs text-white/40">·</span>
                           <span className="text-xs text-white/60">{c.area}</span>
                         </div>
-                        <p className="text-sm text-white/80">{c.finding}</p>
-                        <div className="bg-white/[0.04] rounded-lg p-2">
-                          <p className="text-xs text-white/50 font-medium mb-1">
+                        <p className="text-sm text-white">{c.finding}</p>
+                        <div className="bg-slate-900/95 rounded-lg p-2 border border-white/10">
+                          <p className="text-xs text-white/80 font-medium mb-1">
                             💡 Recommendation
                           </p>
-                          <p className="text-sm text-white/75">{c.recommendation}</p>
+                          <p className="text-sm text-white/95">{c.recommendation}</p>
                         </div>
                         {c.legalBasis && (
                           <p className="text-[11px] text-violet-300/70">
@@ -492,7 +495,7 @@ export function AIInsights({
                 {result.parentQuestions.map((q, i) => (
                   <div
                     key={i}
-                    className="flex items-start justify-between gap-2 bg-white/[0.03] rounded-lg p-2.5"
+                    className="flex items-start justify-between gap-2 bg-white/3 rounded-lg p-2.5"
                   >
                     <p className="text-sm text-white/80 flex-1">
                       <span className="text-violet-400 font-bold mr-1.5">{i + 1}.</span>
@@ -521,7 +524,7 @@ export function AIInsights({
                 {result.nextSteps
                   .sort((a, b) => a.priority - b.priority)
                   .map((step, i) => (
-                    <div key={i} className="border border-white/[0.06] rounded-xl p-3 space-y-2">
+                    <div key={i} className="border border-white/6 rounded-xl p-3 space-y-2">
                       <div className="flex items-center gap-2">
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
                           {step.priority}
@@ -535,7 +538,7 @@ export function AIInsights({
                       </p>
                       {step.template && (
                         <div className="pl-8">
-                          <div className="bg-white/[0.04] rounded-lg p-3 relative">
+                          <div className="bg-white/4 rounded-lg p-3 relative">
                             <div className="absolute top-2 right-2">
                               <CopyButton text={step.template} />
                             </div>

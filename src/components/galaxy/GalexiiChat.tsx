@@ -183,7 +183,7 @@ export function GalexiiChat({
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-20 right-6 z-50 flex items-center gap-2 rounded-full
-          bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-3 
+          bg-linear-to-r from-violet-600 to-cyan-500 px-4 py-3 
           text-white font-semibold text-sm shadow-lg shadow-violet-500/30
           hover:shadow-violet-500/50 hover:scale-105 transition-all duration-200
           ring-2 ring-white/10"
@@ -213,7 +213,7 @@ export function GalexiiChat({
         shadow-2xl shadow-violet-900/40 transition-all duration-300`}
     >
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-900/80 to-cyan-900/40 border-b border-white/10">
+      <div className="flex items-center justify-between px-4 py-3 bg-linear-to-r from-violet-900/80 to-cyan-900/40 border-b border-white/10">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-cyan-300" />
           <span className="font-bold text-white text-sm tracking-wide">
@@ -319,7 +319,7 @@ export function GalexiiChat({
               className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                 msg.role === "user"
                   ? "bg-violet-600/40 text-white/95 rounded-br-md"
-                  : "bg-white/[0.06] text-white/85 rounded-bl-md border border-white/[0.06]"
+                  : "bg-white/6 text-white/85 rounded-bl-md border border-white/6"
               }`}
             >
               {msg.role === "assistant" ? (
@@ -349,8 +349,8 @@ export function GalexiiChat({
       </div>
 
       {/* ── Input ── */}
-      <div className="px-3 pb-3 pt-2 border-t border-white/[0.06]">
-        <div className="flex items-end gap-2 bg-white/[0.04] rounded-xl border border-white/[0.08] px-3 py-2 focus-within:border-violet-500/40 transition">
+      <div className="px-3 pb-3 pt-2 border-t border-white/6">
+        <div className="flex items-end gap-2 bg-white/4 rounded-xl border border-white/8 px-3 py-2 focus-within:border-violet-500/40 transition">
           <textarea
             ref={inputRef}
             value={input}
@@ -364,7 +364,7 @@ export function GalexiiChat({
             disabled={aiConfigured === false}
             rows={1}
             className="flex-1 resize-none bg-transparent text-sm text-white/90 placeholder:text-white/30 
-              outline-none disabled:opacity-40 max-h-[100px] min-h-[24px]"
+              outline-none disabled:opacity-40 max-h-25 min-h-6"
             style={{
               height: "auto",
               overflow: "hidden",

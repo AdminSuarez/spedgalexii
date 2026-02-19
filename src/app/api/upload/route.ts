@@ -233,7 +233,16 @@ export async function POST(req: Request) {
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ ok: false, error: message || "Upload failed." }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          message && message.trim().length > 0
+            ? message
+            : "Upload failed on the server. Try again, and if it keeps happening, share the latest run log or console output with your SpEdGalexii admin.",
+      },
+      { status: 500 },
+    );
   }
 }
 

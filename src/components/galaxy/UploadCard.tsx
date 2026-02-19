@@ -17,8 +17,9 @@ import {
   FolderOpen,
 } from "lucide-react";
 import { useSharedFiles } from "@/lib/SharedFileContext";
+import { PreflightChecklist } from "./PreflightChecklist";
 
-type Scope = "all" | "case_manager";
+export type Scope = "all" | "case_manager";
 type ArtifactFormat = "xlsx" | "pdf" | "gsheet" | "gform";
 
 export type GalexiiModule = "accommodations" | "goals" | "plaafp" | "services" | "compliance" | "assessments";
@@ -211,8 +212,10 @@ function moduleCopy(module: GalexiiModule) {
     default:
       return {
         title: "Upload + Run Accommodation Galexii",
-        subtitle: "Upload a combo of: IEP PDFs, roster.csv, id_crosswalk.csv, testhound_export.xlsx/csv.",
-        tip: "Tip: In Case Manager scope, your Excel export should only include that case manager’s students.",
+        subtitle:
+          "Upload a combo of: IEP PDFs, roster.csv, id_crosswalk.csv, testhound_export.xlsx/csv. Use 'Limit to one case manager' below to run just your caseload.",
+        tip:
+          "Tip: In Case Manager scope, your Excel export should only include that case manager’s students. If a caseload accommodations file like Suarez_CaseLoad_Student_Accommodations_Full.txt is present in input/_CANONICAL, it will be used for that case manager.",
         plannedExcelAll: "REQUIRED_AUDIT_TABLE__ALL_CASE_MANAGERS.xlsx",
         plannedExcelCM: "REQUIRED_AUDIT_TABLE__<CASE_MANAGER>.xlsx",
       };
@@ -525,6 +528,29 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
     return list[0];
   }, [manifest, exportXlsxList, scope, resolvedCaseManagerKey, COPY.plannedExcelAll]);
 
+  const lastRunSummary = useMemo(() => {
+    if (!lastRun) return null;
+
+    let scopeLabel = lastRun.scope === "case_manager" ? "Case manager" : "Admin";
+    if (lastRun.scope === "case_manager" && lastRun.caseManagerKey) {
+      const prettyName = lastRun.caseManagerKey.replaceAll("_", " ");
+      scopeLabel = `Case manager – ${prettyName}`;
+    }
+
+    let when = "just now";
+    if (lastRun.savedAt) {
+      const d = new Date(lastRun.savedAt);
+      if (!Number.isNaN(d.getTime())) {
+        when = d.toLocaleString();
+      }
+    }
+
+    return {
+      scopeLabel,
+      when,
+    };
+  }, [lastRun]);
+
   async function onReveal(format: ArtifactFormat, file?: string) {
     if (!runId) {
       setMsg("No run yet. Start a run to reveal outputs.");
@@ -672,6 +698,24 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
           </div>
 
           <p className="cardBody mt-2 max-w-2xl text-white/80">{COPY.subtitle}</p>
+
+          <PreflightChecklist
+            module={module}
+            scope={scope}
+            caseManagerName={scope === "case_manager" ? resolvedCaseManagerName || undefined : undefined}
+          />
+
+          {lastRunSummary ? (
+            <div className="mt-2 inline-flex items-center gap-2 rounded-2xl border border-white/12 bg-black/30 px-2.5 py-1 text-[11px] text-white/75">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 shadow-[0_0_10px_rgba(16,185,129,0.45)]" />
+              <span className="font-semibold">Last run:</span>
+              <span className="truncate">{lastRunSummary.scopeLabel}</span>
+              <span className="opacity-80">•</span>
+              <span className="truncate" title={lastRunSummary.when}>
+                {lastRunSummary.when}
+              </span>
+            </div>
+          ) : null}
 
           {/* Status chips */}
           <div className="mt-3 flex flex-wrap items-center gap-2 min-w-0">
@@ -950,8 +994,8 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             <div className="mt-3 max-h-28 overflow-auto rounded-2xl border border-white/10 bg-black/20 p-3 text-white/75 min-w-0">
               <div className="cardMeta mb-2 text-white/75">Selected</div>
               <ul className="cardBody space-y-1 text-white/80 min-w-0">
-                {fileNames.map((n) => (
-                  <li key={n} className="truncate font-mono min-w-0" title={n}>
+                {fileNames.map((n, idx) => (
+                  <li key={`${n}__${idx}`} className="truncate font-mono min-w-0" title={n}>
                     {n}
                   </li>
                 ))}
@@ -1028,7 +1072,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             </div>
           </div>
 
-          <pre className="max-h-[340px] overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap break-words">
+          <pre className="max-h-80 overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap break-words">
             {log || "No logs yet."}
           </pre>
 

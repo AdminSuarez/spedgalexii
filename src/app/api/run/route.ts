@@ -914,7 +914,14 @@ export async function POST(req: Request): Promise<NextResponse> {
       await appendLog(`\n[STEP] ${lastStep}\n`);
 
       await new Promise<void>((resolve, reject) => {
-        const p = spawn(pythonCmd, ["-u", ...spawnArgs], { cwd: AUDIT_ROOT });
+        const env = {
+          ...process.env,
+          GALEXII_SCOPE: sel.scope,
+          GALEXII_CASE_MANAGER_NAME: sel.caseManagerName ?? "",
+          GALEXII_CASE_MANAGER_KEY: sel.caseManagerKey ?? "",
+        };
+
+        const p = spawn(pythonCmd, ["-u", ...spawnArgs], { cwd: AUDIT_ROOT, env });
 
         p.stdout.on("data", (d) => void appendLog!(d));
         p.stderr.on("data", (d) => void appendLog!(d));
@@ -1005,7 +1012,10 @@ export async function POST(req: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: true, runId: id });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
-    await stampError(msg || "Run failed.");
+    await stampError(
+      msg ||
+        "Run failed unexpectedly. Check the latest run log for details, then share that log with your SpEdGalexii admin if you need help.",
+    );
 
     const finishedAtIso = new Date().toISOString();
     const fail: RunManifest = {
@@ -1029,7 +1039,17 @@ export async function POST(req: Request): Promise<NextResponse> {
         }
       : undefined;
 
-    return NextResponse.json({ ok: false, error: msg || "Run failed.", details: devDetails }, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          msg && msg.trim().length > 0
+            ? msg
+            : "Run failed unexpectedly. Open the run log in Galaxy for more detail, or share it with your SpEdGalexii admin.",
+        details: devDetails,
+      },
+      { status: 500 },
+    );
   } finally {
     if (lockAcquired) await releaseLock();
   }

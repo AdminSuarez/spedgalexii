@@ -1,8 +1,118 @@
 # SpEdGalexii Deployment & Stripe Setup Guide
 
-## 🚀 Deployment to SpEdGalexii.com
+This file covers two tracks:
 
-### Option 1: Vercel (Recommended for Next.js)
+- **District self-host (recommended for pilots)** – simple Node + Python on the same box.
+- **SpEdGalexii.com SaaS + Stripe** – optional if/when you run a public SaaS.
+
+---
+
+## 🚀 Recommended: District self-host (Node + Python on one box)
+
+### 1. Provision a server
+
+- A small Linux VM (e.g., 2 vCPU, 4 GB RAM) or comparable Mac/Windows machine.
+- Ensure you can SSH/RDP in and install software.
+
+### 2. Install dependencies
+
+On the server:
+
+```bash
+sudo apt-get update            # or your OS equivalent
+sudo apt-get install -y nodejs npm python3 python3-venv
+```
+
+Clone the repo:
+
+```bash
+cd /opt
+git clone <your-git-url> spedgalexii
+cd spedgalexii/AccommodationsAudit/galaxy-iep-accommodations
+```
+
+### 3. Set up the Python pipeline
+
+From `AccommodationsAudit/` (one level up from the Next.js app):
+
+```bash
+cd ..
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt   # or your existing setup steps
+```
+
+Make sure these folders exist and are writable by the app user:
+
+- `input/_CANONICAL/`
+- `input/_REFERENCE/`
+- `ieps/`
+- `output/`
+- `audit/`
+
+### 4. Configure environment variables
+
+In `galaxy-iep-accommodations/.env.local` (or your process manager/env config), set at minimum:
+
+```env
+GALEXII_AUTH_ENABLED=true
+GALEXII_AUTH_SECRET=change-me-to-a-long-random-string
+GALEXII_ADMIN_PASSWORD=some-strong-admin-password
+GALEXII_CASE_MANAGER_PASSWORD=some-strong-case-manager-password
+
+# Optional, for AI-powered features
+OPENAI_API_KEY=sk-...
+```
+
+If you expose the app on a public URL, also set:
+
+```env
+NEXT_PUBLIC_APP_URL=https://your-district-domain
+```
+
+### 5. Build and run the Next.js app
+
+From `galaxy-iep-accommodations/`:
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+By default this listens on port `3000`. For production you will typically:
+
+- Run it under a process manager (pm2, systemd, supervisord).
+- Put Nginx/Apache/your load balancer in front as a reverse proxy.
+
+### 6. Verify with smoke tests
+
+With the app running on the server, from `galaxy-iep-accommodations/` run:
+
+```bash
+SMOKE_BASE_URL="https://your-district-domain" npm run smoke
+```
+
+If it passes, the core API and preflight are reachable.
+
+Then, sign in at `https://your-district-domain/login` with the admin or case-manager password and run one module end‑to‑end using your test exports.
+
+### 7. Backups & data
+
+At a minimum, set up regular backups (or snapshots) for:
+
+- `output/` – generated summaries and narratives.
+- Any config files you customize (`.env.local`, runbook variants, etc.).
+
+You can re‑derive many outputs from canonical inputs, so prioritise backups of any folder that is hard to regenerate in your environment.
+
+---
+
+## 🚀 Deployment to SpEdGalexii.com (SaaS + Stripe)
+
+> Use this path if you are running a public SaaS version with Stripe billing. District self‑hosted pilots can ignore this section.
+
+### Option 1: Vercel (Recommended for Next.js SaaS)
 
 1. **Push to GitHub** (if not already):
    ```bash

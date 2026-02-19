@@ -1065,6 +1065,7 @@ export default function IEPPrepPage() {
               >
                 {/* Section Header */}
                 <button
+                  type="button"
                   onClick={() => toggleSection(section.id)}
                   className="w-full p-4 flex items-center justify-between text-left"
                 >
@@ -1080,12 +1081,22 @@ export default function IEPPrepPage() {
                       <Check size={16} className="text-green-400" />
                     )}
                   </div>
-                  <button
+                  <div
                     onClick={(e) => {
                       e.stopPropagation();
                       copySection(section);
                     }}
-                    className="px-3 py-1 text-xs bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center gap-1"
+                    className="px-3 py-1 text-xs bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors flex items-center gap-1 cursor-pointer"
+                    role="button"
+                    aria-label={`Copy ${section.name} section`}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        copySection(section);
+                      }
+                    }}
                   >
                     {copiedSection === section.id ? (
                       <>
@@ -1098,7 +1109,7 @@ export default function IEPPrepPage() {
                         <span className="text-white/60">Copy</span>
                       </>
                     )}
-                  </button>
+                  </div>
                 </button>
                 
                 {/* Section Fields */}
@@ -1205,11 +1216,11 @@ export default function IEPPrepPage() {
               return (
                 <div 
                   key={section.id}
-                  className="rounded-2xl border border-yellow-500/20 bg-yellow-500/5"
+                  className="rounded-2xl border border-yellow-500/40 bg-slate-950/95 backdrop-blur-sm shadow-lg shadow-yellow-500/20"
                 >
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="w-full p-4 flex items-center justify-between text-left"
+                    className="w-full p-4 flex items-center justify-between text-left bg-slate-950/95 hover:bg-slate-900/95 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {isExpanded ? (
@@ -1271,23 +1282,23 @@ export default function IEPPrepPage() {
         </div>
 
         {/* Instructions */}
-        <div className="mt-8 p-6 rounded-2xl border border-white/10 bg-black/30">
-          <h3 className="text-lg font-semibold text-white mb-4">How to Use IEP Prep Galexii</h3>
-          <ol className="space-y-3 text-white/70">
+        <div className="mt-8 p-6 rounded-2xl border border-white/15 bg-slate-950/95 backdrop-blur-sm shadow-lg shadow-purple-500/20">
+          <h3 className="text-lg font-semibold text-white/95 mb-4">How to Use IEP Prep Galexii</h3>
+          <ol className="space-y-3 text-white/75">
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">1</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">1</span>
               <span>Run Deep Dive analysis on the student (generates DEEP_DIVE_*.json)</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">2</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">2</span>
               <span>Upload the Deep Dive JSON file above</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">3</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">3</span>
               <span>Review auto-populated fields and fill in any missing data</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">4</span>
+              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">4</span>
               <span>Copy sections individually or all at once → paste into Frontline/eSped</span>
             </li>
           </ol>

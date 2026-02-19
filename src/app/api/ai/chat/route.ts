@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { streamChat, isAIConfigured, type ChatMessage } from "@/lib/ai";
+import { streamChat, isAIConfigured, type ChatMessage, type ChatMode } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const messages: ChatMessage[] = body.messages || [];
     const context: string | undefined = body.context;
+    const mode: ChatMode = body.mode === "case_manager" ? "case_manager" : "parent";
 
     if (!messages.length) {
       return new Response(
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
         content: String(m.content).slice(0, 10000), // limit message length
       }));
 
-    const stream = await streamChat(sanitized, context);
+    const stream = await streamChat(sanitized, context, mode);
 
     return new Response(stream, {
       headers: {

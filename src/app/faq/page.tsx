@@ -165,13 +165,13 @@ export default function FAQPage() {
                         className="w-full px-4 py-3 text-left flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
                       >
                         <span className="text-white font-medium pr-4">{item.q}</span>
-                        <span className="text-white/60 text-xl flex-shrink-0">
+                        <span className="text-white/60 text-xl shrink-0">
                           {isOpen ? "−" : "+"}
                         </span>
                       </button>
                       
                       {isOpen && (
-                        <div className="px-4 py-3 bg-white/[0.02] border-t border-white/10">
+                        <div className="px-4 py-3 bg-white/2 border-t border-white/10">
                           <p className="text-white/80 leading-relaxed">{item.a}</p>
                         </div>
                       )}
