@@ -63,6 +63,14 @@ const NAV: NavItem[] = [
     featured: true,
   },
   {
+    key: "dlibs",
+    label: "Dlibs",
+    sub: "Build ARD deliberation talking points",
+    icon: <ClipboardList className="h-4 w-4" />,
+    href: "/dlibs",
+    status: "live",
+  },
+  {
     key: "accommodations",
     label: "Accommodations",
     sub: "Audit accommodations across sources",
@@ -306,7 +314,7 @@ function OutputRepository() {
       </div>
       
       <div className="cardMeta mt-1 text-white/60">
-        Files auto-delete after 12 hours
+        Files auto-delete after 24 hours
       </div>
 
       {isExpanded && (

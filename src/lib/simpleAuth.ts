@@ -1,5 +1,3 @@
-import crypto from "node:crypto";
-
 export type SimpleRole = "admin" | "case_manager";
 
 export type SimpleAuthPayload = {
@@ -9,25 +7,84 @@ export type SimpleAuthPayload = {
 
 const COOKIE_SEPARATOR = ".";
 
+function getCrypto(): Crypto | null {
+  if (typeof crypto !== "undefined") return crypto as Crypto;
+  if (typeof globalThis !== "undefined" && (globalThis as any).crypto) {
+    return (globalThis as any).crypto as Crypto;
+  }
+  return null;
+}
+
+function bufferToHex(buf: ArrayBuffer): string {
+  const view = new Uint8Array(buf);
+  let out = "";
+  for (let i = 0; i < view.length; i += 1) {
+    const v = view[i] ?? 0;
+    out += v.toString(16).padStart(2, "0");
+  }
+  return out;
+}
+
+function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let res = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    res |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return res === 0;
+}
+
 function getSecret(): string | null {
   const s = process.env.GALEXII_AUTH_SECRET;
   return s && s.length >= 16 ? s : null;
 }
 
-function hmac(input: string, secret: string): string {
-  return crypto.createHmac("sha256", secret).update(input).digest("hex");
+async function hmac(input: string, secret: string): Promise<string> {
+  const c = getCrypto();
+  if (!c || !c.subtle) {
+    throw new Error("crypto.subtle is not available in this environment");
+  }
+  const enc = new TextEncoder();
+  const key = await c.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await c.subtle.sign("HMAC", key, enc.encode(input));
+  return bufferToHex(sig as ArrayBuffer);
 }
 
-export function signAuthCookie(payload: SimpleAuthPayload): string | null {
+function base64UrlEncode(str: string): string {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(str, "utf8").toString("base64url");
+  }
+
+  const base64 = btoa(unescape(encodeURIComponent(str)));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/u, "");
+}
+
+function base64UrlDecode(base: string): string {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(base, "base64url").toString("utf8");
+  }
+
+  const padded = base.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((base.length + 3) % 4);
+  const decoded = atob(padded);
+  return decodeURIComponent(escape(decoded));
+}
+
+export async function signAuthCookie(payload: SimpleAuthPayload): Promise<string | null> {
   const secret = getSecret();
   if (!secret) return null;
   const json = JSON.stringify(payload);
-  const base = Buffer.from(json, "utf8").toString("base64url");
-  const sig = hmac(base, secret);
+  const base = base64UrlEncode(json);
+  const sig = await hmac(base, secret);
   return `${base}${COOKIE_SEPARATOR}${sig}`;
 }
 
-export function verifyAuthCookie(value: string): SimpleAuthPayload | null {
+export async function verifyAuthCookie(value: string): Promise<SimpleAuthPayload | null> {
   try {
     const secret = getSecret();
     if (!secret) return null;
@@ -35,12 +92,12 @@ export function verifyAuthCookie(value: string): SimpleAuthPayload | null {
     const [base, sig] = value.split(COOKIE_SEPARATOR);
     if (!base || !sig) return null;
 
-    const expected = hmac(base, secret);
-    if (!crypto.timingSafeEqual(Buffer.from(sig, "utf8"), Buffer.from(expected, "utf8"))) {
+    const expected = await hmac(base, secret);
+    if (!timingSafeEqualHex(sig, expected)) {
       return null;
     }
 
-    const json = Buffer.from(base, "base64url").toString("utf8");
+    const json = base64UrlDecode(base);
     const parsed = JSON.parse(json) as SimpleAuthPayload;
 
     if (parsed.role !== "admin" && parsed.role !== "case_manager") return null;

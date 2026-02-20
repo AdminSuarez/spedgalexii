@@ -1,19 +1,28 @@
 "use client";
 
-import React, { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { Lock, UserCog, Users } from "lucide-react";
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const nextParam = searchParams.get("next") || "/goals";
-
+  const [nextParam, setNextParam] = useState("/goals");
   const [role, setRole] = useState<"admin" | "case_manager">("case_manager");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const url = new URL(window.location.href);
+      const next = url.searchParams.get("next");
+      if (next) setNextParam(next);
+    } catch {
+      // ignore malformed URLs
+    }
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
