@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Incorrect password." }, { status: 401 });
     }
 
-    const token = signAuthCookie({ role, issuedAt: Date.now() });
+    const token = await signAuthCookie({ role, issuedAt: Date.now() });
     if (!token) {
       return NextResponse.json(
         { ok: false, error: "Auth secret is not configured. Set GALEXII_AUTH_SECRET to a long random value." },
