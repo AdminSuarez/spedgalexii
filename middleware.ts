@@ -11,7 +11,7 @@ function isPublicPath(pathname: string): boolean {
   return false;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
@@ -27,7 +27,7 @@ export function middleware(request: NextRequest) {
   const cookie = request.cookies.get("gx_auth");
 
   if (cookie?.value) {
-    const auth = verifyAuthCookie(cookie.value);
+    const auth = await verifyAuthCookie(cookie.value);
     if (auth && auth.role) {
       return NextResponse.next();
     }
