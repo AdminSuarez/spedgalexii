@@ -760,25 +760,26 @@ export async function POST(req: Request): Promise<NextResponse> {
     if (ct.includes("application/json")) {
       const body: unknown = await req.json();
       if (isObject(body)) {
-        const moduleRaw = normString((body as any).module);
-        const module: Module =
+        const bodyRecord = body as Record<string, unknown>;
+        const moduleRaw = normString(bodyRecord["module"]);
+        const selectedModule: Module =
           moduleRaw === "goals" || moduleRaw === "plaafp" || moduleRaw === "services" || moduleRaw === "accommodations"
             ? moduleRaw
             : "accommodations";
 
-        const scope = toScope((body as any).scope);
-        const cmKey = normString((body as any).caseManagerKey);
-        const cmName = normString((body as any).caseManagerName);
-        const uploadBatchId = normString((body as any).uploadBatchId);
+        const scope = toScope(bodyRecord["scope"]);
+        const cmKey = normString(bodyRecord["caseManagerKey"]);
+        const cmName = normString(bodyRecord["caseManagerName"]);
+        const uploadBatchId = normString(bodyRecord["uploadBatchId"]);
 
         if (scope === "case_manager") {
           const key = cmKey.length > 0 ? cmKey : cmName.length > 0 ? keyFromName(cmName) : "";
-          selection = { module, scope };
+          selection = { module: selectedModule, scope };
           if (key.length > 0) selection.caseManagerKey = key;
           if (cmName.length > 0) selection.caseManagerName = cmName;
           if (uploadBatchId.length > 0) selection.uploadBatchId = uploadBatchId;
         } else {
-          selection = { module, scope: "all" };
+          selection = { module: selectedModule, scope: "all" };
           if (uploadBatchId.length > 0) selection.uploadBatchId = uploadBatchId;
         }
       }

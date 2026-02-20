@@ -9,8 +9,9 @@ const COOKIE_SEPARATOR = ".";
 
 function getCrypto(): Crypto | null {
   if (typeof crypto !== "undefined") return crypto as Crypto;
-  if (typeof globalThis !== "undefined" && (globalThis as any).crypto) {
-    return (globalThis as any).crypto as Crypto;
+  if (typeof globalThis !== "undefined") {
+    const maybeGlobal = globalThis as { crypto?: Crypto };
+    if (maybeGlobal.crypto) return maybeGlobal.crypto;
   }
   return null;
 }

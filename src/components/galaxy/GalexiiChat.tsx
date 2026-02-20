@@ -202,8 +202,8 @@ export function GalexiiChat({
   }
 
   // Chat panel
-  const panelWidth = isExpanded ? "w-[600px]" : "w-[380px]";
-  const panelHeight = isExpanded ? "h-[80vh]" : "h-[520px]";
+  const panelWidth = isExpanded ? "w-[720px] max-w-[95vw]" : "w-[460px] max-w-[90vw]";
+  const panelHeight = isExpanded ? "h-[85vh]" : "h-[65vh]";
 
   return (
     <div

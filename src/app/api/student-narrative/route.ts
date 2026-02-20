@@ -52,8 +52,8 @@ async function runPythonCapture(cmd: string, args: string[], cwd: string): Promi
 
 export async function POST(req: Request): Promise<NextResponse> {
   try {
-    const body = await req.json().catch(() => ({}));
-    const rawId = typeof (body as any).studentId === "string" ? (body as any).studentId.trim() : "";
+    const body = (await req.json().catch(() => ({}))) as { studentId?: unknown };
+    const rawId = typeof body.studentId === "string" ? body.studentId.trim() : "";
     const sid = digitsOnly(rawId);
 
     if (!sid) {

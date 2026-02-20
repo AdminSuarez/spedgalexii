@@ -77,7 +77,6 @@ async function fileExists(p: string): Promise<boolean> {
 async function listDirSafe(dir: string): Promise<Dirent[]> {
   try {
     // fs.readdir with withFileTypes returns Dirent objects
-    // @ts-ignore
     return await fs.readdir(dir, { withFileTypes: true });
   } catch {
     return [];
@@ -115,7 +114,7 @@ function overallStatusFromChecks(checks: PreflightCheck[]): "ok" | "warning" | "
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const module = toModule(url.searchParams.get("module"));
+  const selectedModule = toModule(url.searchParams.get("module"));
   const scope = toScope(url.searchParams.get("scope"));
   const caseManagerNameRaw = url.searchParams.get("caseManagerName") ?? "";
   const caseManagerName = caseManagerNameRaw.trim() || undefined;
@@ -134,7 +133,7 @@ export async function GET(request: Request) {
       : "Expected input/_CANONICAL folder is missing. Place your CSV exports there.",
   });
 
-  if (module === "goals") {
+  if (selectedModule === "goals") {
     if (canonExists) {
       const hasGoalsCsv = await anyCsvMatching(CANON_DIR, [
         "fullgoals_by_student",
@@ -151,7 +150,7 @@ export async function GET(request: Request) {
           : "Place a FULLGoals_By_Student or Goals_By_Student CSV into input/_CANONICAL.",
       });
     }
-  } else if (module === "services") {
+  } else if (selectedModule === "services") {
     if (canonExists) {
       const hasServicesCsv = await anyCsvMatching(CANON_DIR, [
         "fulliep_program_names_and_instructional_setting",
@@ -170,7 +169,7 @@ export async function GET(request: Request) {
           : "Place the program/services CSV export into input/_CANONICAL so Services Galexii can run.",
       });
     }
-  } else if (module === "plaafp") {
+  } else if (selectedModule === "plaafp") {
     const iepsExists = await dirExists(IEPS_DIR);
     checks.push({
       id: "ieps_dir",
@@ -225,7 +224,7 @@ export async function GET(request: Request) {
         // best-effort only
       }
     }
-  } else if (module === "accommodations") {
+  } else if (selectedModule === "accommodations") {
     if (canonExists) {
       const hasAccomCsv = await anyCsvMatching(CANON_DIR, [
         "testhound_export",
@@ -280,7 +279,7 @@ export async function GET(request: Request) {
           : "id_crosswalk.csv is recommended so outputs can include local IDs and SIS IDs.",
       });
     }
-  } else if (module === "compliance") {
+  } else if (selectedModule === "compliance") {
     if (canonExists) {
       const fullSummaryPath = path.join(CANON_DIR, "FULLSummary_By_Student.csv");
       const fullSummaryExists = await fileExists(fullSummaryPath);
@@ -330,7 +329,7 @@ export async function GET(request: Request) {
           : "IEP_Students_With_A_BIP.csv is optional but recommended so BIP status is included.",
       });
     }
-  } else if (module === "assessments") {
+  } else if (selectedModule === "assessments") {
     if (canonExists) {
       const rosterPath = path.join(CANON_DIR, "roster.csv");
       const rosterExists = await fileExists(rosterPath);
@@ -398,7 +397,7 @@ export async function GET(request: Request) {
 
   const body: PreflightResponse = {
     ok: true,
-    module,
+    module: selectedModule,
     scope,
     caseManagerName,
     checks,

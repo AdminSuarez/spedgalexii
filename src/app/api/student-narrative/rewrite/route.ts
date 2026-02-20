@@ -5,6 +5,11 @@ import { isAIConfigured, type ChatMode } from "@/lib/ai";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type RewriteBody = {
+  markdown?: string;
+  tone?: ChatMode;
+};
+
 export async function POST(req: Request) {
   if (!isAIConfigured()) {
     return NextResponse.json(
@@ -17,11 +22,9 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json().catch(() => ({}));
-    const markdown = typeof (body as any).markdown === "string" ? (body as any).markdown.trim() : "";
-    const tone: ChatMode = (body as any).tone === "case_manager" || (body as any).tone === "parent"
-      ? (body as any).tone
-      : "parent";
+    const body = (await req.json().catch(() => ({}))) as Partial<RewriteBody>;
+    const markdown = typeof body.markdown === "string" ? body.markdown.trim() : "";
+    const tone: ChatMode = body.tone === "case_manager" || body.tone === "parent" ? body.tone : "parent";
 
     if (!markdown) {
       return NextResponse.json(

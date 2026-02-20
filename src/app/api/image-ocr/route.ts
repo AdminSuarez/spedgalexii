@@ -12,14 +12,23 @@ const AUDIT_ROOT = path.resolve(process.cwd(), "..");
 const SCRIPTS_ROOT = path.join(AUDIT_ROOT, "scripts");
 const OCR_TMP_ROOT = path.join(AUDIT_ROOT, "output", "_runs", "_ocr");
 
-function isFile(x: unknown): x is File {
+type FileWithStream = File & {
+  stream(): ReadableStream<Uint8Array>;
+};
+
+function isFile(x: unknown): x is FileWithStream {
+  if (typeof x !== "object" || x === null) return false;
+  const candidate = x as {
+    name?: unknown;
+    size?: unknown;
+    arrayBuffer?: unknown;
+    stream?: unknown;
+  };
   return (
-    typeof x === "object" &&
-    x !== null &&
-    typeof (x as any).name === "string" &&
-    typeof (x as any).size === "number" &&
-    typeof (x as any).arrayBuffer === "function" &&
-    typeof (x as any).stream === "function"
+    typeof candidate.name === "string" &&
+    typeof candidate.size === "number" &&
+    typeof candidate.arrayBuffer === "function" &&
+    typeof candidate.stream === "function"
   );
 }
 
@@ -69,7 +78,7 @@ export async function POST(req: Request) {
     const tmpName = `ocr_${Date.now()}_${Math.random().toString(16).slice(2)}${ext}`;
     const tmpPath = path.join(OCR_TMP_ROOT, tmpName);
 
-    const nodeReadable = (raw as any).stream();
+    const nodeReadable = raw.stream();
     await pipeline(nodeReadable, createWriteStream(tmpPath));
 
     const venvPython = path.join(AUDIT_ROOT, ".venv", "bin", "python");

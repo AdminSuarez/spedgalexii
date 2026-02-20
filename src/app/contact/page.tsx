@@ -3,6 +3,7 @@
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { GXCard } from "@/components/ui/GXCard";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ContactPage() {
   return (
@@ -142,30 +143,30 @@ export default function ContactPage() {
         <GXCard className="rounded-2xl popCard popCard--violet">
           <h2 className="text-xl font-bold text-white mb-4">Quick Links</h2>
           <div className="flex flex-wrap gap-3">
-            <a
+            <Link
               href="/faq"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
               FAQ
-            </a>
-            <a
+            </Link>
+            <Link
               href="/privacy"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
               Privacy Policy
-            </a>
-            <a
+            </Link>
+            <Link
               href="/about"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
               About Us
-            </a>
-            <a
+            </Link>
+            <Link
               href="/"
               className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
             >
               Orbit Hub
-            </a>
+            </Link>
           </div>
         </GXCard>
 

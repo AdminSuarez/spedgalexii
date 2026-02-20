@@ -6,7 +6,7 @@ import assert from "node:assert";
 async function fetchJson(url: string, init?: RequestInit) {
   const res = await fetch(url, init);
   const text = await res.text();
-  let json: any = null;
+  let json: unknown = null;
   try {
     json = JSON.parse(text);
   } catch {
@@ -23,9 +23,10 @@ async function checkHealth() {
 async function checkPreflight(base: string) {
   const url = `${base}/api/preflight?module=goals&scope=all`;
   const { res, json } = await fetchJson(url);
+  const data = json as { ok?: boolean; checks?: unknown };
   assert.strictEqual(res.ok, true, `preflight HTTP status ${res.status}`);
-  assert.strictEqual(json.ok, true, "preflight ok flag");
-  assert.ok(Array.isArray(json.checks), "preflight checks array");
+  assert.strictEqual(data.ok, true, "preflight ok flag");
+  assert.ok(Array.isArray((data as { checks?: unknown[] }).checks), "preflight checks array");
   console.log("[smoke] /api/preflight (goals) ✔");
 }
 

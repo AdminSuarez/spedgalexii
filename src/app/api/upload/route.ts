@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import crypto from "node:crypto";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
+import { Readable } from "node:stream";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,13 +29,18 @@ const ALLOWED_EXT = new Set([".pdf", ".csv", ".xlsx", ".xls"]);
 // --- helpers ---
 function isFile(x: unknown): x is File {
   // Next/undici File implements arrayBuffer/stream/name/size
+  if (typeof x !== "object" || x === null) return false;
+  const candidate = x as {
+    name?: unknown;
+    size?: unknown;
+    arrayBuffer?: unknown;
+    stream?: unknown;
+  };
   return (
-    typeof x === "object" &&
-    x !== null &&
-    typeof (x as any).name === "string" &&
-    typeof (x as any).size === "number" &&
-    typeof (x as any).arrayBuffer === "function" &&
-    typeof (x as any).stream === "function"
+    typeof candidate.name === "string" &&
+    typeof candidate.size === "number" &&
+    typeof candidate.arrayBuffer === "function" &&
+    typeof candidate.stream === "function"
   );
 }
 
@@ -248,15 +254,14 @@ export async function POST(req: Request) {
 
 /**
  * Convert a WHATWG ReadableStream (from File.stream()) into a Node.js Readable
- * without importing "stream" at top-level (keeps bundle clean).
+ * using Node's built-in Readable helpers.
  */
 function ReadableFromWeb(webStream: ReadableStream<Uint8Array>) {
   // Node 18+ supports Readable.fromWeb
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { Readable } = require("node:stream") as typeof import("node:stream");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const anyReadable = Readable as any;
-  if (typeof anyReadable.fromWeb === "function") return anyReadable.fromWeb(webStream);
+  const readableWithFromWeb = Readable as typeof Readable & {
+    fromWeb?: (stream: ReadableStream<Uint8Array>) => NodeJS.ReadableStream;
+  };
+  if (typeof readableWithFromWeb.fromWeb === "function") return readableWithFromWeb.fromWeb(webStream);
   // Fallback: buffer (should rarely happen in your environment)
   return Readable.from((async function* () {
     const reader = webStream.getReader();

@@ -4,11 +4,16 @@ import { signAuthCookie, type SimpleRole } from "@/lib/simpleAuth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+type LoginBody = {
+  role?: SimpleRole;
+  password?: string;
+};
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const role: SimpleRole = (body as any).role === "admin" ? "admin" : "case_manager";
-    const password = typeof (body as any).password === "string" ? (body as any).password : "";
+    const body = (await req.json().catch(() => ({}))) as Partial<LoginBody>;
+    const role: SimpleRole = body.role === "admin" ? "admin" : "case_manager";
+    const password = typeof body.password === "string" ? body.password : "";
 
     if (!password) {
       return NextResponse.json({ ok: false, error: "Missing password." }, { status: 400 });

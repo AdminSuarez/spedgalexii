@@ -82,8 +82,9 @@ function getStringArray(obj: Record<string, unknown>, key: string): string[] | u
 function parseManifest(x: unknown): Manifest | null {
   if (!isObject(x)) return null;
 
-  const outputsRaw: Record<string, unknown> | undefined = isObject((x as any).outputs)
-    ? ((x as any).outputs as Record<string, unknown>)
+  const raw = x as { outputs?: unknown; ok?: unknown; status?: unknown };
+  const outputsRaw: Record<string, unknown> | undefined = isObject(raw.outputs)
+    ? (raw.outputs as Record<string, unknown>)
     : undefined;
 
   const primaryXlsx = outputsRaw ? getString(outputsRaw, "primaryXlsx") : undefined;
@@ -109,8 +110,8 @@ function parseManifest(x: unknown): Manifest | null {
       }
     : undefined;
 
-  const ok = typeof (x as any).ok === "boolean" ? ((x as any).ok as boolean) : undefined;
-  const status = typeof (x as any).status === "string" ? ((x as any).status as string) : undefined;
+  const ok = typeof raw.ok === "boolean" ? raw.ok : undefined;
+  const status = typeof raw.status === "string" ? raw.status : undefined;
 
   return {
     ...(ok !== undefined ? { ok } : {}),

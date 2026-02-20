@@ -4,7 +4,6 @@ import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { GXCard } from "@/components/ui/GXCard";
 import ScriptPackButton from "@/components/galaxy/ScriptPackButton";
 import { RunAllButton } from "@/components/galaxy/RunAllButton";
-import { LaunchMissionsButton } from "@/components/galaxy/LaunchMissionsButton";
 
 const MODULES = [
   {
@@ -94,7 +93,6 @@ export default function OrbitHubPage() {
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <LaunchMissionsButton />
             <ScriptPackButton label="Download Script Pack (Blank PDF)" />
           </div>
         </div>
