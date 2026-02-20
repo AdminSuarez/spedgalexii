@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "SpEdGalexii",
   description:
     "SpEdGalexii is a modular audit universe for Special Education workflows. Launch systems like Accommodation Galexii to verify compliance, catch missing items, and export auditor-ready evidence.",
+  icons: {
+    icon: "/brand/galexii-logo-round.png",
+    shortcut: "/brand/galexii-logo-round.png",
+    apple: "/brand/galexii-logo-round.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
