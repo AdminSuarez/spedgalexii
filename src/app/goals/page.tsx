@@ -424,7 +424,7 @@ function GoalBankBrowser({
                     </button>
                     <button
                       onClick={() => onInsertGoal(goal)}
-                      className="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-cyan-500/30 to-violet-500/30 border border-cyan-400/30 text-cyan-100 text-xs font-semibold hover:from-cyan-500/40 hover:to-violet-500/40 transition shadow-[0_0_12px_rgba(34,211,238,0.2)]"
+                      className="px-2.5 py-1.5 rounded-lg bg-linear-to-r from-cyan-500/30 to-violet-500/30 border border-cyan-400/30 text-cyan-100 text-xs font-semibold hover:from-cyan-500/40 hover:to-violet-500/40 transition shadow-[0_0_12px_rgba(34,211,238,0.2)]"
                     >
                       Insert
                     </button>
@@ -585,7 +585,7 @@ function GoalsPageInner() {
                 <div>
                   <div className="uiLabel text-white/70">Baseline (optional)</div>
                   <textarea
-                    className="mt-2 w-full min-h-[110px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                    className="mt-2 w-full min-h-27.5 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                     value={baselineText}
                     onChange={(e) => setBaselineText(e.target.value)}
                     placeholder="Example: Baseline: 0/5 correct across 2 probes…"
@@ -595,7 +595,7 @@ function GoalsPageInner() {
                 <div>
                   <div className="uiLabel text-white/70">PLAAFP excerpt (optional)</div>
                   <textarea
-                    className="mt-2 w-full min-h-[110px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                    className="mt-2 w-full min-h-27.5 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                     value={plaafpText}
                     onChange={(e) => setPlaafpText(e.target.value)}
                     placeholder="Paste PLAAFP baseline sentence(s) that justify this goal…"

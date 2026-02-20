@@ -282,7 +282,7 @@ export function GalexiiChat({
             <h3 className="text-white/90 font-semibold text-base">
               Hey there, I&apos;m Galexii! ✨
             </h3>
-            <p className="text-white/50 text-sm leading-relaxed max-w-[260px]">
+            <p className="text-white/50 text-sm leading-relaxed max-w-65">
               I&apos;m your SpEd AI assistant. Ask me about IEPs,
               accommodations, IDEA compliance, parent rights, or anything
               special education.

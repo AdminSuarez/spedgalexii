@@ -916,7 +916,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Present Levels (main section)</div>
                 <textarea
-                  className="mt-2 w-full min-h-[260px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-65 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={mainText}
                   onChange={(e) => setMainText(e.target.value)}
                   placeholder="Paste the main Present Levels page text here..."
@@ -928,7 +928,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Eligibilities / Impairments</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={eligText}
                   onChange={(e) => setEligText(e.target.value)}
                   placeholder='Paste Eligibilities grid text (example includes: "IEP Primary Specific Learning Disability 2/23/21")...'
@@ -940,7 +940,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Curriculum & Learning domain</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={curricText}
                   onChange={(e) => setCurricText(e.target.value)}
                   placeholder="Paste Curriculum & Learning strengths/needs + PEN area..."
@@ -952,7 +952,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Social/Emotional domain</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={socialText}
                   onChange={(e) => setSocialText(e.target.value)}
                   placeholder="Paste Social/Emotional strengths/needs + PEN + (optional) BIP question..."
@@ -964,7 +964,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Independent Functioning domain</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={indText}
                   onChange={(e) => setIndText(e.target.value)}
                   placeholder="Paste Independent Functioning strengths/needs + PEN area..."
@@ -976,7 +976,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Health Care domain</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={healthText}
                   onChange={(e) => setHealthText(e.target.value)}
                   placeholder="Paste Health Care section (Yes/No gate + Additional Info + PEN)..."
@@ -988,7 +988,7 @@ export default function Page() {
               <div>
                 <div className="uiLabel text-white/70">Communication domain</div>
                 <textarea
-                  className="mt-2 w-full min-h-[220px] rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
+                  className="mt-2 w-full min-h-55 rounded-2xl border border-white/10 bg-black/30 p-3 text-white/90 outline-none focus:border-white/20"
                   value={commText}
                   onChange={(e) => setCommText(e.target.value)}
                   placeholder="Paste Communication strengths/needs + PEN area..."

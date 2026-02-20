@@ -446,7 +446,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
                 <div className="card-stars-layer2" />
               </div>
 
-              <div className="scrollCosmic max-h-[calc(100dvh-3rem)] min-h-0 overflow-y-auto p-4 relative z-[1]">
+              <div className="scrollCosmic max-h-[calc(100dvh-3rem)] min-h-0 overflow-y-auto p-4 relative z-1">
                 <div className="mb-5 flex items-center gap-4">
                   {/* ✅ Match hero logo "rounded dark plate" + gradients */}
                   <div className="sidebarLogoWrap">
@@ -548,13 +548,13 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
                           "hover:bg-white/10 hover:text-white",
                           tileTone,
                           active &&
-                            "ring-2 ring-cyan-400/30 border-cyan-300/25 bg-gradient-to-r from-cyan-500/15 via-transparent to-transparent"
+                            "ring-2 ring-cyan-400/30 border-cyan-300/25 bg-linear-to-r from-cyan-500/15 via-transparent to-transparent"
                         )}
                       >
                         {/* ✨ Active illumination bar */}
                         {active && (
                           <span
-                            className="absolute left-0 top-1/2 -translate-y-1/2 h-[70%] w-[3px] rounded-full bg-gradient-to-b from-cyan-300 via-cyan-400 to-cyan-300"
+                            className="absolute left-0 top-1/2 -translate-y-1/2 h-[70%] w-0.75 rounded-full bg-linear-to-b from-cyan-300 via-cyan-400 to-cyan-300"
                             style={{
                               boxShadow:
                                 "0 0 12px 2px rgba(34,211,238,0.65), 0 0 24px 4px rgba(34,211,238,0.35), 0 0 40px 8px rgba(34,211,238,0.15)",
@@ -628,7 +628,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
 
         {/* Drag handle to resize sidebar vs main content (desktop only) */}
         <div
-          className="hidden md:block h-full w-[6px] cursor-col-resize rounded-full bg-white/5 hover:bg-cyan-400/60 transition-colors"
+          className="hidden md:block h-full w-1.5 cursor-col-resize rounded-full bg-white/5 hover:bg-cyan-400/60 transition-colors"
           onMouseDown={() => {
             dragActive.current = true;
           }}
@@ -644,7 +644,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
                 <div className="card-stars-layer2" />
               </div>
 
-              <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0 relative z-[1]">{children}</div>
+              <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0 relative z-1">{children}</div>
             </div>
 
             {/* Footer */}

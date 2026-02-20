@@ -159,7 +159,7 @@ export default function ResultsPage({ params }: { params: { runId: string } }) {
 
         <GXCard className="rounded-3xl popCard popCard--violet min-w-0">
           <div className="uiLabel text-white/70">Run Log</div>
-          <pre className="mt-3 max-h-[520px] overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap break-words">
+          <pre className="mt-3 max-h-130 overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap wrap-break-word">
             {log || "No log yet."}
           </pre>
         </GXCard>

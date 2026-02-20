@@ -1057,7 +1057,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
 
       {/* Message */}
       {msg ? (
-        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-white/80 cardBody min-w-0 break-words">
+        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3 text-white/80 cardBody min-w-0 wrap-break-word">
           {msg}
         </div>
       ) : null}
@@ -1072,7 +1072,7 @@ export function UploadCard({ module = "accommodations" }: { module?: GalexiiModu
             </div>
           </div>
 
-          <pre className="max-h-80 overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap break-words">
+          <pre className="max-h-80 overflow-auto rounded-2xl border border-white/10 bg-black/30 p-3 leading-relaxed text-white/80 cardBody whitespace-pre-wrap wrap-break-word">
             {log || "No logs yet."}
           </pre>
 

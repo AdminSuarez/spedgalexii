@@ -233,7 +233,7 @@ export function RunAllButton() {
         className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
+          <div className="p-2 rounded-xl bg-linear-to-br from-purple-500 to-pink-500">
             <Rocket className="w-6 h-6 text-white" />
           </div>
           <div className="text-left">
@@ -364,7 +364,7 @@ export function RunAllButton() {
             disabled={!hasFiles || busy}
             className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-lg transition-all ${
               hasFiles && !busy
-                ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25"
+                ? "bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-lg shadow-purple-500/25"
                 : "bg-gray-700 text-gray-500 cursor-not-allowed"
             }`}
           >

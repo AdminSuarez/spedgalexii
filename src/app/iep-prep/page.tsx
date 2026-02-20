@@ -1061,7 +1061,7 @@ export default function IEPPrepPage() {
           </div>
           <div className="h-3 bg-black/40 rounded-full overflow-hidden border border-white/10">
             <div 
-              className="h-full bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 transition-all duration-700 ease-out"
+              className="h-full bg-linear-to-r from-violet-500 via-purple-500 to-pink-500 transition-all duration-700 ease-out"
               style={{ 
                 width: `${(filledCount / totalFields) * 100}%`,
                 boxShadow: filledCount > 0 ? '0 0 12px rgba(168,85,247,0.5)' : 'none'
@@ -1095,7 +1095,7 @@ export default function IEPPrepPage() {
           <button
             onClick={copyAll}
             disabled={filledCount === 0}
-            className="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 rounded-xl text-white font-medium hover:from-violet-500 hover:to-purple-500 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
+            className="px-5 py-2.5 bg-linear-to-r from-violet-600 to-purple-600 rounded-xl text-white font-medium hover:from-violet-500 hover:to-purple-500 transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-purple-500/20"
           >
             <Copy size={16} />
             Copy All to Frontline
@@ -1188,7 +1188,7 @@ export default function IEPPrepPage() {
                           <textarea
                             value={formData[field.key] as string || ""}
                             onChange={e => updateField(field.key, e.target.value)}
-                            className="w-full min-h-[100px] px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-purple-500/50 focus:outline-none resize-y"
+                            className="w-full min-h-25 px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-purple-500/50 focus:outline-none resize-y"
                             placeholder={`Enter ${field.label.toLowerCase()}...`}
                           />
                         ) : field.type === "yesno" ? (
@@ -1335,7 +1335,7 @@ export default function IEPPrepPage() {
                             <textarea
                               value={formData[field.key] as string || ""}
                               onChange={e => updateField(field.key, e.target.value)}
-                              className="w-full min-h-[80px] px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-yellow-500/50 focus:outline-none resize-y"
+                              className="w-full min-h-20 px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-yellow-500/50 focus:outline-none resize-y"
                             />
                           ) : (
                             <input
@@ -1360,19 +1360,19 @@ export default function IEPPrepPage() {
           <h3 className="text-lg font-semibold text-white/95 mb-4">How to Use IEP Prep Galexii</h3>
           <ol className="space-y-3 text-white/75">
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">1</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">1</span>
               <span>Run Deep Dive analysis on the student (generates DEEP_DIVE_*.json)</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">2</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">2</span>
               <span>Upload the Deep Dive JSON file above</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">3</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">3</span>
               <span>Review auto-populated fields and fill in any missing data</span>
             </li>
             <li className="flex gap-3">
-              <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">4</span>
+              <span className="shrink-0 w-6 h-6 rounded-full bg-purple-500/30 text-purple-200 flex items-center justify-center text-sm">4</span>
               <span>Copy sections individually or all at once → paste into Frontline/eSped</span>
             </li>
           </ol>
