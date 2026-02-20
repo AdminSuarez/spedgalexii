@@ -8,6 +8,8 @@ function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
   // Allow all auth API endpoints (login, future logout/refresh) to bypass middleware
   if (pathname.startsWith("/api/auth/")) return true;
+  // Allow static assets from the public folder (brand logos, audio, etc.)
+  if (pathname.startsWith("/brand")) return true;
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/assets") || pathname.startsWith("/favicon")) return true;
   return false;
