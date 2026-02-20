@@ -1,4 +1,4 @@
-// Output Repository - stores user exports for 12 hours
+// Output Repository - stores user exports for 24 hours
 
 export type OutputFile = {
   id: string;
@@ -13,7 +13,7 @@ export type OutputFile = {
 };
 
 const STORAGE_KEY = "galexii-outputs";
-const EXPIRY_HOURS = 12;
+const EXPIRY_HOURS = 24;
 
 /**
  * Add a file to the output repository

@@ -78,7 +78,28 @@ SMOKE_BASE_URL="https://your-domain" npm run smoke
 
 ---
 
-## 5. Basic troubleshooting
+## 5. Cleaning up cached runs (disk space)
+
+Each module run creates a timestamped folder under `output/_runs/` that stores
+logs and artifacts for that specific run. Over time, this history can grow
+large.
+
+To keep disk usage under control while still preserving recent runs, you can
+periodically prune old run folders from `galaxy-iep-accommodations/` with:
+
+```bash
+npm run cleanup:runs
+```
+
+This keeps the 20 most recent run folders and deletes older ones. It does **not**
+touch top-level summary files (like `ARD_Summary_*.pptx` or
+`DEEP_DIVE_*.json`) in `output/` or `audit/`.
+
+You can add this as a scheduled task/cron job if desired.
+
+---
+
+## 6. Basic troubleshooting
 
 - **Upload errors**
   - Check file size limits in `src/app/api/upload/route.ts`.

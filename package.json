@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit --pretty false",
     "check:any": "node scripts/checkAny.mjs",
     "framework:preview": "tsx scripts/previewFramework.ts",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "cleanup:runs": "node scripts/cleanup_output_runs.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.95.3",

@@ -517,9 +517,8 @@ export default function IEPPrepPage() {
       // Deliberations
       if (data.deliberations) {
         const delibs = data.deliberations;
-        newFormData.schedule_date = delibs.meeting_info?.ard_date || "";
+        // Do not auto-fill dates; ARD/schedule will typically come from Calendar/invite
         newFormData.meeting_purpose = delibs.meeting_info?.purpose || "";
-        newFormData.meeting_date = delibs.meeting_info?.ard_date || "";
         newFormData.meeting_type = delibs.meeting_info?.purpose || "";
         
         if (delibs.parent_concerns) {
@@ -603,6 +602,8 @@ export default function IEPPrepPage() {
       // Draft Disability Impact Statement from disability + MAP + attendance
       const disability = data.student_info?.disability || data.assessment_profile?.primary_disability || "";
       const grade = data.student_info?.grade || "";
+      const gradeNum = parseInt(grade, 10);
+      const isEighthGrade = !Number.isNaN(gradeNum) && gradeNum === 8;
       const mapRead = data.map_assessment?.reading;
       const mapMath = data.map_assessment?.math;
       const att = data.attendance_analysis;
@@ -826,14 +827,70 @@ export default function IEPPrepPage() {
         "Assessment Profile",
         "MAP assessments",
       ];
-      
-      // Default yes/no values
-      newFormData.disability_impacts_curriculum = "Yes";
-      newFormData.staar_participation = "Yes";
-      newFormData.staar_alt2 = "No";
-      newFormData.commensurate_day = "Yes";
-      newFormData.district_available = "Yes";
-      newFormData.can_participate = "Yes";
+
+      // Default yes/no values (only if not populated from Deep Dive)
+      if (!newFormData.disability_impacts_curriculum) newFormData.disability_impacts_curriculum = "Yes";
+      if (!newFormData.staar_participation) newFormData.staar_participation = "Yes";
+      if (!newFormData.staar_alt2) newFormData.staar_alt2 = "No";
+      if (!newFormData.commensurate_day) newFormData.commensurate_day = "Yes";
+      if (!newFormData.district_available) newFormData.district_available = "Yes";
+      if (!newFormData.can_participate) newFormData.can_participate = "Yes";
+
+      // Defaults for sections that are usually "No" / not applicable so they don't look missing
+      if (!newFormData.transportation_related) newFormData.transportation_related = "No";
+      if (!newFormData.adapted_vehicle) newFormData.adapted_vehicle = "No";
+      if (!newFormData.at_needed) newFormData.at_needed = "No";
+      if (!newFormData.bip_required) newFormData.bip_required = "No";
+      if (!newFormData.esy_discussed) newFormData.esy_discussed = "No";
+      if (!newFormData.esy_eligible) newFormData.esy_eligible = "No";
+      if (!newFormData.mutual_agreement) newFormData.mutual_agreement = "Yes";
+      if (!newFormData.safeguards_acknowledged) newFormData.safeguards_acknowledged = "Yes";
+
+      // Domain impact/transition defaults: typically "No" unless student is in 8th grade,
+      // where transition planning is always addressed and domains more often show an
+      // impact that needs to be explicitly discussed.
+      const domainDefault = isEighthGrade ? "Yes" : "No";
+      if (!newFormData.disability_impacts_independent) newFormData.disability_impacts_independent = domainDefault;
+      if (!newFormData.disability_impacts_social) newFormData.disability_impacts_social = domainDefault;
+      if (!newFormData.disability_impacts_communication) newFormData.disability_impacts_communication = domainDefault;
+      if (!newFormData.has_health_conditions) newFormData.has_health_conditions = domainDefault;
+      if (!newFormData.transition_addressed) newFormData.transition_addressed = domainDefault;
+
+      // Fill narrative-only fields with explicit "N/A" when truly empty so they
+      // don't appear as missing data in common "no issue" scenarios
+      const ensureNA = (key: string) => {
+        const val = newFormData[key];
+        if (!val || (typeof val === "string" && val.trim().length === 0)) {
+          newFormData[key] = "N/A";
+        }
+      };
+
+      // Social/emotional
+      ensureNA("strengths_social");
+      ensureNA("needs_social");
+      // Independent functioning
+      ensureNA("strengths_independent");
+      ensureNA("needs_independent");
+      // Communication
+      ensureNA("strengths_communication");
+      ensureNA("needs_communication");
+      // Health
+      ensureNA("health_conditions");
+      // Technology / assistive tech narrative
+      ensureNA("at_statement");
+      // ESY narrative
+      ensureNA("esy_justification");
+
+      // Prior Written Notice defaults: provide gentle starter language but leave date blank
+      if (!newFormData.action_proposed) {
+        newFormData.action_proposed = "The ARD committee reviewed current evaluation data, present levels, and input from all required members and proposes to implement the IEP as documented in this plan.";
+      }
+      if (!newFormData.explanation) {
+        newFormData.explanation = "This action is based on the student's identified disability-related needs and is reasonably calculated to enable progress in light of the student's circumstances, consistent with IDEA requirements.";
+      }
+      if (!newFormData.other_options) {
+        newFormData.other_options = "The committee considered less intensive options (e.g., general education without services and/or fewer accommodations) but rejected them because they would not provide sufficient support for the student to access and progress in the general curriculum.";
+      }
       
       setFormData(newFormData);
       
@@ -1163,22 +1220,39 @@ export default function IEPPrepPage() {
                           </select>
                         ) : field.type === "list" ? (
                           <div className="space-y-2">
-                            {(formData[field.key] as string[] || []).map((item, i) => (
-                              <div key={i} className="flex items-start gap-2">
-                                <span className="text-white/40 mt-2">•</span>
-                                <input
-                                  value={item}
-                                  onChange={e => {
-                                    const newList = [...(formData[field.key] as string[] || [])];
-                                    newList[i] = e.target.value;
-                                    updateField(field.key, newList);
-                                  }}
-                                  className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-purple-500/50 focus:outline-none"
-                                />
-                              </div>
-                            ))}
+                            {(() => {
+                              const current = formData[field.key];
+                              const list = Array.isArray(current)
+                                ? (current as string[])
+                                : current
+                                ? [String(current)]
+                                : [];
+
+                              return list.map((item, i) => (
+                                <div key={i} className="flex items-start gap-2">
+                                  <span className="text-white/40 mt-2"> b7</span>
+                                  <input
+                                    value={item}
+                                    onChange={e => {
+                                      const newList = [...list];
+                                      newList[i] = e.target.value;
+                                      updateField(field.key, newList);
+                                    }}
+                                    className="flex-1 px-3 py-2 bg-black/30 border border-white/10 rounded-xl text-white/90 focus:border-purple-500/50 focus:outline-none"
+                                  />
+                                </div>
+                              ));
+                            })()}
                             <button
-                              onClick={() => updateField(field.key, [...(formData[field.key] as string[] || []), ""])}
+                              onClick={() => {
+                                const current = formData[field.key];
+                                const list = Array.isArray(current)
+                                  ? (current as string[])
+                                  : current
+                                  ? [String(current)]
+                                  : [];
+                                updateField(field.key, [...list, ""]);
+                              }}
                               className="text-sm text-purple-400 hover:text-purple-300"
                             >
                               + Add item

@@ -230,16 +230,18 @@ export async function GET(request: Request) {
       const hasAccomCsv = await anyCsvMatching(CANON_DIR, [
         "testhound_export",
         "all case mgr student_state_testing_accommodations",
+        "all_lively_ms_students_accomodations_state_testing",
+        "accommodations",
       ]);
       checks.push({
         id: "accommodations_source",
         label:
-          "Accommodations source present (testhound_export*.csv or All Case Mgr Student_State_Testing_Accommodations.csv)",
+          "Accommodations source present (testhound_export*.csv, All Case Mgr Student_State_Testing_Accommodations.csv, All_Lively_MS_Students_Accomodations_State_Testing.csv, or accommodations*.csv)",
         passed: hasAccomCsv,
         severity: hasAccomCsv ? "info" : "error",
         details: hasAccomCsv
           ? undefined
-          : "Place your TestHound or All Case Mgr Student_State_Testing_Accommodations export into input/_CANONICAL.",
+          : "Place your TestHound or All Case Mgr Student_State_Testing_Accommodations / All_Lively_MS_Students_Accomodations_State_Testing export into input/_CANONICAL.",
       });
 
       const suarezCaseloadPath = path.join(CANON_DIR, "Suarez_CaseLoad_Student_Accommodations_Full.txt");

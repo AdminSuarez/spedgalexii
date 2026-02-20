@@ -45,15 +45,15 @@
   --background: var(--bg0);
   --foreground: rgba(255,255,255,.96);
 
-  /* Type scale */
-  --fs-hero:   clamp(52px, 2.4vw + 36px, 96px);
-  --fs-module: clamp(40px, 1.8vw + 28px, 78px);
-  --fs-title:  clamp(22px, 0.95vw + 16px, 36px);
-  --fs-body:   clamp(18px, 0.70vw + 14px, 24px);
-  --fs-small:  clamp(15px, 0.55vw + 12px, 20px);
+  /* Type scale (dialed back to avoid "zoomed" feel) */
+  --fs-hero:   clamp(32px, 1.6vw + 22px, 56px);
+  --fs-module: clamp(26px, 1.3vw + 18px, 44px);
+  --fs-title:  clamp(18px, 0.70vw + 13px, 26px);
+  --fs-body:   clamp(15px, 0.50vw + 11px, 18px);
+  --fs-small:  clamp(12px, 0.40vw + 10px, 15px);
 
-  --card-pad:    clamp(18px, 1.1vw + 14px, 34px);
-  --card-pad-sm: clamp(14px, 0.8vw + 12px, 26px);
+  --card-pad:    clamp(16px, 0.9vw + 12px, 24px);
+  --card-pad-sm: clamp(12px, 0.7vw + 10px, 20px);
 
   --radius: 22px;
   --radius-lg: 26px;
@@ -70,7 +70,8 @@ html, body{
 
 html{
   background: var(--bg0);
-  font-size: clamp(18px, 0.9vw + 14px, 22px);
+  /* Base font-size tuned down for desktop */
+  font-size: clamp(15px, 0.6vw + 12px, 18px);
 }
 
 body{
@@ -131,8 +132,8 @@ h1,h2,h3{
 }
 
 .heroIconWrap{
-  width: clamp(100px, 6.5vw + 80px, 180px);
-  height: clamp(100px, 6.5vw + 80px, 180px);
+  width: clamp(80px, 4.5vw + 60px, 140px);
+  height: clamp(80px, 4.5vw + 60px, 140px);
   border-radius: 32px;
   display: grid;
   place-items: center;
@@ -143,8 +144,8 @@ h1,h2,h3{
 }
 
 .heroIcon{
-  width: clamp(88px, 5.8vw + 68px, 160px);
-  height: clamp(88px, 5.8vw + 68px, 160px);
+  width: clamp(64px, 4.0vw + 52px, 120px);
+  height: clamp(64px, 4.0vw + 52px, 120px);
   /* CRISP: no fog/glow filters */
   filter: none;
 }
@@ -177,7 +178,7 @@ h1,h2,h3{
   line-height: 0.98;
   letter-spacing: -0.02em;
 
-  font-size: clamp(64px, 4.5vw + 32px, 140px);
+  font-size: clamp(42px, 3.0vw + 26px, 88px);
 
   background-image: linear-gradient(90deg,
     rgba(34,211,238,1),
@@ -248,6 +249,26 @@ h1,h2,h3{
   text-shadow: 0 0 26px rgba(168,85,247,.14);
 }
 
+/* Status dots used in Deep Space roadmap (Tier 1/2/3 lists) */
+.gx-status-done,
+.gx-status-pending{
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  display: inline-block;
+  box-shadow: 0 0 10px rgba(16,185,129,.65);
+}
+
+.gx-status-done{
+  background: radial-gradient(circle at 30% 30%, #bbf7d0 0%, #22c55e 55%, #065f46 100%);
+}
+
+.gx-status-pending{
+  background: radial-gradient(circle at 30% 30%, #fee2e2 0%, #f97316 55%, #7c2d12 100%);
+  box-shadow: 0 0 10px rgba(249,115,22,.65);
+}
+
 /* -----------------------------
    2) Galaxy background motion
 ------------------------------ */
@@ -278,6 +299,14 @@ h1,h2,h3{
   position: relative;
   z-index: 10;
   min-height: 100dvh;
+}
+
+/* Main content wrapper used by Orbit Hub and other pages */
+.page{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-inline: 1.5rem;
+  padding-block: 2.5rem;
 }
 
 .galaxy-bg{

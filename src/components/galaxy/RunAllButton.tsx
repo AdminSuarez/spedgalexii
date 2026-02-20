@@ -107,6 +107,23 @@ export function RunAllButton() {
     }
   }, []);
 
+  function resetAll() {
+    setResults(null);
+    setError(null);
+    setUploadBatchId(null);
+    setFiles(null);
+
+    try {
+      localStorage.removeItem(LS_RUNALL_KEY);
+      for (const mod of ALL_MODULES) {
+        const moduleKey = `spedgalexii:lastRun:v2:${mod.key}`;
+        localStorage.removeItem(moduleKey);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   async function uploadFiles(): Promise<string | null> {
     if (!files || files.length === 0) return null;
 
@@ -209,7 +226,7 @@ export function RunAllButton() {
   const totalCount = results?.length ?? 0;
 
   return (
-    <div className="bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-blue-900/40 rounded-2xl border border-purple-500/30 overflow-hidden">
+    <div className="rounded-2xl border border-purple-500/50 shadow-lg shadow-purple-900/50 overflow-hidden bg-slate-950/90">
       {/* Header */}
       <button
         onClick={() => setExpanded(!expanded)}
@@ -228,13 +245,24 @@ export function RunAllButton() {
         </div>
         <div className="flex items-center gap-3">
           {results && (
-            <span
-              className={`text-sm font-medium ${
-                successCount === totalCount ? "text-green-400" : "text-yellow-400"
-              }`}
-            >
-              {successCount}/{totalCount} complete
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-sm font-medium ${
+                  successCount === totalCount ? "text-green-400" : "text-yellow-400"
+                }`}
+              >
+                {successCount}/{totalCount} complete
+              </span>
+              <span
+                onClick={(e) => {
+                  e.stopPropagation();
+                  resetAll();
+                }}
+                className="text-xs text-gray-400 hover:text-gray-200 cursor-pointer underline-offset-2 hover:underline"
+              >
+                Reset
+              </span>
+            </div>
           )}
           {expanded ? (
             <ChevronUp className="w-5 h-5 text-gray-400" />
