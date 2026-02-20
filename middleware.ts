@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifyAuthCookie } from "@/lib/simpleAuth";
 
-const PUBLIC_PATHS = ["/login", "/faq", "/privacy", "/", "/api/healthz"];
+const PUBLIC_PATHS = ["/login", "/faq", "/privacy", "/", "/api/healthz", "/api/auth/login"];
 
 function isPublicPath(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
+  // Allow all auth API endpoints (login, future logout/refresh) to bypass middleware
+  if (pathname.startsWith("/api/auth/")) return true;
   if (pathname.startsWith("/_next")) return true;
   if (pathname.startsWith("/assets") || pathname.startsWith("/favicon")) return true;
   return false;
