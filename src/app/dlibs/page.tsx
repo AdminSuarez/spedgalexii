@@ -176,7 +176,10 @@ export default function DlibsPage() {
         if (s.percentile != null) parts.push(`${s.percentile}th %ile`);
         if (s.achievement_level) parts.push(s.achievement_level);
         if (s.lexile) parts.push(`Lexile ${s.lexile}`);
-        mapLines.push(`${subject[0].toUpperCase() + subject.slice(1)}: ${parts.join(", ")}`);
+        if (subject) {
+          const pretty = subject.charAt(0).toUpperCase() + subject.slice(1);
+          mapLines.push(`${pretty}: ${parts.join(", ")}`);
+        }
       }
       if (mapLines.length > 0) {
         impactParts.push(
