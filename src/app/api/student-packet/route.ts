@@ -6,8 +6,6 @@ import { spawn } from "node:child_process";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const AUDIT_ROOT = path.resolve(process.cwd(), "..");
-
 async function fileExists(p: string): Promise<boolean> {
   try {
     await fs.stat(p);
@@ -43,6 +41,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       return NextResponse.json({ ok: false, error: "Missing or invalid studentId" }, { status: 400 });
     }
 
+    const AUDIT_ROOT = path.resolve(process.cwd(), "..");
     const iepsDir = path.join(AUDIT_ROOT, "ieps");
     const auditDir = path.join(AUDIT_ROOT, "audit");
     const outputDir = path.join(AUDIT_ROOT, "output");

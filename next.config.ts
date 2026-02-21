@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 // Security headers for FERPA compliance and protection
 const securityHeaders = [
@@ -88,10 +89,13 @@ const nextConfig: NextConfig = {
     // This allows larger proxied request bodies in environments where Next proxies requests.
     // Set to the smallest value that covers your real upload sizes (e.g., "25mb", "50mb").
     proxyClientMaxBodySize: "50mb", // proxyClientMaxBodySize :contentReference[oaicite:5]{index=5}
+  },
 
-    // These are great, but enable when you’re ready to enforce them:
-    // typedRoutes: true, // typedRoutes :contentReference[oaicite:6]{index=6}
-    // reactCompiler: true, // reactCompiler :contentReference[oaicite:7]{index=7}
+  // Pin Turbopack's filesystem root to this project directory so it never
+  // walks up into the parent AccommodationsAudit folder (which contains a
+  // .venv with broken symlinks that cause Turbopack to panic at build time).
+  turbopack: {
+    root: path.resolve(__dirname),
   },
 };
 
