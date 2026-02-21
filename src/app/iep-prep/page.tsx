@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { FileText, Upload, Copy, Check, AlertTriangle, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
 
@@ -180,6 +181,55 @@ type DeepDiveData = {
         days_in_class_lively_pct?: string;
       };
     };
+  };
+  // ── New fields from _extract_iep_services() ────────────────────────────
+  iep_services?: {
+    sdi_services?: Array<{
+      service?: string;
+      name?: string;
+      minutes_per_week?: number | string;
+      minutes?: number | string;
+      location?: string;
+      setting?: string;
+      provider?: string;
+    }>;
+    related_services?: Array<{
+      service?: string;
+      name?: string;
+      minutes_per_week?: number | string;
+      minutes?: number | string;
+      location?: string;
+      setting?: string;
+      provider?: string;
+    }>;
+    classroom_accommodations?: string[];
+    testing_accommodations?: string[];
+    lre_setting?: string;
+    esy?: string;
+    at_devices?: string[];
+    bip_present?: boolean;
+    medicaid_consent?: string;
+    goals?: Array<{
+      area?: string;
+      domain?: string;
+      goal_text?: string;
+      text?: string;
+      condition?: string;
+      behavior?: string;
+      criteria?: string;
+      accuracy?: string;
+      monitoring_method?: string;
+      progress_monitoring?: string;
+    }>;
+  };
+  // ── New fields from _extract_reed_data() ──────────────────────────────
+  reed_data?: {
+    reed_date?: string;
+    additional_data_needed?: string;
+    existing_data_sources_reviewed?: string[];
+    parent_notified?: string;
+    eligibility_decision?: string;
+    reevaluation_waived?: string;
   };
 };
 
@@ -481,27 +531,22 @@ const CONDITIONAL_SECTIONS: IEPSection[] = [
 ];
 
 export default function IEPPrepPage() {
+  const searchParams = useSearchParams();
   const [deepDiveData, setDeepDiveData] = useState<DeepDiveData | null>(null);
   const [formData, setFormData] = useState<Record<string, string | string[]>>({});
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(["event_info", "eligibilities"]));
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [autoLoadedFor, setAutoLoadedFor] = useState<string | null>(null);
 
-  // Handle file upload
-  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // processDeepDiveData: shared mapping logic used by both file upload and auto-load
+  const processDeepDiveData = useCallback(async (data: DeepDiveData) => {
+    setDeepDiveData(data);
 
-    setIsLoading(true);
-    try {
-      const text = await file.text();
-      const data = JSON.parse(text) as DeepDiveData;
-      setDeepDiveData(data);
-      
-      // Auto-populate form fields from deep dive data
-      const newFormData: Record<string, string | string[]> = {};
-      
-      // Student info
+    // Auto-populate form fields from deep dive data
+    const newFormData: Record<string, string | string[]> = {};
+
+    // Student info
       if (data.student_info) {
         newFormData.primary_disability = (data.student_info.disability || data.assessment_profile?.primary_disability || "");
       }
@@ -706,6 +751,112 @@ export default function IEPPrepPage() {
         }
       }
 
+      // ── IEP Services (from _extract_iep_services) ─────────────────────────
+      // These come directly from the IEP PDF and are the most accurate source.
+      // They override the assessment_profile fallback above when present.
+      if (data.iep_services) {
+        const svc = data.iep_services;
+
+        // Classroom accommodations — prefer IEP PDF extraction over assessment profile
+        if (svc.classroom_accommodations && svc.classroom_accommodations.length > 0) {
+          newFormData.classroom_accommodations = svc.classroom_accommodations;
+        }
+
+        // Testing accommodations — prefer IEP PDF extraction
+        if (svc.testing_accommodations && svc.testing_accommodations.length > 0) {
+          newFormData.testing_accommodations = svc.testing_accommodations;
+          newFormData.staar_accommodations = svc.testing_accommodations;
+        }
+
+        // SDI services summary → services/placement section
+        if (svc.sdi_services && svc.sdi_services.length > 0) {
+          const sdiLines = svc.sdi_services.map(s => {
+            const name = String(s.service ?? s.name ?? "SDI");
+            const mins = s.minutes_per_week ?? s.minutes;
+            const loc = s.location ?? s.setting ?? "";
+            const prov = s.provider ?? "";
+            const parts = [mins ? `${mins} min/wk` : "", loc, prov].filter(Boolean);
+            return parts.length > 0 ? `${name}: ${parts.join(", ")}` : name;
+          });
+          newFormData.sdi_services = sdiLines.join("\n");
+        }
+
+        // Related services summary
+        if (svc.related_services && svc.related_services.length > 0) {
+          const relLines = svc.related_services.map(s => {
+            const name = String(s.service ?? s.name ?? "Related Service");
+            const mins = s.minutes_per_week ?? s.minutes;
+            const loc = s.location ?? s.setting ?? "";
+            const prov = s.provider ?? "";
+            const parts = [mins ? `${mins} min/wk` : "", loc, prov].filter(Boolean);
+            return parts.length > 0 ? `${name}: ${parts.join(", ")}` : name;
+          });
+          newFormData.related_services = relLines.join("\n");
+        }
+
+        // LRE setting
+        if (svc.lre_setting) {
+          newFormData.lre_setting = svc.lre_setting;
+        }
+
+        // ESY
+        if (svc.esy) {
+          const esyLower = svc.esy.toLowerCase();
+          if (esyLower.includes("yes") || esyLower.includes("eligible")) {
+            newFormData.esy_discussed = "Yes";
+            newFormData.esy_eligible = "Yes";
+          } else if (esyLower.includes("no") || esyLower.includes("not")) {
+            newFormData.esy_discussed = "Yes";
+            newFormData.esy_eligible = "No";
+          }
+        }
+
+        // AT devices
+        if (svc.at_devices && svc.at_devices.length > 0) {
+          newFormData.at_needed = "Yes";
+          newFormData.at_statement = svc.at_devices.join("; ");
+        }
+
+        // BIP
+        if (svc.bip_present) {
+          newFormData.bip_required = "Yes";
+        }
+
+        // Medicaid consent
+        if (svc.medicaid_consent) {
+          newFormData.medicaid_consent = svc.medicaid_consent;
+        }
+
+        // Goals from IEP — if present these are richer than goal_analysis above
+        if (svc.goals && svc.goals.length > 0) {
+          newFormData.goals = svc.goals.map((g, i) => {
+            const area = g.area ?? g.domain ?? `Goal ${i + 1}`;
+            const text = g.goal_text ?? g.text ?? "";
+            const criteria = g.criteria ?? g.accuracy ?? "";
+            const method = g.monitoring_method ?? g.progress_monitoring ?? "";
+            const parts = [text, criteria ? `Criteria: ${criteria}` : "", method ? `Monitoring: ${method}` : ""].filter(Boolean);
+            return `[${area}] ${parts.join(" | ")}`;
+          });
+        }
+      }
+
+      // ── REED Data (from _extract_reed_data) ───────────────────────────────
+      if (data.reed_data) {
+        const reed = data.reed_data;
+        const reedParts: string[] = [];
+        if (reed.reed_date) reedParts.push(`REED Date: ${reed.reed_date}`);
+        if (reed.eligibility_decision) reedParts.push(`Decision: ${reed.eligibility_decision}`);
+        if (reed.additional_data_needed) reedParts.push(`Additional Data Needed: ${reed.additional_data_needed}`);
+        if (reed.reevaluation_waived) reedParts.push(`Re-evaluation Waived: ${reed.reevaluation_waived}`);
+        if (reed.existing_data_sources_reviewed && reed.existing_data_sources_reviewed.length > 0) {
+          reedParts.push(`Data Sources Reviewed: ${reed.existing_data_sources_reviewed.join(", ")}`);
+        }
+        if (reedParts.length > 0) {
+          const existingEvalReview = (newFormData.evaluation_review as string) || "";
+          newFormData.evaluation_review = [existingEvalReview, reedParts.join("\n")].filter(Boolean).join("\n\n");
+        }
+      }
+
       // Student profile (SIS + STAAR + attendance via jacob.csv template)
       if (data.student_profile) {
         const sp = data.student_profile;
@@ -905,14 +1056,41 @@ export default function IEPPrepPage() {
         }
       }
       setExpandedSections(sectionsWithData);
-      
+  }, []);
+
+  // Handle file upload — reads the JSON file, then delegates to processDeepDiveData
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsLoading(true);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as DeepDiveData;
+      await processDeepDiveData(data);
     } catch (err) {
       console.error("Error parsing file:", err);
       alert("Error parsing file. Please upload a valid Deep Dive JSON.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [processDeepDiveData]);
+
+  // Auto-load from localStorage when arriving via handoff link from Deep Space
+  useEffect(() => {
+    const urlStudentId = searchParams?.get("studentId");
+    if (!urlStudentId || autoLoadedFor === urlStudentId) return;
+    const stored = localStorage.getItem("galexii-last-deep-dive");
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored) as { studentId?: string; analysis?: DeepDiveData };
+      if (parsed.studentId !== urlStudentId || !parsed.analysis) return;
+      setIsLoading(true);
+      processDeepDiveData(parsed.analysis)
+        .then(() => setAutoLoadedFor(urlStudentId))
+        .catch(err => console.error("Auto-load failed:", err))
+        .finally(() => setIsLoading(false));
+    } catch { /* ignore */ }
+  }, [searchParams, autoLoadedFor, processDeepDiveData]);
 
   // Toggle section expansion
   const toggleSection = useCallback((sectionId: string) => {

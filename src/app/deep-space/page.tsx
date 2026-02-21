@@ -973,6 +973,29 @@ export default function DeepDivePage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
+              {/* ── Primary handoff buttons ── */}
+              <a
+                href={`/iep-prep?studentId=${encodeURIComponent(result.studentId)}`}
+                className="ctaBtn"
+                style={{ textDecoration: "none" }}
+              >
+                📝 Open in IEP Prep →
+              </a>
+              <a
+                href={`/packets?studentId=${encodeURIComponent(result.studentId)}`}
+                className="ctaBtn"
+                style={{ background: "#9b5cfb22", borderColor: "#9b5cfb", textDecoration: "none" }}
+              >
+                🗂️ Generate ARD Packet →
+              </a>
+              <a
+                href="/ard-preview"
+                className="ctaBtn ctaBtn--outline"
+                style={{ textDecoration: "none" }}
+              >
+                🖼️ Preview Slides
+              </a>
+              {/* ── Export buttons ── */}
               <button
                 onClick={() => {
                   const blob = new Blob([JSON.stringify(result.analysis, null, 2)], {
@@ -986,7 +1009,7 @@ export default function DeepDivePage() {
                 }}
                 className="ctaBtn ctaBtn--outline"
               >
-                Export Data (JSON)
+                ↓ Export JSON
               </button>
               <button
                 onClick={() => {
@@ -999,7 +1022,7 @@ export default function DeepDivePage() {
                 }}
                 className="ctaBtn ctaBtn--outline"
               >
-                Export Report (MD)
+                ↓ Export Report
               </button>
             </div>
 

@@ -13,7 +13,7 @@ type PlanTier = {
   interval: "month" | "year";
   features: string[];
   popular?: boolean;
-  priceId?: string; // Stripe Price ID - set after creating in Stripe Dashboard
+  priceId?: string | undefined; // Stripe Price ID - set after creating in Stripe Dashboard
 };
 
 const PLANS: PlanTier[] = [
