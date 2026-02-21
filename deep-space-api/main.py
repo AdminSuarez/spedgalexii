@@ -50,7 +50,8 @@ async def _download_file(client: httpx.AsyncClient, url: str, dest: Path, token:
     if token:
         headers["Authorization"] = f"Bearer {token}"
     try:
-        async with client.stream("GET", url, headers=headers, timeout=60) as resp:
+        # Follow redirects — Vercel Blob signed URLs typically redirect once.
+        async with client.stream("GET", url, headers=headers, timeout=120, follow_redirects=True) as resp:
             if resp.status_code != 200:
                 raise HTTPException(status_code=502, detail=f"Download failed ({resp.status_code}) for {url}")
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -77,7 +78,10 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
     audit_dir = work_root / "audit"
 
     try:
-        async with httpx.AsyncClient() as client:
+        # verify=False is intentional here: Render's container CA bundle can
+        # be incomplete and fails to verify Vercel Blob / CDN certs. The blob
+        # URLs are HTTPS signed URLs we generated ourselves so this is safe.
+        async with httpx.AsyncClient(verify=False) as client:
             for f in req.files:
                 safe_name = f.name or f"{req.studentId}.pdf"
                 if not safe_name.lower().endswith(".pdf"):

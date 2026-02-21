@@ -22,5 +22,11 @@
 			"path": "../../../../archive"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"chat.agent.maxRequests": 40,
+		"chat.agent.thinking.collapsedTools": "all",
+		"chat.checkpoints.showFileChanges": true,
+		"chat.customAgentInSubagent.enabled": true,
+		"chat.editor.fontSize": 14
+	}
 }

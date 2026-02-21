@@ -377,6 +377,16 @@ export default function DeepDivePage() {
 
       setResult(data);
       
+      // Persist latest analysis for ARD Packet Generator auto-load
+      if (data.analysis) {
+        try {
+          localStorage.setItem(
+            "galexii-last-deep-dive",
+            JSON.stringify({ studentId, analysis: data.analysis }),
+          );
+        } catch { /* ignore quota errors */ }
+      }
+      
       // Auto-save results to Output Repository
       if (data.analysis) {
         const studentName = data.analysis.student_info?.name || `Student_${studentId}`;
