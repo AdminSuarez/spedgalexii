@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
 
   const blob = await put(file.name, file, {
     access: "private",
+    addRandomSuffix: true,
   });
 
   return NextResponse.json({
