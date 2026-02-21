@@ -31,7 +31,7 @@ const PLANS: PlanTier[] = [
       "Goal progress tracking",
       "Accommodation audits",
     ],
-    priceId: "price_XXXXX", // Replace with actual Stripe Price ID
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_IEP_MONTHLY,
   },
   {
     id: "iep-yearly",
@@ -47,7 +47,7 @@ const PLANS: PlanTier[] = [
       "Priority support",
       "Annual compliance reports",
     ],
-    priceId: "price_YYYYY", // Replace with actual Stripe Price ID
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_IEP_YEARLY,
   },
   {
     id: "school-year",
@@ -63,7 +63,7 @@ const PLANS: PlanTier[] = [
       "Priority support",
       "Early access to new features",
     ],
-    priceId: "price_ZZZZZ", // Replace with actual Stripe Price ID
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SCHOOL_YEAR,
   },
 ];
 
