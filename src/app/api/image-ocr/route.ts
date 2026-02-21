@@ -3,6 +3,7 @@ import * as path from "node:path";
 import * as fs from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
+import { Readable } from "node:stream";
 import { spawn } from "node:child_process";
 
 export const runtime = "nodejs";
@@ -34,6 +35,27 @@ function isFile(x: unknown): x is FileWithStream {
 
 async function ensureDir(p: string): Promise<void> {
   await fs.mkdir(p, { recursive: true });
+}
+
+function readableFromWeb(webStream: ReadableStream<Uint8Array>) {
+  const readableWithFromWeb = Readable as typeof Readable & {
+    fromWeb?: (stream: ReadableStream<Uint8Array>) => NodeJS.ReadableStream;
+  };
+  if (typeof readableWithFromWeb.fromWeb === "function") {
+    return readableWithFromWeb.fromWeb(webStream);
+  }
+
+  return Readable.from(
+    (async function* () {
+      const reader = webStream.getReader();
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (value) yield Buffer.from(value);
+      }
+    })(),
+  );
 }
 
 async function runPython(cmd: string, args: string[], cwd: string): Promise<{ ok: boolean; stdout: string; stderr: string }> {
@@ -78,7 +100,7 @@ export async function POST(req: Request) {
     const tmpName = `ocr_${Date.now()}_${Math.random().toString(16).slice(2)}${ext}`;
     const tmpPath = path.join(OCR_TMP_ROOT, tmpName);
 
-    const nodeReadable = raw.stream();
+    const nodeReadable = readableFromWeb(raw.stream());
     await pipeline(nodeReadable, createWriteStream(tmpPath));
 
     const venvPython = path.join(AUDIT_ROOT, ".venv", "bin", "python");
