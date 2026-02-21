@@ -30,7 +30,7 @@ import { addToOutputRepository } from "@/lib/outputRepository";
 import { AIInsights } from "@/components/galaxy/AIInsights";
 import { useSharedFiles } from "@/lib/SharedFileContext";
 
-type AlertSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
+type AlertSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "INQUIRY" | "INFO";
 
 type Alert = {
   severity: AlertSeverity;
@@ -50,6 +50,8 @@ type DeepDiveAnalysis = {
   critical_count: number;
   high_count: number;
   medium_count: number;
+  inquiry_count: number;
+  info_count: number;
   evaluation_status: {
     initial_fie_date: string | null;
     days_since_full_eval: number | null;
@@ -489,6 +491,10 @@ export default function DeepDivePage() {
         return "bg-orange-500/20 border-orange-500 text-orange-200";
       case "MEDIUM":
         return "bg-yellow-500/20 border-yellow-500 text-yellow-200";
+      case "INQUIRY":
+        return "bg-cyan-500/20 border-cyan-500 text-cyan-200";
+      case "INFO":
+        return "bg-indigo-500/20 border-indigo-500 text-indigo-200";
       default:
         return "bg-blue-500/20 border-blue-500 text-blue-200";
     }
@@ -504,6 +510,10 @@ export default function DeepDivePage() {
         return <span className={baseStyle} style={{background: 'radial-gradient(circle, #fb923c 0%, #f97316 60%, transparent 70%)', boxShadow: '0 0 6px #fb923c'}}></span>;
       case "MEDIUM":
         return <span className={baseStyle} style={{background: 'radial-gradient(circle, #fbbf24 0%, #f59e0b 60%, transparent 70%)', boxShadow: '0 0 6px #fbbf24'}}></span>;
+      case "INQUIRY":
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #22d3ee 0%, #06b6d4 60%, transparent 70%)', boxShadow: '0 0 6px #22d3ee'}}></span>;
+      case "INFO":
+        return <span className={baseStyle} style={{background: 'radial-gradient(circle, #818cf8 0%, #6366f1 60%, transparent 70%)', boxShadow: '0 0 6px #818cf8'}}></span>;
       default:
         return <span className={baseStyle} style={{background: 'radial-gradient(circle, #60a5fa 0%, #3b82f6 60%, transparent 70%)', boxShadow: '0 0 6px #60a5fa'}}></span>;
     }
@@ -784,7 +794,7 @@ export default function DeepDivePage() {
             <GXCard className="rounded-2xl popCard popCard--ember">
               <h3 className="cardTitle text-white mb-4">Findings Summary</h3>
               <p className="text-white/60 text-sm mb-4">Issues discovered that require attention for academic stability</p>
-              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 mb-6">
                 <div className="text-center p-4 bg-red-500/20 rounded-xl border border-red-500/30">
                   <div className="text-3xl font-bold text-red-300">
                     {result.analysis.critical_count}
@@ -802,6 +812,18 @@ export default function DeepDivePage() {
                     {result.analysis.medium_count}
                   </div>
                   <div className="text-yellow-200/70 text-sm">Medium</div>
+                </div>
+                <div className="text-center p-4 bg-cyan-500/20 rounded-xl border border-cyan-500/30">
+                  <div className="text-3xl font-bold text-cyan-300">
+                    {result.analysis.inquiry_count ?? 0}
+                  </div>
+                  <div className="text-cyan-200/70 text-sm">Inquiry</div>
+                </div>
+                <div className="text-center p-4 bg-indigo-500/20 rounded-xl border border-indigo-500/30">
+                  <div className="text-3xl font-bold text-indigo-300">
+                    {result.analysis.info_count ?? 0}
+                  </div>
+                  <div className="text-indigo-200/70 text-sm">Info</div>
                 </div>
               </div>
 
