@@ -15,6 +15,20 @@ export const maxDuration = 120; // 2 minutes for processing
  */
 export async function POST(req: NextRequest) {
   try {
+    // Vercel's Node runtime does not provide a Python binary, so the
+    // analyzer can only run in environments where `python3` is installed
+    // (your local machine or a custom backend). In production on Vercel,
+    // surface a clear message instead of a generic 500.
+    if (process.env.VERCEL === "1") {
+      return NextResponse.json(
+        {
+          error:
+            "Deep Space analysis is currently only available when running SpEdGalexii on a machine with Python installed (local dev). The Vercel runtime does not include Python.",
+        },
+        { status: 503 },
+      );
+    }
+
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
     const studentId = formData.get("studentId") as string;

@@ -31,6 +31,83 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
+    const apiUrl = process.env.DEEP_SPACE_API_URL?.trim();
+
+    // If a remote Deep Space API is configured, use it (cloud path).
+    if (apiUrl) {
+      try {
+        // Turn private blob pathnames into signed download URLs
+        const externalFiles: { name: string; url: string }[] = [];
+
+        for (const f of files) {
+          const blobResult = await get(f.pathname, { access: "private" });
+          if (!blobResult || blobResult.statusCode !== 200) {
+            throw new Error(
+              `Failed to resolve blob for ${f.pathname} (${blobResult?.statusCode ?? "no status"})`,
+            );
+          }
+          const downloadUrl = blobResult.blob.downloadUrl;
+          externalFiles.push({ name: f.name, url: downloadUrl });
+        }
+
+        const target = apiUrl.replace(/\/$/, "") + "/analyze";
+        const apiRes = await fetch(target, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(process.env.DEEP_SPACE_API_KEY
+              ? { "x-api-key": process.env.DEEP_SPACE_API_KEY }
+              : {}),
+          },
+          body: JSON.stringify({ studentId, files: externalFiles }),
+        });
+
+        const apiJson = (await apiRes.json().catch(() => ({}))) as {
+          analysis?: unknown;
+          report?: string | null;
+          detail?: string;
+          error?: string;
+        };
+
+        if (!apiRes.ok || !apiJson.analysis) {
+          const msg =
+            apiJson.error || apiJson.detail || `Deep Space API error (${apiRes.status})`;
+          return NextResponse.json({ error: msg }, { status: 502 });
+        }
+
+        return NextResponse.json({
+          success: true,
+          studentId,
+          filesProcessed: files.length,
+          analysis: apiJson.analysis,
+          report: apiJson.report ?? null,
+        });
+      } catch (e) {
+        console.error("Deep Space from-blob remote API error:", e);
+        return NextResponse.json(
+          {
+            error:
+              e instanceof Error
+                ? e.message
+                : "Failed to contact Deep Space analyzer API",
+          },
+          { status: 502 },
+        );
+      }
+    }
+
+    // Fallback: local Python analyzer (dev / on-prem environments only).
+    // On Vercel, this will not work because python3 is not available.
+    if (process.env.VERCEL === "1") {
+      return NextResponse.json(
+        {
+          error:
+            "Deep Space analyzer API is not configured (DEEP_SPACE_API_URL). Configure it to enable Deep Space in the cloud.",
+        },
+        { status: 503 },
+      );
+    }
+
     const tempDir = path.join(os.tmpdir(), `galexii-dive-${Date.now()}`);
     const iepsDir = path.join(tempDir, "ieps");
     const auditDir = path.join(tempDir, "audit");
