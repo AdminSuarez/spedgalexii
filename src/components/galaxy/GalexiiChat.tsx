@@ -40,6 +40,9 @@ export function GalexiiChat({
   const [chatState, setChatState] = useState<ChatState>("idle");
   const [aiConfigured, setAiConfigured] = useState<boolean | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [supportMessage, setSupportMessage] = useState("");
+  const [supportStatus, setSupportStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -65,6 +68,37 @@ export function GalexiiChat({
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  const sendSupportPing = useCallback(async () => {
+    const msg = supportMessage.trim();
+    if (!msg || supportStatus === "sending") return;
+
+    setSupportStatus("sending");
+    try {
+      const lastUser = [...messages].reverse().find((m) => m.role === "user");
+      const pageUrl = typeof window !== "undefined" ? window.location.href : undefined;
+
+      const res = await fetch("/api/support-ping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: msg,
+          pageUrl,
+          lastQuestion: lastUser?.content ?? "",
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok !== true) {
+        throw new Error(data.error || `Support ping failed`);
+      }
+
+      setSupportStatus("sent");
+      setSupportMessage("");
+    } catch {
+      setSupportStatus("error");
+    }
+  }, [supportMessage, messages, supportStatus]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim();
@@ -226,6 +260,13 @@ export function GalexiiChat({
           )}
         </div>
         <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setSupportOpen((v) => !v)}
+              className="hidden sm:inline-flex items-center px-2 py-1 rounded-full bg-white/10 text-[11px] text-white/80 hover:bg-white/20 mr-1"
+            >
+              Need a human?
+            </button>
           {messages.length > 0 && (
             <button
               onClick={clearChat}
@@ -268,6 +309,38 @@ export function GalexiiChat({
             to your <code className="bg-black/30 px-1 rounded">.env.local</code>{" "}
             to enable Galexii AI.
           </p>
+        </div>
+      )}
+
+      {supportOpen && (
+        <div className="px-3 pt-2 pb-2 border-b border-white/10 bg-black/30 space-y-2 text-xs text-white/80">
+          <div>Need live help? Send a quick note my way.</div>
+          <textarea
+            value={supportMessage}
+            onChange={(e) => setSupportMessage(e.target.value)}
+            rows={2}
+            className="w-full rounded-md bg-black/40 border border-white/15 px-2 py-1 text-xs text-white resize-none"
+            placeholder="Describe what looks confusing or broken…"
+          />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-white/50">
+              Includes this page and your last Galexii question.
+            </span>
+            <button
+              type="button"
+              onClick={sendSupportPing}
+              disabled={!supportMessage.trim() || supportStatus === "sending"}
+              className="px-3 py-1 rounded-full bg-violet-500 text-white text-[11px] disabled:opacity-50"
+            >
+              {supportStatus === "sending" ? "Sending…" : "Ping Human"}
+            </button>
+          </div>
+          {supportStatus === "sent" && (
+            <div className="text-emerald-300 text-[10px] mt-1">Sent! I&apos;ll follow up as soon as I can.</div>
+          )}
+          {supportStatus === "error" && (
+            <div className="text-red-300 text-[10px] mt-1">Couldn&apos;t send right now. Try again in a bit.</div>
+          )}
         </div>
       )}
 

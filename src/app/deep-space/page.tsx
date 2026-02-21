@@ -320,19 +320,53 @@ export default function DeepDivePage() {
     setResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append("studentId", studentId);
-      files.forEach((file) => formData.append("files", file));
+      const useBlob = process.env.NEXT_PUBLIC_DEEP_SPACE_USE_BLOB === "true";
 
-      const response = await fetch("/api/deep-space", {
-        method: "POST",
-        body: formData,
-      });
+      let response: Response;
+
+      if (!useBlob) {
+        const formData = new FormData();
+        formData.append("studentId", studentId);
+        files.forEach((file) => formData.append("files", file));
+
+        response = await fetch("/api/deep-space", {
+          method: "POST",
+          body: formData,
+        });
+      } else {
+        const blobFiles: { url: string; name: string }[] = [];
+
+        for (const file of files) {
+          const fd = new FormData();
+          fd.append("file", file);
+
+          const uploadRes = await fetch("/api/deep-space/blob-upload", {
+            method: "POST",
+            body: fd,
+          });
+
+          const uploadJson: unknown = await uploadRes.json();
+          const uploadData = uploadJson as { ok?: boolean; url?: string; error?: string };
+
+          if (!uploadRes.ok || uploadData.ok !== true || !uploadData.url) {
+            const msg = uploadData.error || `Upload failed with status ${uploadRes.status}`;
+            throw new Error(msg);
+          }
+
+          blobFiles.push({ url: uploadData.url, name: file.name });
+        }
+
+        response = await fetch("/api/deep-space/from-blob", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ studentId, files: blobFiles }),
+        });
+      }
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Analysis failed");
+        throw new Error((data as { error?: string }).error || "Analysis failed");
       }
 
       setResult(data);
