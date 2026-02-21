@@ -39,8 +39,9 @@ def _get_analyzer_path() -> Path:
         p = Path(env_path)
         if p.is_file():
             return p
-    # Default: expect analyzer script next to this file in scripts/
-    return Path(__file__).parent.parent / "scripts" / "deep_dive_analyzer.py"
+
+    # Default: expect analyzer script in ./scripts relative to this file
+    return Path(__file__).parent / "scripts" / "deep_dive_analyzer.py"
 
 
 async def _download_file(client: httpx.AsyncClient, url: str, dest: Path) -> None:
