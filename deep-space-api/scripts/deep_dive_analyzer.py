@@ -1715,11 +1715,11 @@ class StudentDocumentAnalyzer:
             has_criterion = bool(re.search(r'\d+\s*(?:out of|%|percent|times)', goal_text, re.I))
 
             progress_method = None
-            prog_match = re.search(r'progress.*?(?:monitor|measure)[:\s]+([^]{5,80})', goal_text, re.I)
+            prog_match = re.search(r'progress.*?(?:monitor|measure)[:\s]+([^\n]{5,80})', goal_text, re.I)
             if prog_match:
                 progress_method = prog_match.group(1).strip()
 
-            implementer_match = re.search(r'implementer[:\s]+([^]{3,60})', goal_text, re.I)
+            implementer_match = re.search(r'implementer[:\s]+([^\n]{3,60})', goal_text, re.I)
             implementer = implementer_match.group(1).strip() if implementer_match else None
 
             result["goals_detail"].append({
