@@ -16,5 +16,11 @@ export async function POST(req: NextRequest) {
     access: "private",
   });
 
-  return NextResponse.json({ ok: true, url: blob.url, pathname: blob.pathname, size: file.size });
+  return NextResponse.json({
+    ok: true,
+    url: blob.url,
+    downloadUrl: blob.downloadUrl,
+    pathname: blob.pathname,
+    size: file.size,
+  });
 }

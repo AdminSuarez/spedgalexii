@@ -334,7 +334,7 @@ export default function DeepDivePage() {
           body: formData,
         });
       } else {
-        const blobFiles: { url: string; name: string }[] = [];
+        const blobFiles: { pathname: string; name: string }[] = [];
 
         for (const file of files) {
           const fd = new FormData();
@@ -346,14 +346,20 @@ export default function DeepDivePage() {
           });
 
           const uploadJson: unknown = await uploadRes.json();
-          const uploadData = uploadJson as { ok?: boolean; url?: string; error?: string };
+          const uploadData = uploadJson as {
+            ok?: boolean;
+            url?: string;
+            downloadUrl?: string;
+            pathname?: string;
+            error?: string;
+          };
 
-          if (!uploadRes.ok || uploadData.ok !== true || !uploadData.url) {
+          if (!uploadRes.ok || uploadData.ok !== true || !uploadData.pathname) {
             const msg = uploadData.error || `Upload failed with status ${uploadRes.status}`;
             throw new Error(msg);
           }
 
-          blobFiles.push({ url: uploadData.url, name: file.name });
+          blobFiles.push({ pathname: uploadData.pathname, name: file.name });
         }
 
         response = await fetch("/api/deep-space/from-blob", {

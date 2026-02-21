@@ -3,12 +3,13 @@ import { spawn } from "child_process";
 import { writeFile, mkdir, readFile, readdir, unlink } from "fs/promises";
 import path from "path";
 import os from "os";
+import { get } from "@vercel/blob";
 
 export const runtime = "nodejs";
 export const maxDuration = 120; // 2 minutes for processing
 
 type BlobFile = {
-  url: string;
+  pathname: string;
   name: string;
 };
 
@@ -38,11 +39,13 @@ export async function POST(req: NextRequest) {
     await mkdir(auditDir, { recursive: true });
 
     for (const f of files) {
-      const res = await fetch(f.url);
-      if (!res.ok) {
-        throw new Error(`Download failed: ${f.url} (${res.status})`);
+      const blobResult = await get(f.pathname, { access: "private" });
+
+      if (!blobResult || blobResult.statusCode !== 200 || !blobResult.stream) {
+        throw new Error(`Download failed: ${f.pathname} (${blobResult?.statusCode ?? "no status"})`);
       }
-      const arrayBuf = await res.arrayBuffer();
+
+      const arrayBuf = await new Response(blobResult.stream).arrayBuffer();
       const buffer = Buffer.from(arrayBuf);
       const baseName = f.name || "document.pdf";
       const filename = baseName.startsWith(studentId) ? baseName : `${studentId}_${baseName}`;
