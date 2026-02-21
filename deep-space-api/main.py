@@ -21,6 +21,7 @@ class AnalyzeRequest(BaseModel):
     studentId: str
     files: List[FileRef]
     assessmentProfile: Optional[str] = None
+    blobToken: Optional[str] = None
 
 
 class AnalyzeResponse(BaseModel):
@@ -44,9 +45,12 @@ def _get_analyzer_path() -> Path:
     return Path(__file__).parent / "scripts" / "deep_dive_analyzer.py"
 
 
-async def _download_file(client: httpx.AsyncClient, url: str, dest: Path) -> None:
+async def _download_file(client: httpx.AsyncClient, url: str, dest: Path, token: Optional[str] = None) -> None:
+    headers = {}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
     try:
-        async with client.stream("GET", url, timeout=60) as resp:
+        async with client.stream("GET", url, headers=headers, timeout=60) as resp:
             if resp.status_code != 200:
                 raise HTTPException(status_code=502, detail=f"Download failed ({resp.status_code}) for {url}")
             dest.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +85,7 @@ async def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
                 if not safe_name.startswith(req.studentId):
                     safe_name = f"{req.studentId}_" + safe_name
                 dest = ieps_dir / safe_name
-                await _download_file(client, f.url, dest)
+                await _download_file(client, f.url, dest, req.blobToken)
 
         env = os.environ.copy()
         env["GALEXII_IEP_FOLDER"] = str(ieps_dir)

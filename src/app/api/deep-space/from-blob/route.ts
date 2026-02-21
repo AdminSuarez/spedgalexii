@@ -59,7 +59,11 @@ export async function POST(req: NextRequest) {
               ? { "x-api-key": process.env.DEEP_SPACE_API_KEY }
               : {}),
           },
-          body: JSON.stringify({ studentId, files: externalFiles }),
+          body: JSON.stringify({ 
+            studentId, 
+            files: externalFiles,
+            blobToken: process.env.BLOB_READ_WRITE_TOKEN
+          }),
         });
 
         const apiJson = (await apiRes.json().catch(() => ({}))) as {
