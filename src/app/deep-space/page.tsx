@@ -774,7 +774,7 @@ export default function DeepDivePage() {
             <GXCard className="rounded-2xl popCard popCard--ember">
               <h3 className="cardTitle text-white mb-4">Findings Summary</h3>
               <p className="text-white/60 text-sm mb-4">Issues discovered that require attention for academic stability</p>
-              <div className="grid grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-6">
                 <div className="text-center p-4 bg-red-500/20 rounded-xl border border-red-500/30">
                   <div className="text-3xl font-bold text-red-300">
                     {result.analysis.critical_count}

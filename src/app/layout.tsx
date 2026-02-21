@@ -1,12 +1,26 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Providers } from "./providers";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: "#0f0c29",
+};
 
 export const metadata: Metadata = {
   title: "SpEdGalexii",
   description:
     "SpEdGalexii is a modular audit universe for Special Education workflows. Launch systems like Accommodation Galexii to verify compliance, catch missing items, and export auditor-ready evidence.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "SpEdGalexii",
+  },
   icons: {
     icon: "/brand/galexii-logo-round.png",
     shortcut: "/brand/galexii-logo-round.png",

@@ -377,6 +377,12 @@ function OutputRepository() {
 export function GalaxyShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const shared = useSharedFiles();
+  const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+
+  // Close mobile nav on route change
+  React.useEffect(() => {
+    setMobileNavOpen(false);
+  }, [pathname]);
 
   // User-adjustable sidebar width (desktop only), persisted per browser.
   const [sidebarWidth, setSidebarWidth] = React.useState<number>(520);
@@ -429,10 +435,75 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
   ]);
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden text-white">
+    <div className="relative flex flex-col h-dvh w-full overflow-hidden text-white">
       <MusicSidebar />
 
-      <div className="relative mx-auto flex h-full min-h-0 w-full gap-6 px-3 py-4 md:px-6 md:py-6">
+      {/* ── Mobile top bar ── */}
+      <div className="flex md:hidden items-center justify-between px-4 py-3 relative z-30 border-b border-white/10 bg-black/30 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <Image src="/brand/galexii-logo-round.png" alt="SpEdGalexii" width={32} height={32} className="rounded-full" />
+          <span className="font-semibold text-white text-sm tracking-tight">SpEdGalexii</span>
+        </div>
+        <button
+          onClick={() => setMobileNavOpen(v => !v)}
+          aria-label={mobileNavOpen ? "Close menu" : "Open menu"}
+          className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+        >
+          {mobileNavOpen ? (
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          ) : (
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          )}
+        </button>
+      </div>
+
+      {/* ── Mobile slide-out nav drawer ── */}
+      {mobileNavOpen && (
+        <div className="absolute inset-0 z-20 flex md:hidden">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileNavOpen(false)} />
+          {/* Drawer */}
+          <nav className="relative z-10 w-72 max-w-[85vw] h-full bg-[#0f0c29] border-r border-white/10 overflow-y-auto p-4 space-y-1">
+            <div className="flex items-center gap-3 mb-5 px-1">
+              <Image src="/brand/galexii-logo-round.png" alt="SpEdGalexii" width={40} height={40} className="rounded-full" />
+              <div>
+                <div className="font-semibold text-white text-sm">SpEdGalexii</div>
+                <div className="text-white/50 text-xs">Audit Universe</div>
+              </div>
+            </div>
+            {NAV.map((item) => {
+              const active = isActivePath(pathname, item.href);
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cx(
+                    "flex items-center gap-3 rounded-xl px-3 py-3 text-white/85 transition",
+                    active
+                      ? "bg-cyan-500/15 border border-cyan-300/25 text-white"
+                      : "hover:bg-white/8 border border-transparent"
+                  )}
+                >
+                  <span className={cx(
+                    "grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5",
+                    active && "border-cyan-300/30 bg-cyan-400/15 text-cyan-200"
+                  )}>
+                    {item.icon}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">{item.label}</div>
+                    <div className="text-xs text-white/50 truncate">{item.sub}</div>
+                  </div>
+                  {active && <span className="ml-auto h-2 w-2 shrink-0 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.8)]" />}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+
+      <div className="relative mx-auto flex flex-1 min-h-0 w-full gap-6 px-3 py-4 md:px-6 md:py-6 overflow-hidden">
         {/* ✅ Sidebar with adjustable width on desktop */}
         <aside
           className="hidden shrink-0 md:block min-h-0"
@@ -635,7 +706,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
           aria-hidden="true"
         />
 
-        <main className="min-w-0 flex-1 min-h-0 flex flex-col">
+        <main className="min-w-0 flex-1 min-h-0 flex flex-col overflow-hidden">
           <div className="scrollCosmic flex-1 min-h-0 overflow-y-auto pr-1 md:pr-2">
             <div className="panel popCard popCard--violet min-w-0 overflow-hidden relative">
               {/* Stars in the main content gutter */}
@@ -644,7 +715,7 @@ export function GalaxyShell({ children }: { children: React.ReactNode }) {
                 <div className="card-stars-layer2" />
               </div>
 
-              <div className="p-5 pt-8 md:p-10 md:pt-14 min-w-0 relative z-1">{children}</div>
+              <div className="p-4 pt-6 md:p-10 md:pt-14 min-w-0 relative z-1">{children}</div>
             </div>
 
             {/* Footer */}
