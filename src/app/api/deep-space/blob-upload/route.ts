@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
   }
 
   const blob = await put(file.name, file, {
-    access: "private",
+    // Use public access so the external Deep Space API
+    // (running outside Vercel) can download the PDF.
+    access: "public",
     addRandomSuffix: true,
   });
 
