@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { streamChat, isAIConfigured, type ChatMessage, type ChatMode } from "@/lib/ai";
+import { streamChat, isAIConfigured, getAIProviders, type ChatMessage, type ChatMode } from "@/lib/ai";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -64,15 +64,19 @@ export async function POST(req: NextRequest) {
 
 /**
  * GET /api/ai/chat
- * 
- * Returns AI configuration status.
+ *
+ * Returns AI configuration status for all providers.
+ * Used by GalexiiChat to decide whether to show the chat UI.
  */
 export async function GET() {
+  const providers = getAIProviders();
   return new Response(
     JSON.stringify({
       configured: isAIConfigured(),
-      model: "gpt-4o-mini",
-      features: ["chat", "analysis", "recommendations"],
+      providers,
+      // Which model is actually being used for chat
+      chatModel: providers.groq ? "llama-3.3-70b-versatile (Groq)" : "gpt-4o-mini (OpenAI)",
+      features: ["chat", "analysis", "recommendations", ...(providers.elevenlabs ? ["tts"] : [])],
     }),
     { headers: { "Content-Type": "application/json" } }
   );

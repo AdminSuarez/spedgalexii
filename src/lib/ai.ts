@@ -1,32 +1,59 @@
 /**
  * AI Service Layer for SpEdGalexii
- * 
- * Handles all OpenAI interactions with FERPA-safe system prompts.
- * Student data is processed in-session only — never stored by OpenAI.
- * 
- * Uses: gpt-4o-mini for chat, gpt-4o for deep analysis
+ *
+ * Provider priority:
+ *   Chat     → Groq (llama-3.3-70b-versatile, fast + cheap) → OpenAI fallback (gpt-4o-mini)
+ *   Analysis → OpenAI gpt-4o (structured JSON output)
+ *   TTS      → ElevenLabs (see /api/tts route)
+ *
+ * Student data is processed in-session only — never stored by any provider.
  */
 
 import OpenAI from "openai";
+import Groq from "groq-sdk";
 
-// ── Client (lazy singleton) ──
-let _client: OpenAI | null = null;
+// ── OpenAI client (lazy singleton) ──
+let _openai: OpenAI | null = null;
 
-function getClient(): OpenAI {
-  if (!_client) {
+function getOpenAI(): OpenAI {
+  if (!_openai) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error(
         "OPENAI_API_KEY is not set. Add it to .env.local to enable AI features."
       );
     }
-    _client = new OpenAI({ apiKey });
+    _openai = new OpenAI({ apiKey });
   }
-  return _client;
+  return _openai;
+}
+
+// ── Groq client (lazy singleton, optional) ──
+let _groq: Groq | null = null;
+
+function getGroq(): Groq | null {
+  if (_groq) return _groq;
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) return null;
+  _groq = new Groq({ apiKey });
+  return _groq;
 }
 
 export function isAIConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY);
+  return Boolean(process.env.OPENAI_API_KEY) || Boolean(process.env.GROQ_API_KEY);
+}
+
+export function isElevenLabsConfigured(): boolean {
+  return Boolean(process.env.ELEVENLABS_API_KEY);
+}
+
+/** Returns which providers are available */
+export function getAIProviders(): { openai: boolean; groq: boolean; elevenlabs: boolean } {
+  return {
+    openai: Boolean(process.env.OPENAI_API_KEY),
+    groq: Boolean(process.env.GROQ_API_KEY),
+    elevenlabs: Boolean(process.env.ELEVENLABS_API_KEY),
+  };
 }
 
 // ── System Prompts ──
@@ -146,7 +173,9 @@ export type ChatMessage = {
 };
 
 /**
- * Stream a chat response from OpenAI.
+ * Stream a chat response.
+ * Uses Groq (llama-3.3-70b-versatile) if available — it's 10× faster and cheaper.
+ * Falls back to OpenAI gpt-4o-mini if Groq is not configured.
  * Returns a ReadableStream for Server-Sent Events.
  */
 export async function streamChat(
@@ -154,8 +183,6 @@ export async function streamChat(
   context?: string,
   mode: ChatMode = "parent"
 ): Promise<ReadableStream<Uint8Array>> {
-  const client = getClient();
-
   const systemMessages: ChatMessage[] = [
     {
       role: "system",
@@ -163,7 +190,6 @@ export async function streamChat(
     },
   ];
 
-  // If analysis context is provided, inject it
   if (context) {
     systemMessages.push({
       role: "system",
@@ -171,15 +197,48 @@ export async function streamChat(
     });
   }
 
+  const allMessages = [...systemMessages, ...messages];
+  const encoder = new TextEncoder();
+
+  // ── Try Groq first (fast) ──
+  const groq = getGroq();
+  if (groq) {
+    const stream = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: allMessages,
+      stream: true,
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content;
+            if (content) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
+            }
+          }
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Stream error" })}\n\n`));
+          controller.close();
+        }
+      },
+    });
+  }
+
+  // ── Fallback: OpenAI gpt-4o-mini ──
+  const client = getOpenAI();
   const stream = await client.chat.completions.create({
     model: "gpt-4o-mini",
-    messages: [...systemMessages, ...messages],
+    messages: allMessages,
     stream: true,
     temperature: 0.7,
     max_tokens: 2000,
   });
-
-  const encoder = new TextEncoder();
 
   return new ReadableStream({
     async start(controller) {
@@ -187,19 +246,13 @@ export async function streamChat(
         for await (const chunk of stream) {
           const content = chunk.choices[0]?.delta?.content;
           if (content) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ content })}\n\n`)
-            );
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
           }
         }
         controller.enqueue(encoder.encode("data: [DONE]\n\n"));
         controller.close();
-      } catch (err) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ error: "Stream error" })}\n\n`
-          )
-        );
+      } catch {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: "Stream error" })}\n\n`));
         controller.close();
       }
     },
@@ -241,7 +294,7 @@ export type AIAnalysisResult = {
 export async function generateAnalysis(
   analysisData: Record<string, unknown>
 ): Promise<AIAnalysisResult> {
-  const client = getClient();
+  const client = getOpenAI();
 
   const response = await client.chat.completions.create({
     model: "gpt-4o",
@@ -272,7 +325,7 @@ export async function generateAnalysis(
 export async function generateParentSummary(
   analysisData: Record<string, unknown>
 ): Promise<string> {
-  const client = getClient();
+  const client = getOpenAI();
 
   const response = await client.chat.completions.create({
     model: "gpt-4o-mini",
