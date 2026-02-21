@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         const externalFiles: { name: string; url: string }[] = [];
 
         for (const f of files) {
-          const blobResult = await get(f.pathname, { access: "public" });
+          const blobResult = await get(f.pathname);
           if (!blobResult || blobResult.statusCode !== 200) {
             throw new Error(
               `Failed to resolve blob for ${f.pathname} (${blobResult?.statusCode ?? "no status"})`,
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
     await mkdir(auditDir, { recursive: true });
 
     for (const f of files) {
-      const blobResult = await get(f.pathname, { access: "public" });
+      const blobResult = await get(f.pathname);
 
       if (!blobResult || blobResult.statusCode !== 200 || !blobResult.stream) {
         throw new Error(`Download failed: ${f.pathname} (${blobResult?.statusCode ?? "no status"})`);
