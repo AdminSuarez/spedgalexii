@@ -367,16 +367,16 @@ h1,h2,h3{
   transform: rotate(3deg);
   opacity: 1;
   background:
-    /* Bright white giants */
-    radial-gradient(circle, rgba(255,255,255,1) 0 2.2px, transparent 3.5px) 0 0/380px 380px,
-    radial-gradient(circle, rgba(255,255,255,.95) 0 1.8px, transparent 3px) 180px 120px/520px 520px,
-    radial-gradient(circle, rgba(255,255,255,.88) 0 1.5px, transparent 2.8px) 90px 280px/620px 620px,
+    /* Bright white giants — sharp pinpoints, gap = 0.2px */
+    radial-gradient(circle, rgba(255,255,255,1) 0 1.4px, transparent 1.6px) 0 0/380px 380px,
+    radial-gradient(circle, rgba(255,255,255,.95) 0 1.2px, transparent 1.4px) 180px 120px/520px 520px,
+    radial-gradient(circle, rgba(255,255,255,.88) 0 1.0px, transparent 1.2px) 90px 280px/620px 620px,
     /* Blue-white hot stars */
-    radial-gradient(circle, rgba(200,220,255,.92) 0 1.6px, transparent 2.8px) 240px 60px/440px 440px,
-    radial-gradient(circle, rgba(180,200,255,.85) 0 1.4px, transparent 2.6px) 320px 340px/580px 580px,
+    radial-gradient(circle, rgba(200,220,255,.92) 0 1.1px, transparent 1.3px) 240px 60px/440px 440px,
+    radial-gradient(circle, rgba(180,200,255,.85) 0 1.0px, transparent 1.2px) 320px 340px/580px 580px,
     /* Yellow/warm stars */
-    radial-gradient(circle, rgba(255,248,220,.88) 0 1.5px, transparent 2.6px) 140px 200px/490px 490px,
-    radial-gradient(circle, rgba(255,240,200,.82) 0 1.3px, transparent 2.4px) 380px 160px/560px 560px;
+    radial-gradient(circle, rgba(255,248,220,.88) 0 1.0px, transparent 1.2px) 140px 200px/490px 490px,
+    radial-gradient(circle, rgba(255,240,200,.82) 0 0.9px, transparent 1.1px) 380px 160px/560px 560px;
   animation: drift1 140s linear infinite, starTwinkle 6s ease-in-out infinite;
 }
 
@@ -386,16 +386,16 @@ h1,h2,h3{
   opacity: .88;
   background:
     /* Dense white field */
-    radial-gradient(circle, rgba(255,255,255,.78) 0 1.2px, transparent 2.4px) 40px 80px/280px 280px,
-    radial-gradient(circle, rgba(255,255,255,.72) 0 1.1px, transparent 2.2px) 160px 20px/340px 340px,
-    radial-gradient(circle, rgba(255,255,255,.68) 0 1.0px, transparent 2.1px) 90px 180px/420px 420px,
-    radial-gradient(circle, rgba(255,255,255,.62) 0 0.9px, transparent 2.0px) 220px 260px/380px 380px,
+    radial-gradient(circle, rgba(255,255,255,.78) 0 0.8px, transparent 1.0px) 40px 80px/280px 280px,
+    radial-gradient(circle, rgba(255,255,255,.72) 0 0.75px, transparent 0.95px) 160px 20px/340px 340px,
+    radial-gradient(circle, rgba(255,255,255,.68) 0 0.7px, transparent 0.9px) 90px 180px/420px 420px,
+    radial-gradient(circle, rgba(255,255,255,.62) 0 0.65px, transparent 0.85px) 220px 260px/380px 380px,
     /* Blue tinted distant */
-    radial-gradient(circle, rgba(180,200,255,.65) 0 1.0px, transparent 2.1px) 280px 140px/460px 460px,
-    radial-gradient(circle, rgba(200,210,255,.58) 0 0.9px, transparent 1.9px) 120px 320px/520px 520px,
+    radial-gradient(circle, rgba(180,200,255,.65) 0 0.7px, transparent 0.9px) 280px 140px/460px 460px,
+    radial-gradient(circle, rgba(200,210,255,.58) 0 0.65px, transparent 0.85px) 120px 320px/520px 520px,
     /* Warm tinted */
-    radial-gradient(circle, rgba(255,235,200,.55) 0 0.9px, transparent 1.9px) 340px 60px/480px 480px,
-    radial-gradient(circle, rgba(255,220,180,.50) 0 0.85px, transparent 1.8px) 60px 400px/540px 540px;
+    radial-gradient(circle, rgba(255,235,200,.55) 0 0.65px, transparent 0.85px) 340px 60px/480px 480px,
+    radial-gradient(circle, rgba(255,220,180,.50) 0 0.6px, transparent 0.8px) 60px 400px/540px 540px;
   animation: drift2 200s linear infinite, starTwinkle 9s ease-in-out infinite;
 }
 
@@ -405,14 +405,14 @@ h1,h2,h3{
   opacity: .75;
   background:
     /* Very dense small stars */
-    radial-gradient(circle, rgba(255,255,255,.55) 0 0.8px, transparent 1.8px) 20px 40px/180px 180px,
-    radial-gradient(circle, rgba(255,255,255,.50) 0 0.75px, transparent 1.7px) 100px 90px/220px 220px,
-    radial-gradient(circle, rgba(255,255,255,.46) 0 0.7px, transparent 1.6px) 60px 160px/260px 260px,
-    radial-gradient(circle, rgba(255,255,255,.42) 0 0.65px, transparent 1.5px) 140px 200px/300px 300px,
-    radial-gradient(circle, rgba(255,255,255,.38) 0 0.6px, transparent 1.4px) 180px 120px/340px 340px,
+    radial-gradient(circle, rgba(255,255,255,.55) 0 0.55px, transparent 0.75px) 20px 40px/180px 180px,
+    radial-gradient(circle, rgba(255,255,255,.50) 0 0.5px, transparent 0.7px) 100px 90px/220px 220px,
+    radial-gradient(circle, rgba(255,255,255,.46) 0 0.5px, transparent 0.7px) 60px 160px/260px 260px,
+    radial-gradient(circle, rgba(255,255,255,.42) 0 0.45px, transparent 0.65px) 140px 200px/300px 300px,
+    radial-gradient(circle, rgba(255,255,255,.38) 0 0.45px, transparent 0.65px) 180px 120px/340px 340px,
     /* Faint blue dust */
-    radial-gradient(circle, rgba(180,200,255,.35) 0 0.6px, transparent 1.4px) 240px 80px/380px 380px,
-    radial-gradient(circle, rgba(160,180,255,.30) 0 0.55px, transparent 1.3px) 80px 280px/420px 420px;
+    radial-gradient(circle, rgba(180,200,255,.35) 0 0.45px, transparent 0.65px) 240px 80px/380px 380px,
+    radial-gradient(circle, rgba(160,180,255,.30) 0 0.4px, transparent 0.6px) 80px 280px/420px 420px;
   animation: drift3 280s linear infinite, starTwinkle 12s ease-in-out infinite;
 }
 
