@@ -22,6 +22,7 @@ import {
   Search,
   Sparkles,
   CreditCard,
+  Presentation,
   Image as ImageIcon,
 } from "lucide-react";
 
@@ -140,6 +141,14 @@ const NAV: NavItem[] = [
     sub: "Build PPT + packet by student ID",
     icon: <FileText className="h-4 w-4" />,
     href: "/packets",
+    status: "live",
+  },
+  {
+    key: "ard-preview",
+    label: "ARD Preview",
+    sub: "See all 20 ARD slide designs",
+    icon: <Presentation className="h-4 w-4" />,
+    href: "/ard-preview",
     status: "live",
   },
   {
