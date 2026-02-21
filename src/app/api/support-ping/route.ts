@@ -28,23 +28,48 @@ export async function POST(req: Request) {
     );
   }
 
-  const payload = {
-    text: "🆘 SpEdGalexii support ping",
-    attachments: [
-      {
-        color: "#9b5cfb",
-        fields: [
-          { title: "Message", value: message, short: false },
-          body.pageUrl
-            ? { title: "Page", value: body.pageUrl, short: false }
-            : undefined,
-          body.lastQuestion
-            ? { title: "Last Galexii Question", value: body.lastQuestion, short: false }
-            : undefined,
-        ].filter(Boolean),
-      },
-    ],
-  } as const;
+  // Detect Discord vs Slack webhook by URL shape and send the right format.
+  // Discord: https://discord.com/api/webhooks/...
+  // Slack:   https://hooks.slack.com/...
+  const isDiscord = webhook.includes("discord.com/api/webhooks");
+
+  const payload = isDiscord
+    ? {
+        // Discord format: content + embeds
+        content: "🆘 **SpEdGalexii support ping**",
+        embeds: [
+          {
+            color: 0x9b5cfb,
+            fields: [
+              { name: "Message", value: message, inline: false },
+              ...(body.pageUrl
+                ? [{ name: "Page", value: body.pageUrl, inline: false }]
+                : []),
+              ...(body.lastQuestion
+                ? [{ name: "Last Galexii Question", value: body.lastQuestion, inline: false }]
+                : []),
+            ],
+          },
+        ],
+      }
+    : {
+        // Slack format: text + attachments
+        text: "🆘 SpEdGalexii support ping",
+        attachments: [
+          {
+            color: "#9b5cfb",
+            fields: [
+              { title: "Message", value: message, short: false },
+              ...(body.pageUrl
+                ? [{ title: "Page", value: body.pageUrl, short: false }]
+                : []),
+              ...(body.lastQuestion
+                ? [{ title: "Last Galexii Question", value: body.lastQuestion, short: false }]
+                : []),
+            ],
+          },
+        ],
+      };
 
   const res = await fetch(webhook, {
     method: "POST",

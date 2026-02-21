@@ -3,7 +3,7 @@ import { spawn } from "child_process";
 import { writeFile, mkdir, readFile, readdir, unlink } from "fs/promises";
 import path from "path";
 import os from "os";
-import { get } from "@vercel/blob";
+import { get, head } from "@vercel/blob";
 
 export const runtime = "nodejs";
 export const maxDuration = 120; // 2 minutes for processing
@@ -36,18 +36,21 @@ export async function POST(req: NextRequest) {
     // If a remote Deep Space API is configured, use it (cloud path).
     if (apiUrl) {
       try {
-        // Turn private blob pathnames into signed download URLs
+        // Turn private blob pathnames into signed download URLs.
+        // Use head() instead of get() — we only need the downloadUrl metadata,
+        // not the actual blob content stream. head() is a lightweight HEAD
+        // request that returns the blob's signed downloadUrl without
+        // downloading any bytes.
         const externalFiles: { name: string; url: string }[] = [];
 
         for (const f of files) {
-          const blobResult = await get(f.pathname, { access: "private" });
-          if (!blobResult || blobResult.statusCode !== 200) {
+          const blobMeta = await head(f.pathname);
+          if (!blobMeta) {
             throw new Error(
-              `Failed to resolve blob for ${f.pathname} (${blobResult?.statusCode ?? "no status"})`,
+              `Blob not found or token missing for: ${f.pathname}`,
             );
           }
-          const downloadUrl = blobResult.blob.downloadUrl;
-          externalFiles.push({ name: f.name, url: downloadUrl });
+          externalFiles.push({ name: f.name, url: blobMeta.downloadUrl });
         }
 
         const target = apiUrl.replace(/\/$/, "") + "/analyze";
@@ -122,10 +125,17 @@ export async function POST(req: NextRequest) {
     for (const f of files) {
       const blobResult = await get(f.pathname, { access: "private" });
 
-      if (!blobResult || blobResult.statusCode !== 200 || !blobResult.stream) {
-        throw new Error(`Download failed: ${f.pathname} (${blobResult?.statusCode ?? "no status"})`);
+      if (!blobResult) {
+        throw new Error(`Blob not found: ${f.pathname} — check BLOB_READ_WRITE_TOKEN`);
       }
 
+      if (blobResult.statusCode !== 200 || !blobResult.stream) {
+        throw new Error(
+          `Download failed: ${f.pathname} (HTTP ${blobResult.statusCode})`,
+        );
+      }
+
+      // blobResult.statusCode === 200 here; TypeScript narrows stream to ReadableStream.
       const arrayBuf = await new Response(blobResult.stream).arrayBuffer();
       const buffer = Buffer.from(arrayBuf);
       const baseName = f.name || "document.pdf";
