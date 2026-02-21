@@ -641,9 +641,9 @@ class StudentDocumentAnalyzer:
         return self.documents
     
     def _classify_document(self, filepath: Path) -> dict:
-        """Classify document type based on filename."""
+        """Classify document type based on filename and content hints."""
         name = filepath.name.lower()
-        
+
         doc_type = "Unknown"
         if "iep" in name and "signed" in name:
             doc_type = "Signed IEP"
@@ -651,14 +651,40 @@ class StudentDocumentAnalyzer:
             doc_type = "IEP"
         elif "reed" in name:
             doc_type = "REED"
-        elif "fie" in name or "evaluation" in name:
+        elif "fiie" in name:
+            doc_type = "FIIE"  # Full Individual Initial Evaluation (initial)
+        elif "fie" in name or "full_individual" in name or "full individual" in name:
             doc_type = "FIE"
+        elif "evaluation" in name and "speech" not in name and "psych" not in name:
+            doc_type = "FIE"
+        elif "psych" in name or "psychological" in name:
+            doc_type = "Psychological Evaluation"
         elif "observation" in name:
-            doc_type = "Observation"
-        elif "speech" in name or "audiology" in name:
-            doc_type = "Speech/Audiology"
-        elif "bip" in name:
+            doc_type = "Classroom Observation"
+        elif "speech" in name or "language" in name or "slp" in name:
+            doc_type = "Speech/Language Evaluation"
+        elif "audiology" in name or "audiological" in name:
+            doc_type = "Audiological Evaluation"
+        elif "ot" in name or "occupational" in name:
+            doc_type = "OT Evaluation"
+        elif "pt" in name or "physical_therapy" in name or "physical therapy" in name:
+            doc_type = "PT Evaluation"
+        elif "orientation" in name or "mobility" in name:
+            doc_type = "Orientation & Mobility"
+        elif "bip" in name or "behavior_intervention" in name:
             doc_type = "BIP"
+        elif "fba" in name or "functional_behavior" in name:
+            doc_type = "FBA"
+        elif "pwn" in name or "prior_written" in name:
+            doc_type = "Prior Written Notice"
+        elif "transition" in name and "iep" not in name:
+            doc_type = "Transition Assessment"
+        elif "staar" in name:
+            doc_type = "STAAR Report"
+        elif "map" in name or "nwea" in name:
+            doc_type = "MAP Report"
+        elif "504" in name:
+            doc_type = "Section 504 Plan"
             
         # Extract date from filename (format: MMDDYYYY)
         date_match = re.search(r'-(\d{8})-', str(filepath))
@@ -1071,6 +1097,658 @@ class StudentDocumentAnalyzer:
         
         return result
                 
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # FIE / FIIE EXTRACTION
+    # ─────────────────────────────────────────────────────────────────────────
+    def _extract_fie_data(self) -> dict:
+        """Extract comprehensive data from FIE/FIIE documents."""
+        result = {
+            "available": False,
+            "document": None,
+            "doc_type": None,
+            "evaluation_date": None,
+            "consent_date": None,
+            "evaluator": None,
+            "eligibility_determined": None,
+            "disability_categories_considered": [],
+            "eligible_disability": None,
+            "sld_areas": [],
+            "strengths": [],
+            "areas_of_need": [],
+            "tests_administered": [],
+            "scores": {},
+            "parent_interview": False,
+            "teacher_interview": False,
+            "classroom_observation": False,
+            "vision_hearing_screening": None,
+            "language_dominance": None,
+            "ell_evaluation": False,
+            "medical_health_notes": [],
+            "emotional_disturbance_indicators": False,
+            "intellectual_disability_eval": False,
+            "autism_indicators": False,
+            "adaptive_behavior_assessed": False,
+            "speech_language_findings": {},
+            "visual_motor_findings": {},
+            "reevaluation_due_date": None,
+            "alerts": [],
+        }
+
+        fie_docs = [d for d in self.documents if d["type"] in ("FIE", "FIIE")]
+        if not fie_docs:
+            return result
+
+        # Use most recent FIE
+        doc = sorted(fie_docs, key=lambda x: x["date"] or "", reverse=True)[0]
+        result["available"] = True
+        result["document"] = doc["filename"]
+        result["doc_type"] = doc["type"]
+        result["evaluation_date"] = doc["date"]
+        text = self.extracted_text.get(doc["filename"], "")
+        tl = text.lower()
+
+        # ── Consent date ──────────────────────────────────────────────────────
+        consent_match = re.search(
+            r'(?:consent|agreement).*?(?:date|signed)[:\s]*(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})',
+            tl, re.I
+        )
+        if consent_match:
+            result["consent_date"] = consent_match.group(1)
+
+        # ── Evaluator ─────────────────────────────────────────────────────────
+        eval_match = re.search(
+            r'(?:diagnostician|evaluator|examiner|psychologist)[:\s]+([A-Z][a-z]+(?: [A-Z][a-z]+)+)',
+            text
+        )
+        if eval_match:
+            result["evaluator"] = eval_match.group(1)
+
+        # ── Eligibility determination ─────────────────────────────────────────
+        if re.search(r'is\s+eligible|eligible\s+for\s+special\s+education', tl):
+            result["eligibility_determined"] = "Eligible"
+        elif re.search(r'is\s+not\s+eligible|does\s+not\s+(?:meet|qualify)', tl):
+            result["eligibility_determined"] = "Not Eligible"
+
+        # ── Disability categories considered ──────────────────────────────────
+        idea_categories = [
+            "specific learning disability", "speech or language impairment",
+            "intellectual disability", "emotional disturbance",
+            "autism", "other health impairment", "traumatic brain injury",
+            "visual impairment", "hearing impairment", "deaf-blindness",
+            "orthopedic impairment", "multiple disabilities",
+            "developmental delay"
+        ]
+        for cat in idea_categories:
+            if cat in tl:
+                result["disability_categories_considered"].append(cat.title())
+
+        # ── Eligible disability (primary) ─────────────────────────────────────
+        elig_match = re.search(
+            r'(?:primary\s+)?(?:eligibility|disability)[:\s]+([A-Z][A-Za-z ]+?)(?:\n|,|\.|Secondary)',
+            text
+        )
+        if elig_match:
+            result["eligible_disability"] = elig_match.group(1).strip()
+
+        # ── SLD areas identified ───────────────────────────────────────────────
+        sld_area_patterns = [
+            ("basic reading", "Basic Reading"),
+            ("reading comprehension", "Reading Comprehension"),
+            ("reading fluency", "Reading Fluency"),
+            (r"math(?:ematics)? calculation", "Math Calculation"),
+            (r"math(?:ematics)? problem.?solving", "Math Problem Solving"),
+            ("written expression", "Written Expression"),
+            ("oral expression", "Oral Expression"),
+            ("listening comprehension", "Listening Comprehension"),
+        ]
+        for pattern, label in sld_area_patterns:
+            if re.search(pattern, tl):
+                result["sld_areas"].append(label)
+
+        # ── Tests administered ────────────────────────────────────────────────
+        test_patterns = [
+            (r'wisc[\s\-]?v|wisc[\s\-]?iv', "WISC-V (Cognitive)"),
+            (r'wj[\s\-]?iv|woodcock.johnson', "WJ-IV (Academic Achievement)"),
+            (r'wj[\s\-]?iii', "WJ-III (Academic Achievement)"),
+            (r'ktea[\s\-]?3|kaufman.*achievement', "KTEA-3 (Academic Achievement)"),
+            (r'wiat[\s\-]?(?:ii|iii|4)', "WIAT (Academic Achievement)"),
+            (r'gort[\s\-]?\d', "GORT (Reading)"),
+            (r'ctopp[\s\-]?\d?', "CTOPP (Phonological Processing)"),
+            (r'celf[\s\-]?\d', "CELF (Language)"),
+            (r'basc[\s\-]?\d', "BASC (Behavior/Social-Emotional)"),
+            (r'conners[\s\-]?\d?', "Conners (ADHD)"),
+            (r'vmi|beery', "Beery VMI (Visual-Motor)"),
+            (r'tvps[\s\-]?\d?', "TVPS (Visual Processing)"),
+            (r'dtvp[\s\-]?\d?', "DTVP (Visual Processing)"),
+            (r'vineland[\s\-]?\d?', "Vineland (Adaptive Behavior)"),
+            (r'abas[\s\-]?\d?', "ABAS (Adaptive Behavior)"),
+            (r'besa|bilingual.*evaluation', "BESA (Bilingual Language)"),
+            (r'bvat', "BVAT (Bilingual Verbal Ability)"),
+            (r'ppvt[\s\-]?\d?', "PPVT (Receptive Vocabulary)"),
+            (r'eva|expressive.*vocabulary', "EVT (Expressive Vocabulary)"),
+            (r'cpt[\s\-]?\d?|continuous.performance', "CPT (Attention)"),
+            (r'cas[\s\-]?\d?', "CAS (Cognitive Assessment)"),
+            (r'kbit[\s\-]?\d?', "KBIT (Brief Cognitive)"),
+            (r'wasi[\s\-]?\d?', "WASI (Brief Cognitive)"),
+            (r'towl[\s\-]?\d?', "TOWL (Written Language)"),
+            (r'told[\s\-]?\d?', "TOLD (Language)"),
+        ]
+        for pattern, label in test_patterns:
+            if re.search(pattern, tl):
+                result["tests_administered"].append(label)
+
+        # ── Score extraction (standard scores + percentiles) ──────────────────
+        score_pattern = re.finditer(
+            r'([A-Z][A-Za-z ]{2,30})[:\s]+(?:standard score[:\s]+)?(\d{2,3})[,\s]+(?:percentile[:\s]+)?(\d{1,3})(?:th|st|nd|rd)?',
+            text
+        )
+        for m in score_pattern:
+            label = m.group(1).strip()
+            ss = int(m.group(2))
+            pct = int(m.group(3))
+            if 40 <= ss <= 160 and 1 <= pct <= 99:  # sanity check
+                result["scores"][label] = {"standard_score": ss, "percentile": pct}
+
+        # ── Required components ───────────────────────────────────────────────
+        result["parent_interview"] = bool(re.search(r'parent\s+interview|interview.*parent', tl))
+        result["teacher_interview"] = bool(re.search(r'teacher\s+interview|interview.*teacher', tl))
+        result["classroom_observation"] = bool(re.search(r'classroom\s+observation|observed.*in\s+class', tl))
+
+        # ── Vision / hearing ──────────────────────────────────────────────────
+        if re.search(r'vision.*pass|hearing.*pass|passed.*vision|passed.*hearing', tl):
+            result["vision_hearing_screening"] = "Passed"
+        elif re.search(r'vision.*fail|hearing.*fail|failed.*vision|failed.*hearing|referred.*audiolog', tl):
+            result["vision_hearing_screening"] = "Failed/Referred"
+
+        # ── Language dominance / ELL ──────────────────────────────────────────
+        lang_match = re.search(r'language\s+dominance[:\s]+(\w+)', tl)
+        if lang_match:
+            result["language_dominance"] = lang_match.group(1).title()
+        result["ell_evaluation"] = bool(re.search(r'besa|bvat|bilingual.*eval|language\s+proficiency', tl))
+
+        # ── Emotional disturbance ─────────────────────────────────────────────
+        result["emotional_disturbance_indicators"] = bool(
+            re.search(r'emotional\s+disturbance|internalizing|externalizing|depression|anxiety.*significant|mood\s+disorder', tl)
+        )
+
+        # ── Autism ────────────────────────────────────────────────────────────
+        result["autism_indicators"] = bool(
+            re.search(r'autism|asd|ados|adi-r|social\s+communication\s+disorder', tl)
+        )
+
+        # ── Intellectual disability / adaptive behavior ───────────────────────
+        result["intellectual_disability_eval"] = bool(
+            re.search(r'intellectual\s+disab|adaptive\s+behav|vineland|abas|daily\s+living\s+skills', tl)
+        )
+        result["adaptive_behavior_assessed"] = result["intellectual_disability_eval"]
+
+        # ── Strengths ─────────────────────────────────────────────────────────
+        strength_section = re.search(
+            r'(?:strength|asset|positive)[s:\s]+(.*?)(?:area[s]?\s+of\s+need|weakness|concern|recommend)',
+            tl, re.DOTALL
+        )
+        if strength_section:
+            raw = strength_section.group(1)
+            for line in raw.split('\n')[:6]:
+                line = line.strip(' -•*	')
+                if len(line) > 10:
+                    result["strengths"].append(line[:200])
+
+        # ── Areas of need ─────────────────────────────────────────────────────
+        need_section = re.search(
+            r'area[s]?\s+of\s+need[:\s]+(.*?)(?:recommendation|eligib|service|conclusion)',
+            tl, re.DOTALL
+        )
+        if need_section:
+            raw = need_section.group(1)
+            for line in raw.split('\n')[:8]:
+                line = line.strip(' -•*	')
+                if len(line) > 10:
+                    result["areas_of_need"].append(line[:200])
+
+        # ── Speech/language findings ──────────────────────────────────────────
+        if re.search(r'celf|speech.*language|articulation|pragmatic|phonolog', tl):
+            result["speech_language_findings"]["evaluated"] = True
+            celf_match = re.search(r'celf.*?(?:core|composite)[:\s]+(\d{2,3})', tl)
+            if celf_match:
+                result["speech_language_findings"]["celf_composite"] = int(celf_match.group(1))
+
+        # ── Visual-motor findings ─────────────────────────────────────────────
+        if re.search(r'vmi|beery|tvps|dtvp|visual.motor|visual.perceptual', tl):
+            result["visual_motor_findings"]["evaluated"] = True
+            vmi_match = re.search(r'(?:vmi|beery).*?(?:standard\s+score|ss)[:\s]+(\d{2,3})', tl)
+            if vmi_match:
+                result["visual_motor_findings"]["vmi_score"] = int(vmi_match.group(1))
+
+        # ── Re-evaluation due date ────────────────────────────────────────────
+        if doc["date"]:
+            try:
+                eval_dt = datetime.strptime(doc["date"], "%Y-%m-%d")
+                reeval_dt = eval_dt.replace(year=eval_dt.year + 3)
+                result["reevaluation_due_date"] = reeval_dt.strftime("%Y-%m-%d")
+            except Exception:
+                pass
+
+        # ── Alerts ────────────────────────────────────────────────────────────
+        if not result["parent_interview"]:
+            result["alerts"].append("No parent interview documented in FIE")
+        if not result["teacher_interview"]:
+            result["alerts"].append("No teacher interview documented in FIE")
+        if not result["classroom_observation"]:
+            result["alerts"].append("No classroom observation documented in FIE")
+        if not result["tests_administered"]:
+            result["alerts"].append("No standardized tests identified in FIE — verify document completeness")
+        if result["vision_hearing_screening"] is None:
+            result["alerts"].append("Vision/hearing screening results not found in FIE")
+        if result["reevaluation_due_date"]:
+            try:
+                reeval_dt = datetime.strptime(result["reevaluation_due_date"], "%Y-%m-%d")
+                if reeval_dt < datetime.now():
+                    result["alerts"].append(
+                        f"RE-EVALUATION OVERDUE — FIE dated {doc['date']}, re-eval was due {result['reevaluation_due_date']}"
+                    )
+                elif (reeval_dt - datetime.now()).days < 180:
+                    result["alerts"].append(
+                        f"Re-evaluation due within 6 months: {result['reevaluation_due_date']}"
+                    )
+            except Exception:
+                pass
+
+        return result
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # REED EXTRACTION
+    # ─────────────────────────────────────────────────────────────────────────
+    def _extract_reed_data(self) -> dict:
+        """Extract comprehensive data from REED documents."""
+        result = {
+            "available": False,
+            "document": None,
+            "reed_date": None,
+            "reed_due_date": None,
+            "additional_data_needed": None,
+            "data_types_needed": [],
+            "existing_data_reviewed": [],
+            "parent_notified": False,
+            "parent_response": None,
+            "reevaluation_waived": False,
+            "eligibility_continues": None,
+            "current_performance_summary": None,
+            "committee_signatures": False,
+            "decision": None,
+            "alerts": [],
+        }
+
+        reed_docs = [d for d in self.documents if d["type"] == "REED"]
+        if not reed_docs:
+            return result
+
+        doc = sorted(reed_docs, key=lambda x: x["date"] or "", reverse=True)[0]
+        result["available"] = True
+        result["document"] = doc["filename"]
+        result["reed_date"] = doc["date"]
+        text = self.extracted_text.get(doc["filename"], "")
+        tl = text.lower()
+
+        # ── Additional data needed ─────────────────────────────────────────────
+        if re.search(r'no additional.*data.*needed|data.*not.*needed|waive.*eval', tl):
+            result["additional_data_needed"] = False
+            result["reevaluation_waived"] = True
+            result["decision"] = "No additional data needed — reevaluation waived"
+        elif re.search(r'additional.*data.*(?:is|are)\s+needed|need.*additional.*data|require.*new.*test', tl):
+            result["additional_data_needed"] = True
+            result["decision"] = "Additional data needed — full FIE required"
+
+        # ── What data types needed ────────────────────────────────────────────
+        data_type_patterns = [
+            ("cognitive", "Cognitive Assessment"),
+            ("academic achievement", "Academic Achievement"),
+            ("behavior", "Behavioral Assessment"),
+            ("adaptive", "Adaptive Behavior"),
+            ("speech.*language", "Speech/Language Evaluation"),
+            ("occupational therapy", "Occupational Therapy Evaluation"),
+            ("physical therapy", "Physical Therapy Evaluation"),
+            ("audiol", "Audiological Evaluation"),
+            ("vision", "Vision Evaluation"),
+            ("transition", "Transition Assessment"),
+            ("classroom observation", "Classroom Observation"),
+        ]
+        if result["additional_data_needed"]:
+            for pattern, label in data_type_patterns:
+                if re.search(pattern, tl):
+                    result["data_types_needed"].append(label)
+
+        # ── Existing data sources reviewed ───────────────────────────────────
+        source_patterns = [
+            (r'previous\s+(?:fie|evaluation|testing)', "Previous FIE/Evaluation"),
+            (r'staar', "STAAR Results"),
+            (r'report\s+card|grades', "Grades/Report Cards"),
+            (r'teacher\s+(?:input|report|observation)', "Teacher Input/Reports"),
+            (r'parent\s+(?:input|concern|interview)', "Parent Input"),
+            (r'progress\s+(?:monitor|data)', "Progress Monitoring Data"),
+            (r'curriculum.based', "Curriculum-Based Assessment"),
+            (r'attendance', "Attendance Records"),
+            (r'discipline', "Discipline Records"),
+            (r'map|nwea', "MAP Assessment"),
+            (r'health\s+(?:record|history)', "Health Records"),
+        ]
+        for pattern, label in source_patterns:
+            if re.search(pattern, tl):
+                result["existing_data_reviewed"].append(label)
+
+        # ── Parent notification ────────────────────────────────────────────────
+        result["parent_notified"] = bool(
+            re.search(r'parent.*(?:notif|informed|sent|mailed|emailed)', tl)
+        )
+
+        # ── Parent response ────────────────────────────────────────────────────
+        if re.search(r'parent.*agree|agreed.*no.*additional|waive.*right.*eval', tl):
+            result["parent_response"] = "Agreed — no additional evaluation"
+        elif re.search(r'parent.*request.*eval|requested.*full.*eval', tl):
+            result["parent_response"] = "Requested full evaluation"
+        elif re.search(r'no.*response|did not respond|unable.*to.*reach', tl):
+            result["parent_response"] = "No response"
+
+        # ── Eligibility continues ──────────────────────────────────────────────
+        if re.search(r'continues\s+to\s+be\s+eligible|eligibility\s+continues|remain\s+eligible', tl):
+            result["eligibility_continues"] = True
+        elif re.search(r'no\s+longer\s+eligible|eligibility\s+discontinued|does\s+not\s+continue', tl):
+            result["eligibility_continues"] = False
+
+        # ── Committee signatures ───────────────────────────────────────────────
+        result["committee_signatures"] = bool(
+            re.search(r'signature|signed|committee\s+member', tl)
+        )
+
+        # ── Current performance summary ────────────────────────────────────────
+        perf_match = re.search(
+            r'(?:current\s+performance|present\s+level|summary\s+of\s+performance)[:\s]+(.*?)(?:\n\n|evaluation\s+decision|additional\s+data)',
+            text, re.DOTALL | re.I
+        )
+        if perf_match:
+            result["current_performance_summary"] = perf_match.group(1).strip()[:500]
+
+        # ── REED due date (next one) ────────────────────────────────────────────
+        reed_due_match = re.search(r'reed\s+due[:\s]+(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})', tl)
+        if reed_due_match:
+            result["reed_due_date"] = reed_due_match.group(1)
+
+        # ── Alerts ────────────────────────────────────────────────────────────
+        if not result["parent_notified"]:
+            result["alerts"].append("No documentation of parent notification for REED")
+        if result["additional_data_needed"] is None:
+            result["alerts"].append("REED decision unclear — additional data needed not specified")
+        if result["additional_data_needed"] and not result["data_types_needed"]:
+            result["alerts"].append("REED says additional data needed but specific areas not identified")
+        if not result["committee_signatures"]:
+            result["alerts"].append("Committee signatures not found in REED")
+
+        return result
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # IEP SERVICES & PLAAFP EXTRACTION (all domains)
+    # ─────────────────────────────────────────────────────────────────────────
+    def _extract_iep_services(self) -> dict:
+        """Extract services, accommodations, ESY, AT, and full PLAAFP from IEP."""
+        result = {
+            "available": False,
+            "iep_start_date": None,
+            "iep_end_date": None,
+            "special_education_services": [],
+            "related_services": [],
+            "supplementary_aids": [],
+            "classroom_accommodations": [],
+            "testing_accommodations": [],
+            "esy_considered": None,
+            "esy_services": [],
+            "at_considered": None,
+            "at_provided": [],
+            "medicaid_consent": None,
+            "parent_rights_provided": None,
+            "bip_present": False,
+            "manifestation_determination": False,
+            "nonparticipation_justification": None,
+            "testing_designation": None,
+            "section_504_relationship": None,
+            "plaafp_all_domains": {},
+            "goals_detail": [],
+            "services_total_minutes_per_week": 0,
+            "alerts": [],
+        }
+
+        ieps = [d for d in self.documents if "IEP" in d["type"]]
+        if not ieps:
+            return result
+
+        doc = sorted(ieps, key=lambda x: x["date"] or "", reverse=True)[0]
+        result["available"] = True
+        text = self.extracted_text.get(doc["filename"], "")
+        tl = text.lower()
+
+        # ── IEP dates ─────────────────────────────────────────────────────────
+        start_match = re.search(r'(?:iep|plan)\s+(?:start|begin)[:\s]+(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})', tl)
+        end_match = re.search(r'(?:iep|plan)\s+end[:\s]+(\d{1,2}[/\-]\d{1,2}[/\-]\d{2,4})', tl)
+        if start_match:
+            result["iep_start_date"] = start_match.group(1)
+        if end_match:
+            result["iep_end_date"] = end_match.group(1)
+
+        # ── Special education services (SDI) ──────────────────────────────────
+        # Pattern: service name + minutes + frequency + location
+        sdi_patterns = [
+            r'(?:special\s+education|sdi|specially\s+designed\s+instruction)[:\s]+(.*?)(?:|minutes)',
+            r'(\d+)\s+minutes?\s+(?:per|a)\s+(?:week|day)[,\s]+(\d+)\s+(?:times|sessions)',
+        ]
+        # Grab service blocks via "Service:" pattern
+        service_blocks = re.finditer(
+            r'(?:Service|SDI|Specially Designed Instruction)[:\s]+([^\n]{5,80})\s*\n'
+            r'(?:.*?Minutes?[:\s]+(\d+).*?\n)?'
+            r'(?:.*?(?:per week|per day|frequency)[:\s]+([^\n]{1,40})\n)?'
+            r'(?:.*?(?:location|setting)[:\s]+([^\n]{1,60})\n)?',
+            text, re.I | re.DOTALL
+        )
+        total_minutes = 0
+        for m in service_blocks:
+            service_name = m.group(1).strip()
+            minutes = int(m.group(2)) if m.group(2) else None
+            frequency = m.group(3).strip() if m.group(3) else None
+            location = m.group(4).strip() if m.group(4) else None
+            if service_name and len(service_name) > 3:
+                result["special_education_services"].append({
+                    "service": service_name,
+                    "minutes": minutes,
+                    "frequency": frequency,
+                    "location": location,
+                })
+                if minutes:
+                    total_minutes += minutes
+        result["services_total_minutes_per_week"] = total_minutes
+
+        # ── Related services ───────────────────────────────────────────────────
+        related_keywords = [
+            "speech-language", "speech language", "occupational therapy",
+            "physical therapy", "counseling", "orientation and mobility",
+            "audiology", "school health", "transportation", "interpreter"
+        ]
+        for kw in related_keywords:
+            if kw in tl:
+                # Try to grab minutes near keyword
+                min_match = re.search(
+                    rf'{re.escape(kw)}.*?(\d+)\s*minutes',
+                    tl, re.I
+                )
+                result["related_services"].append({
+                    "service": kw.title(),
+                    "minutes": int(min_match.group(1)) if min_match else None,
+                })
+
+        # ── Supplementary aids ────────────────────────────────────────────────
+        supp_section = re.search(
+            r'supplementary\s+aids?\s+(?:and\s+)?(?:support|service)[s:\s]+(.*?)(?:\n\n|testing|accommodat)',
+            tl, re.DOTALL
+        )
+        if supp_section:
+            for line in supp_section.group(1).split('\n')[:8]:
+                line = line.strip(' -•*	')
+                if len(line) > 5:
+                    result["supplementary_aids"].append(line[:200])
+
+        # ── Classroom & testing accommodations (from IEP PDF directly) ────────
+        acc_section = re.search(
+            r'(?:classroom\s+accommodat|instructional\s+accommodat)[s:\s]+(.*?)(?:testing\s+accommodat|state\s+assess|goal|$)',
+            tl, re.DOTALL
+        )
+        if acc_section:
+            for line in acc_section.group(1).split('\n')[:15]:
+                line = line.strip(' -•*	✓□')
+                if len(line) > 5:
+                    result["classroom_accommodations"].append(line[:200])
+
+        test_acc_section = re.search(
+            r'(?:testing\s+accommodat|state\s+assess.*accommodat)[s:\s]+(.*?)(?:goal|esy|extended\s+school|assistive\s+tech|$)',
+            tl, re.DOTALL
+        )
+        if test_acc_section:
+            for line in test_acc_section.group(1).split('\n')[:15]:
+                line = line.strip(' -•*	✓□')
+                if len(line) > 5:
+                    result["testing_accommodations"].append(line[:200])
+
+        # ── ESY ────────────────────────────────────────────────────────────────
+        if re.search(r'extended\s+school\s+year', tl):
+            result["esy_considered"] = True
+            if re.search(r'esy.*(?:yes|will\s+receive|qualif)', tl):
+                result["esy_services"].append("ESY services approved")
+            elif re.search(r'esy.*(?:no|does\s+not\s+qualif|not\s+eligible)', tl):
+                result["esy_services"] = []
+                result["esy_considered"] = "Considered — not needed"
+        else:
+            result["esy_considered"] = False
+            result["alerts"].append("ESY not mentioned in IEP — must be considered annually")
+
+        # ── Assistive Technology ───────────────────────────────────────────────
+        if re.search(r'assistive\s+tech', tl):
+            result["at_considered"] = True
+            at_section = re.search(
+                r'assistive\s+tech.*?\n(.*?)(?:\n\n|esy|service|goal)',
+                tl, re.DOTALL
+            )
+            if at_section:
+                for line in at_section.group(1).split('\n')[:6]:
+                    line = line.strip(' -•*	')
+                    if len(line) > 3:
+                        result["at_provided"].append(line[:150])
+        else:
+            result["at_considered"] = False
+            result["alerts"].append("Assistive technology consideration not documented in IEP")
+
+        # ── Medicaid consent ───────────────────────────────────────────────────
+        if re.search(r'medicaid.*(?:yes|consent\s+given|signed)', tl):
+            result["medicaid_consent"] = True
+        elif re.search(r'medicaid.*(?:no|declined|refused|not\s+sign)', tl):
+            result["medicaid_consent"] = False
+
+        # ── Parent rights provided ─────────────────────────────────────────────
+        result["parent_rights_provided"] = bool(
+            re.search(r'parent.*rights.*(?:provided|given|received|copy)', tl)
+        )
+
+        # ── BIP ────────────────────────────────────────────────────────────────
+        result["bip_present"] = bool(re.search(r'bip|behavior\s+intervention\s+plan', tl))
+
+        # ── Manifestation Determination ────────────────────────────────────────
+        result["manifestation_determination"] = bool(
+            re.search(r'manifestation\s+determination|manifestation\s+review', tl)
+        )
+
+        # ── Nonparticipation justification ────────────────────────────────────
+        nonpart = re.search(
+            r'(?:non.?participation|removal.*from\s+general)\s*[:.\s]+(.*?)(?:\n\n|placement|setting)',
+            tl, re.DOTALL
+        )
+        if nonpart:
+            result["nonparticipation_justification"] = nonpart.group(1).strip()[:300]
+
+        # ── Testing designation ────────────────────────────────────────────────
+        if re.search(r'staar\s+alt\s*2|alternate\s+assessment', tl):
+            result["testing_designation"] = "STAAR Alt 2"
+        elif re.search(r'staar\s+(?!alt)', tl):
+            result["testing_designation"] = "STAAR"
+
+        # ── Section 504 relationship ───────────────────────────────────────────
+        if re.search(r'section\s+504|504\s+plan', tl):
+            result["section_504_relationship"] = "Referenced in IEP"
+
+        # ── PLAAFP all domains ─────────────────────────────────────────────────
+        domains = [
+            "English/Reading", "Mathematics", "Written Language", "Science",
+            "Social Studies", "Speech/Language", "Communication",
+            "Adaptive Behavior", "Social-Emotional/Behavioral",
+            "Motor/Physical", "Transition", "Vocational",
+        ]
+        for domain in domains:
+            # Build a flexible search pattern for each domain
+            pattern_key = domain.lower().replace("/", r"[/\s]").replace("-", r"[\-\s]")
+            section_match = re.search(
+                rf'present\s+levels.*?{pattern_key}.*?\n(.*?)(?:goal|present\s+level|service|$)',
+                tl, re.DOTALL
+            )
+            if section_match:
+                content_raw = section_match.group(1).strip()[:600]
+                if len(content_raw) > 30:
+                    result["plaafp_all_domains"][domain] = content_raw
+
+        # ── Goals with full detail ─────────────────────────────────────────────
+        goal_blocks = re.finditer(
+            r'Measurable Annual Goal[:\s]+(.*?)(?=Measurable Annual Goal|Progress will be|Implementer|$)',
+            text, re.DOTALL
+        )
+        for m in list(goal_blocks)[:15]:
+            goal_text = m.group(1).strip()
+            if len(goal_text) < 20:
+                continue
+
+            has_timeframe = bool(re.search(r'by.*?(?:end|date|iep)', goal_text, re.I))
+            has_condition = bool(re.search(r'given|when|after|during', goal_text, re.I))
+            has_behavior = bool(re.search(r'will\s+\w+', goal_text, re.I))
+            has_criterion = bool(re.search(r'\d+\s*(?:out of|%|percent|times)', goal_text, re.I))
+
+            progress_method = None
+            prog_match = re.search(r'progress.*?(?:monitor|measure)[:\s]+([^]{5,80})', goal_text, re.I)
+            if prog_match:
+                progress_method = prog_match.group(1).strip()
+
+            implementer_match = re.search(r'implementer[:\s]+([^]{3,60})', goal_text, re.I)
+            implementer = implementer_match.group(1).strip() if implementer_match else None
+
+            result["goals_detail"].append({
+                "preview": goal_text[:250],
+                "has_timeframe": has_timeframe,
+                "has_condition": has_condition,
+                "has_behavior": has_behavior,
+                "has_criterion": has_criterion,
+                "all_four_components": all([has_timeframe, has_condition, has_behavior, has_criterion]),
+                "progress_monitoring_method": progress_method,
+                "implementer": implementer,
+            })
+
+        # ── Alerts ────────────────────────────────────────────────────────────
+        if not result["special_education_services"] and not result["related_services"]:
+            result["alerts"].append("No services extracted from IEP — document may need manual review")
+        if not result["classroom_accommodations"] and not result["testing_accommodations"]:
+            result["alerts"].append("No accommodations extracted from IEP PDF — verify against Frontline")
+        if not result["parent_rights_provided"]:
+            result["alerts"].append("No documentation that parent rights were provided at ARD")
+        for i, goal in enumerate(result["goals_detail"]):
+            if not goal["all_four_components"]:
+                missing = [k for k in ["has_timeframe", "has_condition", "has_behavior", "has_criterion"] if not goal[k]]
+                result["alerts"].append(f"Goal {i+1} missing TEA components: {', '.join(missing)}")
+            if not goal["progress_monitoring_method"]:
+                result["alerts"].append(f"Goal {i+1} has no progress monitoring method documented")
+
+        return result
+
     def analyze_all(self):
         """Run all analysis modules."""
         # Load assessment profile from Frontline
@@ -1109,6 +1787,9 @@ class StudentDocumentAnalyzer:
             "telpas_profile": self.telpas_profile,
             "behavior_intervention": self.behavior_intervention,
             "transportation_profile": self.transportation_profile,
+            "fie_data": self._extract_fie_data(),
+            "reed_data": self._extract_reed_data(),
+            "iep_services": self._extract_iep_services(),
         }
         
         # Compile all alerts
