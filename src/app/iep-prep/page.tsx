@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { GalaxyShell } from "@/components/galaxy/GalaxyShell";
 import { FileText, Upload, Copy, Check, AlertTriangle, ChevronDown, ChevronRight, Sparkles } from "lucide-react";
@@ -530,7 +530,7 @@ const CONDITIONAL_SECTIONS: IEPSection[] = [
   },
 ];
 
-export default function IEPPrepPage() {
+function IEPPrepInner() {
   const searchParams = useSearchParams();
   const [deepDiveData, setDeepDiveData] = useState<DeepDiveData | null>(null);
   const [formData, setFormData] = useState<Record<string, string | string[]>>({});
@@ -1557,5 +1557,13 @@ export default function IEPPrepPage() {
         </div>
       </div>
     </GalaxyShell>
+  );
+}
+
+export default function IEPPrepPage() {
+  return (
+    <Suspense fallback={null}>
+      <IEPPrepInner />
+    </Suspense>
   );
 }
