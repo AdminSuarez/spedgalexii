@@ -2477,7 +2477,122 @@ class StudentDocumentAnalyzer:
                     "message": map_alert["message"],
                     "recommendation": map_alert.get("recommendation")
                 })
-            
+
+        # ── FIE / FIIE alerts ────────────────────────────────────────────────
+        fie_data = self.analysis.get("fie_data", {})
+        for alert_msg in fie_data.get("alerts", []):
+            alerts.append({
+                "severity": "HIGH",
+                "category": "FIE / Evaluation",
+                "message": alert_msg
+            })
+        # Re-eval overdue from fie_data (in case not caught by evaluation_status)
+        if fie_data.get("reevaluation_overdue"):
+            alerts.append({
+                "severity": "CRITICAL",
+                "category": "Re-evaluation Overdue",
+                "message": f"Re-evaluation due date passed: {fie_data.get('reevaluation_due', 'unknown date')}. "
+                           f"Three-year re-evaluation required under IDEA §300.303."
+            })
+        # Consent-to-eval lag > 45 school days
+        if fie_data.get("consent_to_eval_days") and int(fie_data.get("consent_to_eval_days", 0)) > 45:
+            alerts.append({
+                "severity": "HIGH",
+                "category": "FIE Timeline",
+                "message": f"Consent-to-evaluation gap is {fie_data['consent_to_eval_days']} days "
+                           f"(IDEA requires completion within 45 school days of consent)."
+            })
+        # Language dominance / interpreter needed
+        if fie_data.get("language_dominance") and fie_data.get("language_dominance", "").lower() not in ("english", ""):
+            alerts.append({
+                "severity": "MEDIUM",
+                "category": "Language / LEP",
+                "message": f"Student's language dominance: {fie_data['language_dominance']}. "
+                           f"Verify interpreter was used in evaluation and ARD, and that parent received "
+                           f"translated Prior Written Notice."
+            })
+
+        # ── REED alerts ──────────────────────────────────────────────────────
+        reed_data = self.analysis.get("reed_data", {})
+        for alert_msg in reed_data.get("alerts", []):
+            alerts.append({
+                "severity": "MEDIUM",
+                "category": "REED",
+                "message": alert_msg
+            })
+        # REED decision missing
+        if not reed_data.get("eligibility_decision"):
+            alerts.append({
+                "severity": "INQUIRY",
+                "category": "REED",
+                "message": "No REED eligibility decision found in documents. "
+                           "Verify REED form is complete and signed."
+            })
+        # Parent notification missing on REED
+        if reed_data.get("parent_notified") and str(reed_data["parent_notified"]).lower() in ("no", "n", "false"):
+            alerts.append({
+                "severity": "HIGH",
+                "category": "REED / Parent Notice",
+                "message": "REED parent notification not documented. "
+                           "Parent must be notified before reevaluation begins (34 CFR §300.300)."
+            })
+
+        # ── IEP Services alerts ──────────────────────────────────────────────
+        iep_services = self.analysis.get("iep_services", {})
+        for alert_msg in iep_services.get("alerts", []):
+            alerts.append({
+                "severity": "MEDIUM",
+                "category": "IEP Services",
+                "message": alert_msg
+            })
+        # Goals without all 4 components
+        for goal in iep_services.get("goals", []):
+            missing_components = []
+            if not goal.get("condition"):
+                missing_components.append("condition")
+            if not goal.get("behavior") and not goal.get("goal_text"):
+                missing_components.append("behavior")
+            if not goal.get("criteria") and not goal.get("accuracy"):
+                missing_components.append("criteria/accuracy")
+            if not goal.get("monitoring_method") and not goal.get("progress_monitoring"):
+                missing_components.append("progress monitoring method")
+            if missing_components:
+                area = goal.get("area", goal.get("domain", "Unknown area"))
+                alerts.append({
+                    "severity": "MEDIUM",
+                    "category": "IEP Goal Completeness",
+                    "message": f"Goal in '{area}' is missing required components: "
+                               f"{', '.join(missing_components)}. "
+                               f"TEA requires condition, behavior, criteria, and evaluation method."
+                })
+        # No SDI services documented
+        if not iep_services.get("sdi_services"):
+            alerts.append({
+                "severity": "INQUIRY",
+                "category": "IEP Services",
+                "message": "No Specially Designed Instruction (SDI) services found in documents. "
+                           "Every student receiving special education must have SDI documented in the IEP."
+            })
+        # No testing accommodations but student has SLD/OHI
+        disability_lower = str(self.analysis.get("student_info", {}).get("disability", "")).lower()
+        has_academic_disability = any(x in disability_lower for x in ("learning", "sld", "health", "ohi", "adhd", "dyslexia"))
+        if has_academic_disability and not iep_services.get("testing_accommodations"):
+            alerts.append({
+                "severity": "MEDIUM",
+                "category": "Testing Accommodations",
+                "message": "Student has an academic disability but no state/district testing "
+                           "accommodations were extracted. Verify accommodations are documented and "
+                           "that student has a valid testing designation (e.g., Accommodation, Exempt, ALT)."
+            })
+        # BIP present but no FBA reference
+        if iep_services.get("bip_present") and not fie_data.get("fba_conducted"):
+            alerts.append({
+                "severity": "INQUIRY",
+                "category": "BIP / FBA",
+                "message": "BIP is referenced in IEP but no FBA was found in evaluation documents. "
+                           "IDEA requires an FBA before implementing a BIP for behavior that impedes learning."
+            })
+
         self.analysis["alerts"] = alerts
         self.analysis["critical_count"] = len([a for a in alerts if a["severity"] == "CRITICAL"])
         self.analysis["high_count"] = len([a for a in alerts if a["severity"] == "HIGH"])
