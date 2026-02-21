@@ -14,8 +14,9 @@ export async function POST(req: NextRequest) {
     }
 
     const blob = await put(file.name, file, {
-      // Rely on the store's default (private) access and
-      // use the signed downloadUrl to share with Deep Space.
+      // Explicitly use private access to match the store configuration
+      // and still rely on the signed downloadUrl for sharing.
+      access: "private",
       addRandomSuffix: true,
     });
 
