@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
 import { getServerSupabase, CANON_BUCKET } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -264,6 +265,41 @@ async function latestRosterFromSupabase(): Promise<string | null> {
   }
 }
 
+/**
+ * Read case managers directly from the seeded `roster` Supabase table.
+ * This is the primary source on Vercel where the filesystem is ephemeral.
+ */
+async function caseManagersFromRosterTable(): Promise<{ label: string; key: string }[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return [];
+
+  try {
+    const sb = createClient(url, serviceKey);
+    const { data, error } = await sb
+      .from("roster")
+      .select("case_manager")
+      .not("case_manager", "is", null)
+      .neq("case_manager", "");
+
+    if (error || !data) return [];
+
+    const seen = new Set<string>();
+    const out: { label: string; key: string }[] = [];
+    for (const row of data) {
+      const v = String(row.case_manager ?? "").trim();
+      if (!v) continue;
+      const k = keyFromName(v);
+      if (k === BLANK_KEY || seen.has(k)) continue;
+      seen.add(k);
+      out.push({ label: v, key: k });
+    }
+    return out.sort((a, b) => a.label.localeCompare(b.label));
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   const AUDIT_ROOT = path.resolve(process.cwd(), "..");
   const OUTPUT = path.join(AUDIT_ROOT, "output");
@@ -294,37 +330,50 @@ export async function GET() {
     kind: "special",
   });
 
-  // 0) Canonical source: roster.csv — local file → local upload batch → Supabase Storage
+  // 0) Canonical source: roster table (Supabase) → local file → local upload → Supabase Storage
   let rosterSource: string | null = null;
-  let rosterText: string | null = null;
+  let rosteCms: { label: string; key: string }[] = [];
 
-  if (await fileExists(CANON_ROSTER)) {
-    rosterSource = CANON_ROSTER;
-    rosterText = await fs.readFile(CANON_ROSTER, "utf8").catch(() => null);
+  // 0a) Supabase roster table — always available on Vercel
+  const tableCms = await caseManagersFromRosterTable();
+  if (tableCms.length > 0) {
+    rosteCms = tableCms;
+    rosterSource = "supabase_table";
+  } else if (await fileExists(CANON_ROSTER)) {
+    // 0b) Local canonical file
+    const rosterText = await fs.readFile(CANON_ROSTER, "utf8").catch(() => null);
+    if (rosterText) {
+      rosteCms = await readRosterCaseManagers(rosterText);
+      rosterSource = CANON_ROSTER;
+    }
   } else {
+    // 0c) Local upload batch
     const localUpload = await latestUploadRosterPath(AUDIT_ROOT);
     if (localUpload) {
-      rosterSource = localUpload;
-      rosterText = await fs.readFile(localUpload, "utf8").catch(() => null);
+      const rosterText = await fs.readFile(localUpload, "utf8").catch(() => null);
+      if (rosterText) {
+        rosteCms = await readRosterCaseManagers(rosterText);
+        rosterSource = localUpload;
+      }
     } else {
-      // Vercel / cloud: check Supabase Storage
-      rosterText = await latestRosterFromSupabase();
-      if (rosterText) rosterSource = "supabase";
+      // 0d) Supabase Storage (uploaded CSV)
+      const rosterText = await latestRosterFromSupabase();
+      if (rosterText) {
+        rosteCms = await readRosterCaseManagers(rosterText);
+        rosterSource = "supabase_storage";
+      }
     }
   }
 
-  if (rosterText) {
-    const cms = await readRosterCaseManagers(rosterText);
-    for (const cm of cms) {
-      const filename = filenameForKey(cm.key);
-      if (!byKey.has(cm.key)) {
-        byKey.set(cm.key, {
-          key: cm.key,
-          label: cm.label,
-          filename,
-          kind: "case_manager",
-        });
-      }
+  for (const cm of rosteCms) {
+    const filename = filenameForKey(cm.key);
+    if (!byKey.has(cm.key)) {
+      byKey.set(cm.key, {
+        key: cm.key,
+        label: cm.label,
+        filename,
+        kind: "case_manager",
+      });
     }
   }
 
@@ -392,7 +441,11 @@ export async function GET() {
     meta: {
       allWorkbook: { filename: allFilename, exists: allExists },
       blankWorkbook: { filename: blankFilename, exists: blankExists },
-      source: rosterSource ? path.relative(AUDIT_ROOT, rosterSource).replaceAll("\\", "/") : "files_only",
+      source: rosterSource
+        ? (rosterSource.startsWith("supabase")
+            ? rosterSource
+            : path.relative(AUDIT_ROOT, rosterSource).replaceAll("\\", "/"))
+        : "files_only",
     },
   });
 }
