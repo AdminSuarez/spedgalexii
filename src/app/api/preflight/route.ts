@@ -125,12 +125,12 @@ export async function GET(request: Request) {
   const canonExists = await dirExists(CANON_DIR);
   checks.push({
     id: "canon_dir",
-    label: `Canonical input folder at "${CANON_DIR}"`,
+    label: `Canonical input folder`,
     passed: canonExists,
-    severity: canonExists ? "info" : "error",
+    severity: canonExists ? "info" : "warning",
     details: canonExists
       ? undefined
-      : "Expected input/_CANONICAL folder is missing. Place your CSV exports there.",
+      : "Local input/_CANONICAL folder not found. CSV-based modules (Accommodations, Goals, Services) require uploaded CSV files to run.",
   });
 
   if (selectedModule === "goals") {

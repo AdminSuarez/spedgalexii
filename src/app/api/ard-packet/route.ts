@@ -32,7 +32,8 @@
  */
 
 import { NextResponse } from "next/server";
-import PptxGenJS from "pptxgenjs";import OpenAI from "openai";
+import PptxGenJS from "pptxgenjs";
+import OpenAI from "openai";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ const H = 7.5;
 
 /** Draw a solid background rectangle filling the whole slide */
 function addBg(slide: PptxGenJS.Slide, color: string) {
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0, y: 0, w: W, h: H,
     fill: { color },
     line: { color, width: 0 },
@@ -76,7 +77,7 @@ function addBg(slide: PptxGenJS.Slide, color: string) {
 
 /** Subtle gradient-like inner glow via a centered semi-transparent oval */
 function addGlow(slide: PptxGenJS.Slide) {
-  slide.addShape(PptxGenJS.ShapeType.ellipse, {
+  slide.addShape("ellipse", {
     x: W / 2 - 4, y: H / 2 - 2.5, w: 8, h: 5,
     fill: { color: COLORS.accent, transparency: 88 },
     line: { color: COLORS.bgDeep, width: 0 },
@@ -85,7 +86,7 @@ function addGlow(slide: PptxGenJS.Slide) {
 
 /** Top accent bar */
 function addTopBar(slide: PptxGenJS.Slide, color = COLORS.accent) {
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0, y: 0, w: W, h: 0.08,
     fill: { color },
     line: { color, width: 0 },
@@ -94,7 +95,7 @@ function addTopBar(slide: PptxGenJS.Slide, color = COLORS.accent) {
 
 /** Bottom accent bar */
 function addBottomBar(slide: PptxGenJS.Slide, color = COLORS.accent) {
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0, y: H - 0.06, w: W, h: 0.06,
     fill: { color },
     line: { color, width: 0 },
@@ -114,7 +115,7 @@ function addSlideNum(slide: PptxGenJS.Slide, num: number) {
 
 /** Left vertical accent stripe */
 function addLeftStripe(slide: PptxGenJS.Slide, color = COLORS.accent) {
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0, y: 0.08, w: 0.08, h: H - 0.14,
     fill: { color },
     line: { color, width: 0 },
@@ -129,7 +130,7 @@ function addSectionHeader(
   color = COLORS.accent,
 ) {
   // Header bar
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0.15, y: 0.15, w: W - 0.3, h: 0.85,
     fill: { color: COLORS.bgCard },
     line: { color, width: 1.5 },
@@ -137,7 +138,7 @@ function addSectionHeader(
   });
 
   // Glowing left tab on header
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x: 0.15, y: 0.15, w: 0.12, h: 0.85,
     fill: { color },
     line: { color, width: 0 },
@@ -179,7 +180,7 @@ function addBody(
   } = opts;
 
   // Card background
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x, y, w, h,
     fill: { color: COLORS.bgCard },
     line: { color: COLORS.accent, width: 0.5, transparency: 70 },
@@ -217,7 +218,7 @@ function addTwoCol(
     { title: rightTitle, text: rightText },
   ].entries()) {
     const x = 0.22 + i * (colW + 0.16);
-    slide.addShape(PptxGenJS.ShapeType.rect, {
+    slide.addShape("rect", {
       x, y: yStart, w: colW, h: colH,
       fill: { color: COLORS.bgCard },
       line: { color: COLORS.accentCyan, width: 0.5, transparency: 60 },
@@ -251,7 +252,7 @@ function addBulletCard(
   opts: { x?: number; y?: number; w?: number; h?: number; color?: string; bullet?: string } = {},
 ) {
   const { x = 0.22, y = 1.12, w = W - 0.44, h = H - 1.4, color = COLORS.white, bullet = "✓" } = opts;
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x, y, w, h,
     fill: { color: COLORS.bgCard },
     line: { color: COLORS.accent, width: 0.5, transparency: 70 },
@@ -290,7 +291,7 @@ function addTable(
 
   // Header row
   headers.forEach((hdr, ci) => {
-    slide.addShape(PptxGenJS.ShapeType.rect, {
+    slide.addShape("rect", {
       x: x + ci * colW, y,
       w: colW, h: headerH,
       fill: { color: headerColor },
@@ -310,7 +311,7 @@ function addTable(
     const ry = y + headerH + ri * rowH;
     const bg = ri % 2 === 0 ? COLORS.bgCard : COLORS.bgMid;
     row.forEach((cell, ci) => {
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: x + ci * colW, y: ry,
         w: colW, h: rowH,
         fill: { color: bg },
@@ -348,7 +349,7 @@ function addScoreBar(
     fontSize: 9, bold: true, color, fontFace: FONT, align: "right", valign: "middle",
   });
   // track
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x, y: y + barH + 0.06, w, h: barH,
     fill: { color, transparency: 75 },
     line: { color: COLORS.bgDeep, width: 0 },
@@ -356,7 +357,7 @@ function addScoreBar(
   });
   // fill
   if (pct > 0) {
-    slide.addShape(PptxGenJS.ShapeType.rect, {
+    slide.addShape("rect", {
       x, y: y + barH + 0.06, w: w * pct, h: barH,
       fill: { color },
       line: { color: COLORS.bgDeep, width: 0 },
@@ -368,7 +369,7 @@ function addScoreBar(
 /** A small pill / badge shape + text */
 function addPill(slide: PptxGenJS.Slide, label: string, x: number, y: number, color: string) {
   const tw = Math.min(3.2, label.length * 0.095 + 0.3);
-  slide.addShape(PptxGenJS.ShapeType.rect, {
+  slide.addShape("rect", {
     x, y, w: tw, h: 0.26,
     fill: { color, transparency: 78 },
     line: { color, width: 1 },
@@ -523,7 +524,7 @@ export async function POST(req: Request) {
         const sx = Math.random() * W;
         const sy = Math.random() * H;
         const size = Math.random() < 0.2 ? 0.045 : 0.02;
-        slide.addShape(PptxGenJS.ShapeType.ellipse, {
+        slide.addShape("ellipse", {
           x: sx, y: sy, w: size, h: size,
           fill: { color: COLORS.white, transparency: Math.floor(Math.random() * 50 + 30) },
           line: { color: COLORS.bgDeep, width: 0 },
@@ -531,14 +532,14 @@ export async function POST(req: Request) {
       }
 
       // Central glow
-      slide.addShape(PptxGenJS.ShapeType.ellipse, {
+      slide.addShape("ellipse", {
         x: W / 2 - 3.5, y: H / 2 - 2, w: 7, h: 4,
         fill: { color: COLORS.accent, transparency: 82 },
         line: { color: COLORS.bgDeep, width: 0 },
       });
 
       // Logo placeholder (orbit ring)
-      slide.addShape(PptxGenJS.ShapeType.ellipse, {
+      slide.addShape("ellipse", {
         x: W / 2 - 0.7, y: 0.5, w: 1.4, h: 1.4,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accent, width: 2 },
@@ -607,7 +608,7 @@ export async function POST(req: Request) {
       });
 
       // Confidentiality notice
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: W / 2 - 3.5, y: 5.2, w: 7, h: 0.5,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accentRed, width: 1 },
@@ -648,7 +649,7 @@ export async function POST(req: Request) {
         COLORS.accent);
 
       // Card background
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: 0.22, y: 1.12, w: W - 0.44, h: H - 1.4,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accent, width: 0.5, transparency: 70 },
@@ -719,7 +720,7 @@ export async function POST(req: Request) {
       const leftX = 0.22, rightX = 0.22 + colW + 0.08;
 
       // ── Left: FIE metadata + test table ──
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: leftX, y: 1.12, w: colW - 0.04, h: colH,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accentCyan, width: 0.5, transparency: 60 },
@@ -762,7 +763,7 @@ export async function POST(req: Request) {
       }
 
       // ── Right: REED ──
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: rightX, y: 1.12, w: colW - 0.04, h: colH,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accentMint, width: 0.5, transparency: 60 },
@@ -943,7 +944,7 @@ export async function POST(req: Request) {
           tRows, { x: 0.22, y: 1.12, w: W - 0.44, h: H - 1.45, headerColor: COLORS.accent });
       } else {
         // Fall back to score bars for common subjects using AI text
-        slide.addShape(PptxGenJS.ShapeType.rect, {
+        slide.addShape("rect", {
           x: 0.22, y: 1.12, w: W - 0.44, h: H - 1.4,
           fill: { color: COLORS.bgCard },
           line: { color: COLORS.accent, width: 0.5, transparency: 70 },
@@ -987,7 +988,7 @@ export async function POST(req: Request) {
         "NWEA MAP RIT scores, percentile rankings, and growth projections",
         COLORS.accentMint);
 
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: 0.22, y: 1.12, w: W - 0.44, h: H - 1.4,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accentMint, width: 0.5, transparency: 70 },
@@ -1072,7 +1073,7 @@ export async function POST(req: Request) {
           const gx = 0.22 + gc * (gW + 0.08);
           const gy = 1.15 + gr * (gH + 0.06);
 
-          slide.addShape(PptxGenJS.ShapeType.rect, {
+          slide.addShape("rect", {
             x: gx, y: gy, w: gW, h: gH,
             fill: { color: COLORS.bgCard },
             line: { color: COLORS.accentMint, width: 0.8, transparency: 55 },
@@ -1256,7 +1257,7 @@ export async function POST(req: Request) {
       addBg(slide, COLORS.bgDeep);
 
       // Same star glow as title slide
-      slide.addShape(PptxGenJS.ShapeType.ellipse, {
+      slide.addShape("ellipse", {
         x: W / 2 - 3, y: H / 2 - 2, w: 6, h: 4,
         fill: { color: COLORS.accentMint, transparency: 85 },
         line: { color: COLORS.bgDeep, width: 0 },
@@ -1281,7 +1282,7 @@ export async function POST(req: Request) {
       addSlideNum(slide, 20);
 
       // Bottom signature area
-      slide.addShape(PptxGenJS.ShapeType.rect, {
+      slide.addShape("rect", {
         x: 0.22, y: H - 1.2, w: W - 0.44, h: 0.65,
         fill: { color: COLORS.bgCard },
         line: { color: COLORS.accentMint, width: 0.5, transparency: 50 },

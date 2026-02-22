@@ -21,7 +21,11 @@ const EXT_TO_MIME: Record<string, string> = {
   ".jpeg": "image/jpeg",
   ".webp": "image/webp",
   ".gif": "image/gif",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
 };
+
+const HEIC_MIME = new Set(["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"]);
 
 function isFile(x: unknown): x is File {
   if (typeof x !== "object" || x === null) return false;
@@ -64,10 +68,17 @@ export async function POST(req: Request) {
       ? raw.type
       : (EXT_TO_MIME[ext] ?? "image/png");
 
+    if (HEIC_MIME.has(mimeType)) {
+      return NextResponse.json(
+        { ok: false, error: "iPhone HEIC photos are not supported by OCR. Convert to JPEG first: on iPhone go to Settings → Camera → Formats → Most Compatible, or use a free online converter at heictojpeg.net." },
+        { status: 415 },
+      );
+    }
+
     if (!ALLOWED_MIME.has(mimeType)) {
       return NextResponse.json(
-        { ok: false, error: `Unsupported image type: ${mimeType}. Use PNG, JPEG, WebP, or GIF.` },
-        { status: 400 },
+        { ok: false, error: `Unsupported image type: ${mimeType}. Supported formats: PNG, JPEG, WebP, GIF.` },
+        { status: 415 },
       );
     }
 
