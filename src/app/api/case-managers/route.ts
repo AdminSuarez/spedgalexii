@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import * as path from "node:path";
 import * as fs from "node:fs/promises";
+import { getServerSupabase, CANON_BUCKET } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -145,9 +146,15 @@ function pickColumnIndex(headers: string[], candidates: string[]) {
   return -1;
 }
 
-async function readRosterCaseManagers(rosterPath: string): Promise<{ label: string; key: string }[]> {
+async function readRosterCaseManagers(rosterTextOrPath: string): Promise<{ label: string; key: string }[]> {
   try {
-    const raw = await fs.readFile(rosterPath, "utf8");
+    // Accept either raw CSV text or a file path
+    let raw: string;
+    if (rosterTextOrPath.includes("\n") || rosterTextOrPath.includes(",")) {
+      raw = rosterTextOrPath;
+    } else {
+      raw = await fs.readFile(rosterTextOrPath, "utf8");
+    }
     const rows = parseCsv(raw);
     if (rows.length < 2) return [];
 
@@ -210,6 +217,53 @@ async function latestUploadRosterPath(auditRoot: string): Promise<string | null>
   return (await fileExists(candidate)) ? candidate : null;
 }
 
+/**
+ * Find the most recently uploaded roster CSV in Supabase Storage.
+ * Returns its text content, or null if not found / Supabase not configured.
+ */
+async function latestRosterFromSupabase(): Promise<string | null> {
+  const sb = getServerSupabase();
+  if (!sb) return null;
+
+  try {
+    // List all batch folders under canon/
+    const { data: folders, error: listErr } = await sb.storage
+      .from(CANON_BUCKET)
+      .list("canon", { limit: 100, sortBy: { column: "created_at", order: "desc" } });
+
+    if (listErr || !folders?.length) return null;
+
+    // Walk each batch folder newest-first, looking for any roster-like CSV
+    for (const folder of folders) {
+      const prefix = `canon/${folder.name}`;
+      const { data: files, error: fileErr } = await sb.storage
+        .from(CANON_BUCKET)
+        .list(prefix, { limit: 50 });
+
+      if (fileErr || !files?.length) continue;
+
+      const rosterFile = files.find((f) => {
+        const n = f.name.toLowerCase();
+        return n.includes("roster") && (n.endsWith(".csv") || n.endsWith(".xlsx"));
+      });
+
+      if (!rosterFile) continue;
+
+      const { data: blob, error: dlErr } = await sb.storage
+        .from(CANON_BUCKET)
+        .download(`${prefix}/${rosterFile.name}`);
+
+      if (dlErr || !blob) continue;
+
+      return await blob.text();
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   const AUDIT_ROOT = path.resolve(process.cwd(), "..");
   const OUTPUT = path.join(AUDIT_ROOT, "output");
@@ -240,13 +294,27 @@ export async function GET() {
     kind: "special",
   });
 
-  // 0) Canonical source: roster.csv
+  // 0) Canonical source: roster.csv — local file → local upload batch → Supabase Storage
   let rosterSource: string | null = null;
-  if (await fileExists(CANON_ROSTER)) rosterSource = CANON_ROSTER;
-  else rosterSource = await latestUploadRosterPath(AUDIT_ROOT);
+  let rosterText: string | null = null;
 
-  if (rosterSource) {
-    const cms = await readRosterCaseManagers(rosterSource);
+  if (await fileExists(CANON_ROSTER)) {
+    rosterSource = CANON_ROSTER;
+    rosterText = await fs.readFile(CANON_ROSTER, "utf8").catch(() => null);
+  } else {
+    const localUpload = await latestUploadRosterPath(AUDIT_ROOT);
+    if (localUpload) {
+      rosterSource = localUpload;
+      rosterText = await fs.readFile(localUpload, "utf8").catch(() => null);
+    } else {
+      // Vercel / cloud: check Supabase Storage
+      rosterText = await latestRosterFromSupabase();
+      if (rosterText) rosterSource = "supabase";
+    }
+  }
+
+  if (rosterText) {
+    const cms = await readRosterCaseManagers(rosterText);
     for (const cm of cms) {
       const filename = filenameForKey(cm.key);
       if (!byKey.has(cm.key)) {

@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { createWriteStream } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
+import { uploadToSupabase, CANON_BUCKET } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -231,11 +232,40 @@ export async function POST(req: Request) {
       "utf8"
     );
 
+    // ── Mirror canonical CSV/XLSX files to Supabase Storage ──────────────────
+    // This makes roster.csv (and other data files) available on Vercel where
+    // the local filesystem is ephemeral and wiped between requests.
+    // PDFs are skipped — they go through Vercel Blob for Deep Space.
+    const supabaseUploads: string[] = [];
+    for (const sf of savedFiles) {
+      if (sf.kind !== "canonical") continue;
+      try {
+        const fullPath = path.join(batchRoot, sf.relPath);
+        const buf = await fs.readFile(fullPath);
+        const ext = path.extname(sf.savedName).toLowerCase();
+        const ct =
+          ext === ".csv"
+            ? "text/csv"
+            : ext === ".xlsx"
+              ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              : "application/octet-stream";
+
+        // Store under: canon/<batchId>/<filename>
+        const storagePath = `canon/${uploadBatchId}/${sf.savedName}`;
+        const res = await uploadToSupabase(storagePath, buf, ct);
+        if (res.ok) supabaseUploads.push(storagePath);
+        else console.warn(`[upload] Supabase mirror failed for ${sf.savedName}: ${res.error}`);
+      } catch (e) {
+        console.warn(`[upload] Supabase mirror error for ${sf.savedName}:`, e);
+      }
+    }
+
     return NextResponse.json({
       ok: true,
       uploadBatchId,
       saved: savedFiles.length,
       files: savedFiles,
+      ...(supabaseUploads.length > 0 ? { supabasePaths: supabaseUploads } : {}),
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
